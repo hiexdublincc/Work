@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, lt, lte, or } from "drizzle-orm";
 import { z } from "zod";
-import { properties, users, weeklyUpdates } from "../../drizzle/schema";
+import { achievements, activities, companies, opportunities, properties, users, weeklyUpdates } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
 import {
@@ -122,5 +122,80 @@ export const weeklyUpdatesRouter = router({
     }
     await db.update(weeklyUpdates).set({ status: "Submitted", submittedAt: new Date() }).where(eq(weeklyUpdates.id, input.id));
     return { success: true };
+  }),
+
+  generateDraft: activeProcedure.input(z.object({
+    propertyId: z.number().int().positive().optional(),
+    ownerId: z.number().int().positive().optional(),
+    weekCommencing: z.coerce.date(),
+  })).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    const propertyId = await resolvePropertyId(ctx.user, input.propertyId);
+    const ownerId = resolveOwnerId(ctx.user, input.ownerId);
+    await assertOwnerPropertyCompatibility(ownerId, propertyId);
+
+    const weekStart = input.weekCommencing;
+    const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+    const nextWeekEnd = new Date(weekEnd.getTime() + 7 * 86_400_000);
+
+    const [weekActivities, movedOpportunities, weekAchievements, upcomingTasks] = await Promise.all([
+      db.select({
+        id: activities.id, type: activities.type, subtype: activities.subtype, title: activities.title,
+        companyName: companies.name, startedAt: activities.startedAt, completedAt: activities.completedAt, dueAt: activities.dueAt,
+      }).from(activities)
+        .leftJoin(companies, eq(activities.companyId, companies.id))
+        .where(scopedWhere(
+          isNull(activities.archivedAt), eq(activities.propertyId, propertyId), eq(activities.ownerId, ownerId),
+          gte(activities.createdAt, weekStart), lt(activities.createdAt, weekEnd),
+        )).orderBy(asc(activities.createdAt)),
+      db.select({
+        id: opportunities.id, name: opportunities.name, stage: opportunities.stage, valueCents: opportunities.valueCents,
+        companyName: companies.name,
+      }).from(opportunities)
+        .leftJoin(companies, eq(opportunities.companyId, companies.id))
+        .where(scopedWhere(
+          isNull(opportunities.archivedAt), eq(opportunities.propertyId, propertyId), eq(opportunities.ownerId, ownerId),
+          gte(opportunities.stageChangedAt, weekStart), lt(opportunities.stageChangedAt, weekEnd),
+        )).orderBy(asc(opportunities.stageChangedAt)),
+      db.select({
+        id: achievements.id, organizationActivity: achievements.organizationActivity, status: achievements.status, potentialValueCents: achievements.potentialValueCents,
+      }).from(achievements)
+        .where(scopedWhere(
+          isNull(achievements.archivedAt), eq(achievements.propertyId, propertyId), eq(achievements.ownerId, ownerId),
+          gte(achievements.createdAt, weekStart), lt(achievements.createdAt, weekEnd),
+        )).orderBy(asc(achievements.createdAt)),
+      db.select({ id: activities.id, title: activities.title, dueAt: activities.dueAt })
+        .from(activities)
+        .where(scopedWhere(
+          isNull(activities.archivedAt), eq(activities.propertyId, propertyId), eq(activities.ownerId, ownerId),
+          eq(activities.type, "task"), isNull(activities.completedAt),
+          gte(activities.dueAt, weekEnd), lt(activities.dueAt, nextWeekEnd),
+        )).orderBy(asc(activities.dueAt)),
+    ]);
+
+    const eventSubtypes = new Set(["Event attended", "Webinar attended", "Sales trip"]);
+    const corporateSubtypes = new Set(["RFP received", "RFP submitted", "Contract signed", "Proposal sent"]);
+    const money = (cents: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(cents / 100);
+    const bullet = (lines: string[]) => (lines.length ? lines.map(line => `- ${line}`).join("\n") : "");
+
+    const wonOpportunities = movedOpportunities.filter(item => item.stage === "Closed Won");
+    const openMoved = movedOpportunities.filter(item => item.stage !== "Closed Won" && item.stage !== "Closed Lost");
+    const completedActivities = weekActivities.filter(item => item.completedAt);
+    const subtypeCounts = new Map<string, number>();
+    weekActivities.forEach(item => subtypeCounts.set(item.subtype, (subtypeCounts.get(item.subtype) ?? 0) + 1));
+
+    return {
+      keyWins: bullet([
+        ...weekAchievements.map(item => `${item.organizationActivity} — ${item.status}${item.potentialValueCents ? ` (${money(item.potentialValueCents)})` : ""}`),
+        ...wonOpportunities.map(item => `Closed Won: ${item.name}${item.companyName ? ` (${item.companyName})` : ""} — ${money(item.valueCents)}`),
+      ]),
+      businessPotential: bullet(openMoved.map(item => `${item.name}${item.companyName ? ` (${item.companyName})` : ""} — ${item.stage}, ${money(item.valueCents)}`)),
+      keyActivity: bullet(Array.from(subtypeCounts.entries()).map(([subtype, count]) => `${count} × ${subtype}`)),
+      corporateUpdates: bullet(weekActivities.filter(item => corporateSubtypes.has(item.subtype)).map(item => `${item.subtype}: ${item.title}${item.companyName ? ` (${item.companyName})` : ""}`)),
+      groupUpdates: "",
+      eventTradeActivity: bullet(weekActivities.filter(item => eventSubtypes.has(item.subtype)).map(item => `${item.subtype}: ${item.title}`)),
+      completedActions: bullet(completedActivities.map(item => item.title)),
+      nextWeekPriorities: bullet(upcomingTasks.map(item => `${item.title}${item.dueAt ? ` (due ${item.dueAt.toISOString().slice(0, 10)})` : ""}`)),
+    };
   }),
 });
