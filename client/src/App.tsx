@@ -10,10 +10,15 @@ import Achievements from "./pages/Achievements";
 import Activities from "./pages/Activities";
 import CalendarPage from "./pages/Calendar";
 import Companies from "./pages/Companies";
+import CompetitorIntelligence from "./pages/CompetitorIntelligence";
 import Contacts from "./pages/Contacts";
+import DataStudio from "./pages/DataStudio";
+import HotelKnowledge from "./pages/HotelKnowledge";
 import Home from "./pages/Home";
 import Leads from "./pages/Leads";
 import Opportunities from "./pages/Opportunities";
+import Referrals from "./pages/Referrals";
+import Reports from "./pages/Reports";
 import SystemSettings from "./pages/SystemSettings";
 import UserManagement from "./pages/UserManagement";
 import WeeklyUpdates from "./pages/WeeklyUpdates";
@@ -46,6 +51,11 @@ function Router() {
         <Route path="/calendar" component={CalendarPage} />
         <Route path="/achievements" component={Achievements} />
         <Route path="/weekly-updates" component={WeeklyUpdates} />
+        <Route path="/competitor-intelligence" component={CompetitorIntelligence} />
+        <Route path="/referrals" component={Referrals} />
+        <Route path="/hotel-knowledge" component={HotelKnowledge} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/data" component={DataStudio} />
         <Route path="/admin/users" component={AdminUsersRoute} />
         <Route path="/admin/settings" component={AdminSettingsRoute} />
         <Route path="/404" component={NotFound} />

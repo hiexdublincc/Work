@@ -23,6 +23,7 @@ import { startLogin } from "@/const";
 import {
   Activity,
   BarChart3,
+  BookOpen,
   CalendarDays,
   Building2,
   ChevronDown,
@@ -33,9 +34,11 @@ import {
   LogOut,
   Menu,
   Plus,
+  Radar,
   Search,
   Settings,
   ShieldCheck,
+  Share2,
   Sparkles,
   Target,
   Trophy,
@@ -57,6 +60,9 @@ const primaryItems = [
 
 const insightItems = [
   { icon: Trophy, label: "Achievements", path: "/achievements" },
+  { icon: Radar, label: "Competitor intelligence", path: "/competitor-intelligence" },
+  { icon: Share2, label: "Referrals", path: "/referrals" },
+  { icon: BookOpen, label: "Hotel knowledge", path: "/hotel-knowledge" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
   { icon: Database, label: "Data", path: "/data" },
 ];
