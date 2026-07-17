@@ -1,0 +1,1 @@
+ALTER TABLE `opportunities` ADD `stageChangedAt` timestamp DEFAULT (now()) NOT NULL;
