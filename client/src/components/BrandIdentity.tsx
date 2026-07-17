@@ -10,7 +10,7 @@ type LogoProps = {
 export function GroupLogo({ className, imageClassName }: LogoProps) {
   const [failed, setFailed] = useState(false);
   return (
-    <span className={cn("inline-flex items-center justify-center", className)}>
+    <span className={cn("inline-flex items-center justify-center overflow-hidden", className)}>
       {failed ? (
         <span role="img" aria-label="JMK Group UK & Ireland logo unavailable" className="px-2 text-center text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#002460]">
           JMK Group
@@ -20,7 +20,7 @@ export function GroupLogo({ className, imageClassName }: LogoProps) {
           src={JMK_BRAND.logoUrl}
           alt="JMK Group UK & Ireland"
           onError={() => setFailed(true)}
-          className={cn("block h-auto w-full object-contain", imageClassName)}
+          className={cn("block h-full w-full object-contain", imageClassName)}
         />
       )}
     </span>
