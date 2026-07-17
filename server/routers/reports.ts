@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ACTIVITY_TYPES, LEAD_STATUSES, OPPORTUNITY_STAGES, activities, leads, opportunities } from "../../drizzle/schema";
+import { ACTIVITY_TYPES, LEAD_STATUSES, LOST_REASONS, OPPORTUNITY_STAGES, OPPORTUNITY_TYPES, activities, leads, opportunities, properties } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
 import { activeProcedure } from "./common";
@@ -134,5 +134,72 @@ export const reportsRouter = router({
       grossValueCents: Number(row.grossValueCents),
       weightedValueCents: Number(row.weightedValueCents),
     }));
+  }),
+
+  lostBusiness: activeProcedure.input(reportFilters).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
+    const lostWhere = scopedWhere(
+      eq(opportunities.stage, "Closed Lost"),
+      propertyScope(opportunities.propertyId, propertyIds),
+      input.propertyId ? eq(opportunities.propertyId, input.propertyId) : undefined,
+      input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
+      input.from ? gte(opportunities.lostAt, input.from) : undefined,
+      input.to ? lte(opportunities.lostAt, input.to) : undefined,
+    );
+
+    const [byReason, byProperty, byType, byStageAtLoss, byCompetitor] = await Promise.all([
+      db.select({
+        lostReason: opportunities.lostReason,
+        count: sql<number>`count(*)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities).where(lostWhere).groupBy(opportunities.lostReason),
+      db.select({
+        propertyId: opportunities.propertyId,
+        propertyName: properties.name,
+        count: sql<number>`count(*)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities).leftJoin(properties, eq(opportunities.propertyId, properties.id)).where(lostWhere).groupBy(opportunities.propertyId, properties.name),
+      db.select({
+        businessType: opportunities.businessType,
+        count: sql<number>`count(*)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities).where(lostWhere).groupBy(opportunities.businessType),
+      db.select({
+        stageAtLoss: opportunities.stageAtLoss,
+        count: sql<number>`count(*)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities).where(lostWhere).groupBy(opportunities.stageAtLoss),
+      db.select({
+        competitorHotel: opportunities.competitorHotel,
+        count: sql<number>`count(*)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities).where(lostWhere).groupBy(opportunities.competitorHotel),
+    ]);
+
+    const totalCount = byReason.reduce((sum, row) => sum + Number(row.count), 0);
+    const totalValueCents = byReason.reduce((sum, row) => sum + Number(row.valueCents), 0);
+
+    return {
+      totalCount,
+      totalValueCents,
+      byReason: LOST_REASONS.map(reason => {
+        const row = byReason.find(item => item.lostReason === reason);
+        return { reason, count: Number(row?.count ?? 0), valueCents: Number(row?.valueCents ?? 0) };
+      }),
+      byProperty: byProperty.map(row => ({ propertyId: row.propertyId, propertyName: row.propertyName, count: Number(row.count), valueCents: Number(row.valueCents) })),
+      byType: OPPORTUNITY_TYPES.map(type => {
+        const row = byType.find(item => item.businessType === type);
+        return { type, count: Number(row?.count ?? 0), valueCents: Number(row?.valueCents ?? 0) };
+      }).filter(item => item.count > 0),
+      byStageAtLoss: OPPORTUNITY_STAGES.map(stage => {
+        const row = byStageAtLoss.find(item => item.stageAtLoss === stage);
+        return { stage, count: Number(row?.count ?? 0), valueCents: Number(row?.valueCents ?? 0) };
+      }).filter(item => item.count > 0),
+      byCompetitor: byCompetitor
+        .filter(row => row.competitorHotel)
+        .map(row => ({ competitorHotel: row.competitorHotel as string, count: Number(row.count), valueCents: Number(row.valueCents) }))
+        .sort((a, b) => b.count - a.count),
+    };
   }),
 });

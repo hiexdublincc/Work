@@ -1,13 +1,14 @@
 import { FilterSelect, SearchFilters } from "@/components/crm/CRMForms";
-import { EmptyState, ErrorPanel, LoadingPanel, PageHeader, money } from "@/components/crm/CRMPrimitives";
+import { EmptyState, ErrorPanel, LoadingPanel, PageHeader, StatusBadge, money } from "@/components/crm/CRMPrimitives";
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
-import { BarChart3, CalendarClock, PhoneCall, TrendingUp } from "lucide-react";
+import { BarChart3, CalendarClock, PhoneCall, ShieldAlert, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AppRouter } from "../../../server/routers";
 
 type Summary = inferRouterOutputs<AppRouter>["reports"]["summary"];
 type Forecast = inferRouterOutputs<AppRouter>["reports"]["revenueForecast"];
+type LostBusiness = inferRouterOutputs<AppRouter>["reports"]["lostBusiness"];
 
 export default function Reports() {
   const [propertyId, setPropertyId] = useState("");
@@ -26,12 +27,13 @@ export default function Reports() {
   );
   const summary = trpc.reports.summary.useQuery(filters);
   const forecast = trpc.reports.revenueForecast.useQuery(filters);
+  const lostBusiness = trpc.reports.lostBusiness.useQuery(filters);
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
   const activeFilters = [propertyId, ownerId, from, to].filter(Boolean).length;
-  const loading = summary.isLoading || forecast.isLoading || refs.isLoading;
-  const error = summary.error || forecast.error || refs.error;
+  const loading = summary.isLoading || forecast.isLoading || lostBusiness.isLoading || refs.isLoading;
+  const error = summary.error || forecast.error || lostBusiness.error || refs.error;
 
   return (
     <div className="page-enter max-w-[1500px]">
@@ -61,13 +63,14 @@ export default function Reports() {
       {loading ? (
         <LoadingPanel rows={8} />
       ) : error ? (
-        <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); }} />
+        <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); lostBusiness.refetch(); }} />
       ) : (
         <div className="space-y-4">
           <LeadsByStatus data={summary.data!.leadsByStatus} />
           <OpportunitiesByStage data={summary.data!.opportunitiesByStage} />
           <ActivitySummary data={summary.data!.activitySummary} />
           <RevenueForecast data={forecast.data!} />
+          <LostBusinessAnalysis data={lostBusiness.data!} />
         </div>
       )}
     </div>
@@ -204,4 +207,88 @@ function RevenueForecast({ data }: { data: Forecast }) {
 function monthLabel(value: string) {
   const [year, month] = value.split("-").map(Number);
   return new Date(year, month - 1, 1).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+}
+
+function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
+  const reasonsWithData = data.byReason.filter(item => item.count > 0);
+  const max = Math.max(...reasonsWithData.map(item => item.count), 1);
+
+  return (
+    <Panel icon={ShieldAlert} title="Lost business analysis" description="Closed Lost opportunities broken down by reason, property, business type, stage at loss, and competitor.">
+      {data.totalCount === 0 ? (
+        <EmptyState icon={ShieldAlert} title="No lost business in this view" description="Opportunities marked Closed Lost with their required lost reason will appear here." />
+      ) : (
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-muted-foreground">
+            <span><strong className="text-foreground">{data.totalCount}</strong> lost opportunities</span>
+            <span><strong className="text-foreground">{money(data.totalValueCents)}</strong> lost value</span>
+          </div>
+
+          <div>
+            <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By lost reason</p>
+            <div className="space-y-2.5">
+              {reasonsWithData.map(item => (
+                <div key={item.reason} className="grid items-center gap-3 sm:grid-cols-[150px_1fr_100px]">
+                  <p className="text-[11px] font-semibold text-[#44566c]">{item.reason}</p>
+                  <div className="h-6 overflow-hidden rounded-lg bg-[#edf3f8]">
+                    <div className="flex h-full items-center rounded-lg bg-rose-600 px-3 text-[10px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.count / max) * 100)}%` }}>{item.count}</div>
+                  </div>
+                  <p className="text-right text-[11px] font-semibold tabular-nums">{money(item.valueCents)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By property</p>
+              <div className="space-y-2">
+                {data.byProperty.map(item => (
+                  <div key={item.propertyId} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                    <span className="font-medium">{item.propertyName || "Unassigned"}</span>
+                    <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By business type</p>
+              <div className="space-y-2">
+                {data.byType.map(item => (
+                  <div key={item.type} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                    <span className="font-medium">{item.type}</span>
+                    <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By stage at loss</p>
+              <div className="space-y-2">
+                {data.byStageAtLoss.map(item => (
+                  <div key={item.stage} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                    <StatusBadge value={item.stage} />
+                    <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {data.byCompetitor.length > 0 && (
+              <div>
+                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By competitor</p>
+                <div className="space-y-2">
+                  {data.byCompetitor.slice(0, 6).map(item => (
+                    <div key={item.competitorHotel} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                      <span className="font-medium">{item.competitorHotel}</span>
+                      <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
 }
