@@ -2,11 +2,12 @@ import { and, eq, gte, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm"
 import { z } from "zod";
 import { ACTIVITY_TYPES, LEAD_STATUSES, OPPORTUNITY_STAGES, activities, leads, opportunities } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
-import { ownerScope, requireDb, scopedWhere } from "../db";
+import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
 import { activeProcedure } from "./common";
 
 const reportFilters = z.object({
   ownerId: z.number().int().positive().optional(),
+  propertyId: z.number().int().positive().optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
 });
@@ -14,24 +15,28 @@ const reportFilters = z.object({
 export const reportsRouter = router({
   summary: activeProcedure.input(reportFilters).query(async ({ ctx, input }) => {
     const db = await requireDb();
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
     const leadWhere = scopedWhere(
       isNull(leads.archivedAt),
-      ownerScope(leads.ownerId, ctx.user),
-      ctx.user.role === "admin" && input.ownerId ? eq(leads.ownerId, input.ownerId) : undefined,
+      propertyScope(leads.propertyId, propertyIds),
+      input.propertyId ? eq(leads.propertyId, input.propertyId) : undefined,
+      input.ownerId ? eq(leads.ownerId, input.ownerId) : undefined,
       input.from ? gte(leads.createdAt, input.from) : undefined,
       input.to ? lte(leads.createdAt, input.to) : undefined,
     );
     const opportunityWhere = scopedWhere(
       isNull(opportunities.archivedAt),
-      ownerScope(opportunities.ownerId, ctx.user),
-      ctx.user.role === "admin" && input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
+      propertyScope(opportunities.propertyId, propertyIds),
+      input.propertyId ? eq(opportunities.propertyId, input.propertyId) : undefined,
+      input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
       input.from ? gte(opportunities.createdAt, input.from) : undefined,
       input.to ? lte(opportunities.createdAt, input.to) : undefined,
     );
     const activityWhere = scopedWhere(
       isNull(activities.archivedAt),
-      ownerScope(activities.ownerId, ctx.user),
-      ctx.user.role === "admin" && input.ownerId ? eq(activities.ownerId, input.ownerId) : undefined,
+      propertyScope(activities.propertyId, propertyIds),
+      input.propertyId ? eq(activities.propertyId, input.propertyId) : undefined,
+      input.ownerId ? eq(activities.ownerId, input.ownerId) : undefined,
       input.from ? gte(activities.createdAt, input.from) : undefined,
       input.to ? lte(activities.createdAt, input.to) : undefined,
     );
@@ -98,6 +103,7 @@ export const reportsRouter = router({
 
   revenueForecast: activeProcedure.input(reportFilters).query(async ({ ctx, input }) => {
     const db = await requireDb();
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
     const openStages = OPPORTUNITY_STAGES.filter(stage => stage !== "Closed Won" && stage !== "Closed Lost");
     const rows = await db
       .select({
@@ -112,8 +118,9 @@ export const reportsRouter = router({
           isNull(opportunities.archivedAt),
           isNotNull(opportunities.expectedCloseDate),
           inArray(opportunities.stage, openStages),
-          ownerScope(opportunities.ownerId, ctx.user),
-          ctx.user.role === "admin" && input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
+          propertyScope(opportunities.propertyId, propertyIds),
+          input.propertyId ? eq(opportunities.propertyId, input.propertyId) : undefined,
+          input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
           input.from ? gte(opportunities.expectedCloseDate, input.from) : undefined,
           input.to ? lte(opportunities.expectedCloseDate, input.to) : undefined,
         ),
