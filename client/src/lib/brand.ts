@@ -9,7 +9,7 @@ export type BrandIdentity = {
 
 export const JMK_BRAND = {
   name: "JMK Group",
-  logoUrl: "/manus-storage/jmk-group_e7ce8654.png",
+  logoUrl: "/brand/jmklogo-1-1024x279.png",
   navy: "#002460",
   cyan: "#6cccd8",
   cyanStrong: "#0090b4",
@@ -21,7 +21,7 @@ export const HOTEL_BRANDS = {
   home2: {
     key: "home2",
     name: "Home2 Suites by Hilton",
-    logoUrl: "/manus-storage/home2-uniform_9dc9c0c7.png",
+    logoUrl: "/brand/Home2_Suites_by_Hilton_logo.svg.webp",
     accent: "#a9b500",
     softAccent: "#f6f7dc",
     ink: "#4c3729",
@@ -29,7 +29,7 @@ export const HOTEL_BRANDS = {
   holidayInnExpress: {
     key: "holiday-inn-express",
     name: "Holiday Inn Express by IHG",
-    logoUrl: "/manus-storage/holiday-inn-express-uniform_352e74a1.png",
+    logoUrl: "/brand/hiex-logo-banner-white.png",
     accent: "#003a78",
     softAccent: "#eaf1f8",
     ink: "#052f68",
@@ -37,7 +37,7 @@ export const HOTEL_BRANDS = {
   residenceInn: {
     key: "residence-inn",
     name: "Residence Inn by Marriott",
-    logoUrl: "/manus-storage/residence-inn-uniform_a3631d8b.png",
+    logoUrl: "/brand/Residence_Inn_logo.svg.webp",
     accent: "#5e2f3d",
     softAccent: "#f5ecef",
     ink: "#48222f",
@@ -45,7 +45,7 @@ export const HOTEL_BRANDS = {
   aloft: {
     key: "aloft",
     name: "Aloft Hotels",
-    logoUrl: "/manus-storage/aloft-uniform_02d1a1b8.png",
+    logoUrl: "/brand/Aloft_Hotels_logo.svg.webp",
     accent: "#b01f64",
     softAccent: "#faedf3",
     ink: "#34383c",
@@ -53,7 +53,7 @@ export const HOTEL_BRANDS = {
   hampton: {
     key: "hampton",
     name: "Hampton by Hilton",
-    logoUrl: "/manus-storage/hampton-uniform_e933799a.png",
+    logoUrl: "/brand/Hampton-by-Hilton-Logo-Color.png",
     accent: "#0754b8",
     softAccent: "#eaf2fd",
     ink: "#063e8c",
@@ -61,7 +61,7 @@ export const HOTEL_BRANDS = {
   moxy: {
     key: "moxy",
     name: "Moxy Hotels",
-    logoUrl: "/manus-storage/moxy-uniform_bfe9aa4e.png",
+    logoUrl: "/brand/mxyDUBOXrgb.1434020.jpg",
     accent: "#b1127f",
     softAccent: "#f9eaf5",
     ink: "#24282b",

@@ -37,19 +37,16 @@ describe("JMK property brand identities", () => {
     expect(getPropertyBrand(null)).toBeNull();
   });
 
-  it("uses durable managed asset paths for all supplied logos", () => {
-    expect(JMK_BRAND.logoUrl).toMatch(/^\/manus-storage\//);
+  it("uses durable self-hosted asset paths for all supplied logos", () => {
+    expect(JMK_BRAND.logoUrl).toMatch(/^\/brand\//);
     for (const brand of Object.values(HOTEL_BRANDS)) {
-      expect(brand.logoUrl, brand.name).toMatch(/^\/manus-storage\//);
+      expect(brand.logoUrl, brand.name).toMatch(/^\/brand\//);
     }
   });
 
-  it("uses one distinct normalised PNG canvas for every hotel brand", () => {
+  it("uses one distinct logo file for every hotel brand", () => {
     const hotelLogoUrls = Object.values(HOTEL_BRANDS).map(brand => brand.logoUrl);
 
     expect(new Set(hotelLogoUrls).size).toBe(hotelLogoUrls.length);
-    for (const brand of Object.values(HOTEL_BRANDS)) {
-      expect(brand.logoUrl, brand.name).toMatch(/^\/manus-storage\/[a-z0-9-]+-uniform_[a-z0-9]+\.png$/);
-    }
   });
 });
