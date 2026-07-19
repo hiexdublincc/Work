@@ -25,6 +25,7 @@ import {
   BarChart3,
   BookOpen,
   CalendarDays,
+  CalendarRange,
   Building2,
   ChevronDown,
   CircleDollarSign,
@@ -59,6 +60,7 @@ const primaryItems = [
 ];
 
 const insightItems = [
+  { icon: CalendarRange, label: "Weekly updates", path: "/weekly-updates" },
   { icon: Trophy, label: "Achievements", path: "/achievements" },
   { icon: Radar, label: "Competitor intelligence", path: "/competitor-intelligence" },
   { icon: Share2, label: "Referrals", path: "/referrals" },
