@@ -23,7 +23,6 @@ import {
   shortDate,
   useSearchShortcut,
 } from "@/components/crm/CRMPrimitives";
-import { PropertyIdentity, PropertyLogo } from "@/components/BrandIdentity";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -42,7 +41,6 @@ const companySortOptions = [
 type CompanySort = (typeof companySortOptions)[number]["value"];
 type CompanyForm = {
   name: string;
-  propertyId: string;
   ownerId: string;
   category: string;
   status: (typeof statuses)[number];
@@ -65,7 +63,6 @@ type CompanyForm = {
 
 const emptyForm: CompanyForm = {
   name: "",
-  propertyId: "",
   ownerId: "",
   category: "Corporate",
   status: "Prospect",
@@ -94,7 +91,6 @@ export default function Companies() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("");
-  const [propertyId, setPropertyId] = useState("");
   const [sort, setSort] = useState<CompanySort>("updated");
   const [editorOpen, setEditorOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -111,23 +107,21 @@ export default function Companies() {
     search,
     status: (status as (typeof statuses)[number]) || undefined,
     category: (category as any) || undefined,
-    propertyId: propertyId ? Number(propertyId) : undefined,
     sort,
   });
   const detail = trpc.companies.get.useQuery({ id: selectedId! }, { enabled: selectedId !== null });
   const duplicateInput = useMemo(
     () => ({
-      propertyId: form.propertyId ? Number(form.propertyId) : undefined,
       excludeId: editingId ?? undefined,
       name: form.name.trim() || undefined,
       email: form.email.trim() || undefined,
       phone: form.phone.trim() || undefined,
       website: form.website.trim() || undefined,
     }),
-    [editingId, form.email, form.name, form.phone, form.propertyId, form.website],
+    [editingId, form.email, form.name, form.phone, form.website],
   );
   const duplicateCheck = trpc.companies.duplicateCheck.useQuery(duplicateInput, {
-    enabled: editorOpen && Boolean(form.propertyId) && Boolean(form.name.trim() || form.email.trim() || form.phone.trim() || form.website.trim()),
+    enabled: editorOpen && Boolean(form.name.trim() || form.email.trim() || form.phone.trim() || form.website.trim()),
   });
   const create = trpc.companies.create.useMutation({
     onSuccess: () => saved("Company created"),
@@ -148,13 +142,12 @@ export default function Companies() {
     onError: error => toast.error(error.message),
   });
 
-  const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name, description: item.city || undefined })) ?? [];
   const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
   const categoryOptions = (references.data?.taxonomy.accountCategories ?? []).map(value => ({ value, label: value }));
 
   useEffect(() => {
     setPage(1);
-  }, [search, status, category, propertyId, sort]);
+  }, [search, status, category, sort]);
   useEffect(() => {
     if (!references.data) return;
     const params = new URLSearchParams(window.location.search);
@@ -180,7 +173,6 @@ export default function Companies() {
     setEditingId(null);
     setForm({
       ...emptyForm,
-      propertyId: propertyOptions.length === 1 ? propertyOptions[0].value : "",
       ownerId: ownerOptions.length === 1 ? ownerOptions[0].value : "",
     });
     setEditorOpen(true);
@@ -192,7 +184,6 @@ export default function Companies() {
     setEditingId(row.id);
     setForm({
       name: row.name,
-      propertyId: String(row.propertyId),
       ownerId: String(row.ownerId),
       category: row.category,
       status: row.status,
@@ -219,7 +210,6 @@ export default function Companies() {
     event.preventDefault();
     const payload = {
       name: form.name,
-      propertyId: Number(form.propertyId),
       ownerId: Number(form.ownerId),
       category: form.category as any,
       status: form.status,
@@ -254,8 +244,7 @@ export default function Companies() {
         description="A focused view of hotel accounts, production potential, relationships, health, and the next commercial move."
         action={<CreateButton label="New company" onClick={openCreate} />}
       />
-      <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[status, category, propertyId].filter(Boolean).length} onClear={() => { setStatus(""); setCategory(""); setPropertyId(""); }}>
-        <FilterSelect value={propertyId} onChange={setPropertyId} options={propertyOptions} placeholder="All properties" className="w-[180px]" />
+      <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[status, category].filter(Boolean).length} onClear={() => { setStatus(""); setCategory(""); }}>
         <FilterSelect value={category} onChange={setCategory} options={categoryOptions} placeholder="All categories" />
         <FilterSelect value={status} onChange={setStatus} options={statuses.map(value => ({ value, label: value }))} placeholder="All statuses" />
         <FilterSelect value={sort} onChange={value => setSort(value as CompanySort)} options={companySortOptions.map(option => ({ ...option }))} placeholder="Sort companies" className="w-[170px]" />
@@ -269,11 +258,11 @@ export default function Companies() {
         <div className="surface"><EmptyState icon={Building2} title="No companies in this view" description="Create your first hotel account or broaden the current search and filters." action={<CreateButton label="New company" onClick={openCreate} />} /></div>
       ) : (
         <div className="surface overflow-hidden">
-          <RecordTable columns={["Company", "Property", "Category", "Potential", "Next follow-up", "Health"]}>
+          <RecordTable columns={["Company", "Owner", "Category", "Potential", "Next follow-up", "Health"]}>
             {rows.map(row => (
               <tr key={row.id} onClick={() => setSelectedId(row.id)} className="cursor-pointer border-b border-[#e8edf3] transition-colors last:border-0 hover:bg-[#f7fafc]">
                 <td className="px-4 py-3.5"><div className="flex items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e6f7f9] text-[#00677f]"><Building2 className="h-4 w-4" /></div><div><p className="text-xs font-semibold">{row.name}</p><p className="mt-1 text-[10px] text-muted-foreground">{row.segment || row.industry || row.destinationCity || "Account profile"}</p></div></div></td>
-                <td className="px-4 py-3.5"><div className="flex min-w-[190px] items-center gap-2.5"><PropertyLogo propertyName={row.propertyName} /><span className="text-[11px] font-semibold leading-4">{row.propertyName}</span></div></td>
+                <td className="px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
                 <td className="px-4 py-3.5 text-xs">{row.category}</td>
                 <td className="px-4 py-3.5"><p className="text-xs font-semibold">{money(row.potentialRevenueCents)}</p><p className="mt-1 text-[10px] text-muted-foreground">{row.potentialRoomNights.toLocaleString()} room nights</p></td>
                 <td className="px-4 py-3.5 text-xs">{shortDate(row.nextFollowUpAt)}</td>
@@ -296,7 +285,6 @@ export default function Companies() {
               <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#00677f]">Essential account details</p>
               <FieldGrid>
                 <TextField label="Company name" value={form.name} onChange={value => set("name", value)} required />
-                <SelectField label="Property" value={form.propertyId} onChange={value => set("propertyId", value)} options={propertyOptions} required />
                 <SelectField label="Owner" value={form.ownerId} onChange={value => set("ownerId", value)} options={ownerOptions} required />
                 <SelectField label="Account category" value={form.category} onChange={value => set("category", value)} options={categoryOptions} required />
                 <SelectField label="Status" value={form.status} onChange={value => set("status", value as CompanyForm["status"])} options={statuses.map(value => ({ value, label: value }))} />
@@ -306,7 +294,7 @@ export default function Companies() {
 
             {duplicateMatches.length > 0 && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate account</p><p className="mt-1 text-[11px] leading-5">{duplicateMatches.map(match => `${match.name} · ${match.propertyName || "Property"}`).join("; ")}. You can still save after checking these records.</p></div></div>
+                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate account</p><p className="mt-1 text-[11px] leading-5">{duplicateMatches.map(match => match.name).join("; ")}. You can still save after checking these records.</p></div></div>
               </div>
             )}
 
@@ -338,15 +326,14 @@ export default function Companies() {
               <div className="mt-5"><TextAreaField label="Commercial notes" value={form.notes} onChange={value => set("notes", value)} placeholder="Relationship context, production history, needs, risks, and agreed actions…" rows={5} /></div>
             </details>
 
-            <DialogActions onCancel={() => setEditorOpen(false)} saving={create.isPending || update.isPending} disabled={!form.name || !form.propertyId || !form.ownerId} />
+            <DialogActions onCancel={() => setEditorOpen(false)} saving={create.isPending || update.isPending} disabled={!form.name || !form.ownerId} />
           </form>
         </DialogContent>
       </Dialog>
 
-      <CRMDetailSheet open={selectedId !== null} onOpenChange={open => !open && setSelectedId(null)} title={detail.data?.company.name || "Company profile"} eyebrow={detail.data?.propertyName || "Hotel account"} loading={detail.isLoading} error={detail.error?.message} action={<Button size="sm" onClick={openEdit} className="rounded-xl"><Pencil className="mr-2 h-3.5 w-3.5" />Edit</Button>}>
+      <CRMDetailSheet open={selectedId !== null} onOpenChange={open => !open && setSelectedId(null)} title={detail.data?.company.name || "Company profile"} eyebrow="Shared group account" loading={detail.isLoading} error={detail.error?.message} action={<Button size="sm" onClick={openEdit} className="rounded-xl"><Pencil className="mr-2 h-3.5 w-3.5" />Edit</Button>}>
         {detail.data && (
           <div className="space-y-7">
-            <PropertyIdentity propertyName={detail.data.propertyName} className="rounded-2xl border border-[#dce5ee] bg-[linear-gradient(110deg,#ffffff_0%,#f5fbfc_100%)] p-4" />
             <div className="rounded-2xl border border-[#dce5ee] bg-[#f5fbfc] p-4">
               <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#00677f] shadow-sm"><HeartPulse className="h-4 w-4" /></div><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Account health</p><div className="mt-1"><StatusBadge value={detail.data.accountHealth.state} /></div></div></div><p className="max-w-[17rem] text-right text-[11px] leading-5 text-muted-foreground">{detail.data.accountHealth.reasons.join(" · ")}</p></div>
             </div>

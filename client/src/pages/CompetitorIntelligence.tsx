@@ -92,7 +92,7 @@ export default function CompetitorIntelligence() {
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
-  const scopedCompanies = refs.data?.companies.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
+  const scopedCompanies = refs.data?.companies ?? [];
   const scopedOpportunities = refs.data?.opportunities.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
   const companyOptions = [{ value: "none", label: "No linked company" }, ...scopedCompanies.map(item => ({ value: String(item.id), label: item.label }))];
   const opportunityOptions = [{ value: "none", label: "No linked opportunity" }, ...scopedOpportunities.map(item => ({ value: String(item.id), label: item.label }))];

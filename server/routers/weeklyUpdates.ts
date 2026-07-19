@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gte, isNull, lt, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, isNull, lt, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { achievements, activities, companies, opportunities, properties, users, weeklyUpdates } from "../../drizzle/schema";
+import { achievements, activities, companies, contacts, leads, opportunities, properties, users, weeklyUpdates } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
 import {
@@ -141,9 +141,14 @@ export const weeklyUpdatesRouter = router({
     const [weekActivities, movedOpportunities, weekAchievements, upcomingTasks] = await Promise.all([
       db.select({
         id: activities.id, type: activities.type, subtype: activities.subtype, title: activities.title,
-        companyName: companies.name, startedAt: activities.startedAt, completedAt: activities.completedAt, dueAt: activities.dueAt,
+        description: activities.description,
+        entityName: sql<string>`coalesce(${companies.name}, concat(${contacts.firstName}, ' ', ${contacts.lastName}), concat(${leads.firstName}, ' ', ${leads.lastName}), ${opportunities.name})`,
+        startedAt: activities.startedAt, completedAt: activities.completedAt, dueAt: activities.dueAt,
       }).from(activities)
         .leftJoin(companies, eq(activities.companyId, companies.id))
+        .leftJoin(contacts, eq(activities.contactId, contacts.id))
+        .leftJoin(leads, eq(activities.leadId, leads.id))
+        .leftJoin(opportunities, eq(activities.opportunityId, opportunities.id))
         .where(scopedWhere(
           isNull(activities.archivedAt), eq(activities.propertyId, propertyId), eq(activities.ownerId, ownerId),
           gte(activities.createdAt, weekStart), lt(activities.createdAt, weekEnd),
@@ -158,17 +163,20 @@ export const weeklyUpdatesRouter = router({
           gte(opportunities.stageChangedAt, weekStart), lt(opportunities.stageChangedAt, weekEnd),
         )).orderBy(asc(opportunities.stageChangedAt)),
       db.select({
-        id: achievements.id, organizationActivity: achievements.organizationActivity, status: achievements.status, potentialValueCents: achievements.potentialValueCents,
+        id: achievements.id, organizationActivity: achievements.organizationActivity, status: achievements.status,
+        potentialValueCents: achievements.potentialValueCents, eventDate: achievements.eventDate,
+        nights: achievements.nights, roomNights: achievements.roomNights, companyName: companies.name,
       }).from(achievements)
+        .leftJoin(companies, eq(achievements.companyId, companies.id))
         .where(scopedWhere(
           isNull(achievements.archivedAt), eq(achievements.propertyId, propertyId), eq(achievements.ownerId, ownerId),
           gte(achievements.createdAt, weekStart), lt(achievements.createdAt, weekEnd),
-        )).orderBy(asc(achievements.createdAt)),
+        )).orderBy(desc(achievements.potentialValueCents)),
       db.select({ id: activities.id, title: activities.title, dueAt: activities.dueAt })
         .from(activities)
         .where(scopedWhere(
           isNull(activities.archivedAt), eq(activities.propertyId, propertyId), eq(activities.ownerId, ownerId),
-          eq(activities.type, "task"), isNull(activities.completedAt),
+          isNotNull(activities.dueAt), isNull(activities.completedAt),
           gte(activities.dueAt, weekEnd), lt(activities.dueAt, nextWeekEnd),
         )).orderBy(asc(activities.dueAt)),
     ]);
@@ -176,22 +184,58 @@ export const weeklyUpdatesRouter = router({
     const eventSubtypes = new Set(["Event attended", "Webinar attended", "Sales trip"]);
     const corporateSubtypes = new Set(["RFP received", "RFP submitted", "Contract signed", "Proposal sent"]);
     const money = (cents: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(cents / 100);
+    const date = (value: Date | string) => new Date(value).toLocaleDateString("en-GB");
     const bullet = (lines: string[]) => (lines.length ? lines.map(line => `- ${line}`).join("\n") : "");
 
     const wonOpportunities = movedOpportunities.filter(item => item.stage === "Closed Won");
     const openMoved = movedOpportunities.filter(item => item.stage !== "Closed Won" && item.stage !== "Closed Lost");
     const completedActivities = weekActivities.filter(item => item.completedAt);
-    const subtypeCounts = new Map<string, number>();
-    weekActivities.forEach(item => subtypeCounts.set(item.subtype, (subtypeCounts.get(item.subtype) ?? 0) + 1));
+
+    // Top 5 wins ranked by potential value, formatted to match the group's weekly reporting template:
+    // "Company - £value | date | N night | M rooms – Status"
+    const topWins = weekAchievements.slice(0, 5).map(item => {
+      const parts = [
+        `**${item.companyName || item.organizationActivity}**`,
+        item.potentialValueCents ? money(item.potentialValueCents) : null,
+        item.eventDate ? date(item.eventDate) : null,
+        item.nights ? `${item.nights} night${item.nights === 1 ? "" : "s"}` : null,
+        item.roomNights ? `${item.roomNights} rooms` : null,
+      ].filter(Boolean);
+      return `${parts.join(" | ")} – ${item.status}`;
+    });
+
+    const activityVerb: Record<string, string> = {
+      "Call made": "Had a call with",
+      "Email sent": "Sent a proposal to",
+      "Meeting held": "Met with",
+      "Appointment booked": "Had a catch-up with",
+      "Site visit/showaround": "Conducted a show-around for",
+      "Webinar attended": "Attended a webinar hosted by",
+      "Sales trip": "Attended a sales trip meeting with",
+      "Event attended": "Attended an event with",
+      "Follow-up completed": "Completed a follow-up with",
+      "Proposal sent": "Sent a proposal to",
+      "RFP received": "Received an RFP from",
+      "RFP submitted": "Submitted an RFP response to",
+      "Contract signed": "Signed a contract with",
+    };
+    const narrativeActivity = (item: (typeof weekActivities)[number]) => {
+      const verb = activityVerb[item.subtype];
+      const subject = item.entityName ? `**${item.entityName}**` : null;
+      const lead = verb && subject ? `${verb} ${subject}` : subject ? `${item.subtype} with ${subject}` : item.title;
+      const detail = item.description?.trim();
+      return `${lead}${detail ? `, ${detail.charAt(0).toLowerCase()}${detail.slice(1)}` : ""}.`;
+    };
 
     return {
-      keyWins: bullet([
-        ...weekAchievements.map(item => `${item.organizationActivity} — ${item.status}${item.potentialValueCents ? ` (${money(item.potentialValueCents)})` : ""}`),
+      weekLabel: `${date(weekStart)} - ${date(new Date(weekEnd.getTime() - 86_400_000))}`,
+      keyWins: bullet(topWins),
+      businessPotential: bullet([
+        ...openMoved.map(item => `${item.name}${item.companyName ? ` (${item.companyName})` : ""} — ${item.stage}, ${money(item.valueCents)}`),
         ...wonOpportunities.map(item => `Closed Won: ${item.name}${item.companyName ? ` (${item.companyName})` : ""} — ${money(item.valueCents)}`),
       ]),
-      businessPotential: bullet(openMoved.map(item => `${item.name}${item.companyName ? ` (${item.companyName})` : ""} — ${item.stage}, ${money(item.valueCents)}`)),
-      keyActivity: bullet(Array.from(subtypeCounts.entries()).map(([subtype, count]) => `${count} × ${subtype}`)),
-      corporateUpdates: bullet(weekActivities.filter(item => corporateSubtypes.has(item.subtype)).map(item => `${item.subtype}: ${item.title}${item.companyName ? ` (${item.companyName})` : ""}`)),
+      keyActivity: bullet(weekActivities.map(narrativeActivity)),
+      corporateUpdates: bullet(weekActivities.filter(item => corporateSubtypes.has(item.subtype)).map(item => `${item.subtype}: ${item.title}${item.entityName ? ` (${item.entityName})` : ""}`)),
       groupUpdates: "",
       eventTradeActivity: bullet(weekActivities.filter(item => eventSubtypes.has(item.subtype)).map(item => `${item.subtype}: ${item.title}`)),
       completedActions: bullet(completedActivities.map(item => item.title)),

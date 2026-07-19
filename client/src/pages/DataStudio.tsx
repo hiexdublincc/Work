@@ -7,13 +7,14 @@ import { CheckCircle2, Database, Download, FileWarning, Upload } from "lucide-re
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-type Entity = "companies" | "contacts" | "leads" | "opportunities";
+type Entity = "companies" | "contacts" | "leads" | "opportunities" | "activities";
 
 const ENTITY_OPTIONS = [
   { value: "companies", label: "Companies" },
   { value: "contacts", label: "Contacts" },
   { value: "leads", label: "Leads" },
   { value: "opportunities", label: "Opportunities" },
+  { value: "activities", label: "Activities" },
 ];
 
 export default function DataStudio() {
@@ -90,7 +91,7 @@ export default function DataStudio() {
       <PageHeader
         eyebrow="Bulk data management"
         title="Data studio"
-        description="Import Companies, Contacts, Leads, and Opportunities from CSV, or export your authorised scope for reporting."
+        description="Import Companies, Contacts, Leads, Opportunities, and Activities from CSV, or export your authorised scope for reporting."
       />
 
       <div className="grid gap-4 lg:grid-cols-2">

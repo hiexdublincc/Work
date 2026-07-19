@@ -1,17 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ACCOUNT_CATEGORIES, activities, companies, contacts, opportunities, properties, users } from "../../drizzle/schema";
+import { ACCOUNT_CATEGORIES, activities, companies, contacts, opportunities, users } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
-import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
+import { requireDb } from "../db";
 import {
   activeProcedure,
   assertEntityAccess,
-  assertOwnerPropertyCompatibility,
   idInput,
   listInput,
   resolveOwnerId,
-  resolvePropertyId,
 } from "./common";
 
 const nullableText = (max: number) => z.string().trim().max(max).nullish();
@@ -20,7 +18,7 @@ const companyFields = z.object({
   name: z.string().trim().min(1).max(240),
   legalName: nullableText(240), website: nullableText(500), email: nullableText(320), phone: nullableText(80),
   industry: nullableText(160), category: z.enum(ACCOUNT_CATEGORIES).default("Corporate"), segment: nullableText(160),
-  propertyId: z.number().int().positive().optional(), destinationCity: nullableText(120), leadSource: nullableText(160),
+  destinationCity: nullableText(120), leadSource: nullableText(160),
   preferredRateType: nullableText(120), productionHistory: nullableText(20000),
   potentialRoomNights: z.number().int().min(0).default(0), potentialRevenueCents: z.number().int().min(0).default(0),
   relationshipStatus: nullableText(120), lastActivityAt: z.coerce.date().nullish(), nextFollowUpAt: z.coerce.date().nullish(),
@@ -77,11 +75,9 @@ export const companiesRouter = router({
     industry: z.string().trim().max(160).optional(), sort: z.enum(["updated", "name", "created", "potential"]).default("updated"),
   })).query(async ({ ctx, input }) => {
     const db = await requireDb();
-    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
     const search = input.search ? `%${input.search}%` : undefined;
-    const where = scopedWhere(
-      isNull(companies.archivedAt), propertyScope(companies.propertyId, propertyIds),
-      input.propertyId ? eq(companies.propertyId, input.propertyId) : undefined,
+    const where = and(
+      isNull(companies.archivedAt),
       input.ownerId ? eq(companies.ownerId, input.ownerId) : undefined,
       input.status ? eq(companies.status, input.status) : undefined,
       input.category ? eq(companies.category, input.category) : undefined,
@@ -95,13 +91,13 @@ export const companiesRouter = router({
       db.select({
         id: companies.id, name: companies.name, legalName: companies.legalName, email: companies.email, phone: companies.phone,
         industry: companies.industry, category: companies.category, segment: companies.segment, status: companies.status,
-        city: companies.city, destinationCity: companies.destinationCity, propertyId: companies.propertyId, propertyName: properties.name,
+        city: companies.city, destinationCity: companies.destinationCity,
         ownerId: companies.ownerId, ownerName: users.name, potentialRoomNights: companies.potentialRoomNights,
         potentialRevenueCents: companies.potentialRevenueCents, relationshipStatus: companies.relationshipStatus,
         lastActivityAt: companies.lastActivityAt, nextFollowUpAt: companies.nextFollowUpAt,
         contractStartDate: companies.contractStartDate, contractExpiryDate: companies.contractExpiryDate,
         updatedAt: companies.updatedAt, createdAt: companies.createdAt,
-      }).from(companies).leftJoin(users, eq(companies.ownerId, users.id)).leftJoin(properties, eq(companies.propertyId, properties.id))
+      }).from(companies).leftJoin(users, eq(companies.ownerId, users.id))
         .where(where).orderBy(order).limit(input.pageSize).offset((input.page - 1) * input.pageSize),
       db.select({ count: sql<number>`count(*)` }).from(companies).where(where),
     ]);
@@ -111,8 +107,8 @@ export const companiesRouter = router({
   get: activeProcedure.input(idInput).query(async ({ ctx, input }) => {
     const db = await requireDb();
     await assertEntityAccess(ctx.user, "company", input.id);
-    const rows = await db.select({ company: companies, ownerName: users.name, propertyName: properties.name })
-      .from(companies).leftJoin(users, eq(companies.ownerId, users.id)).leftJoin(properties, eq(companies.propertyId, properties.id))
+    const rows = await db.select({ company: companies, ownerName: users.name })
+      .from(companies).leftJoin(users, eq(companies.ownerId, users.id))
       .where(and(eq(companies.id, input.id), isNull(companies.archivedAt))).limit(1);
     if (!rows[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Company not found." });
     const [relatedContacts, relatedOpportunities, relatedActivities] = await Promise.all([
@@ -124,12 +120,11 @@ export const companiesRouter = router({
   }),
 
   duplicateCheck: activeProcedure.input(z.object({
-    propertyId: z.number().int().positive().optional(), excludeId: z.number().int().positive().optional(),
+    excludeId: z.number().int().positive().optional(),
     name: z.string().trim().max(240).optional(), email: z.string().trim().max(320).optional(),
     phone: z.string().trim().max(80).optional(), website: z.string().trim().max(500).optional(),
-  })).query(async ({ ctx, input }) => {
+  })).query(async ({ input }) => {
     const db = await requireDb();
-    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
     const signals = [
       input.name ? sql`lower(${companies.name}) = lower(${input.name})` : undefined,
       input.email ? sql`lower(${companies.email}) = lower(${input.email})` : undefined,
@@ -137,10 +132,9 @@ export const companiesRouter = router({
       input.website ? sql`lower(${companies.website}) = lower(${input.website})` : undefined,
     ].filter(Boolean);
     if (!signals.length) return { matches: [] };
-    const rows = await db.select({ id: companies.id, name: companies.name, email: companies.email, phone: companies.phone, website: companies.website, propertyId: companies.propertyId, propertyName: properties.name })
-      .from(companies).leftJoin(properties, eq(companies.propertyId, properties.id))
-      .where(scopedWhere(isNull(companies.archivedAt), propertyScope(companies.propertyId, propertyIds),
-        input.propertyId ? eq(companies.propertyId, input.propertyId) : undefined,
+    const rows = await db.select({ id: companies.id, name: companies.name, email: companies.email, phone: companies.phone, website: companies.website })
+      .from(companies)
+      .where(and(isNull(companies.archivedAt),
         input.excludeId ? sql`${companies.id} <> ${input.excludeId}` : undefined,
         or(...signals as [NonNullable<(typeof signals)[number]>, ...NonNullable<(typeof signals)[number]>[]])))
       .limit(8);
@@ -149,21 +143,17 @@ export const companiesRouter = router({
 
   create: activeProcedure.input(companyFields).mutation(async ({ ctx, input }) => {
     const db = await requireDb();
-    const propertyId = await resolvePropertyId(ctx.user, input.propertyId);
     const ownerId = resolveOwnerId(ctx.user, input.ownerId);
-    await assertOwnerPropertyCompatibility(ownerId, propertyId);
-    const result = await db.insert(companies).values({ ...input, propertyId, ownerId, createdById: ctx.user.id });
+    const result = await db.insert(companies).values({ ...input, ownerId, createdById: ctx.user.id });
     return { id: Number(result[0].insertId) };
   }),
 
   update: activeProcedure.input(companyFields.partial().extend({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await requireDb();
     const existing = await assertEntityAccess(ctx.user, "company", input.id);
-    const { id, ownerId: requestedOwnerId, propertyId: requestedPropertyId, ...changes } = input;
-    const propertyId = requestedPropertyId === undefined ? existing.propertyId : await resolvePropertyId(ctx.user, requestedPropertyId);
+    const { id, ownerId: requestedOwnerId, ...changes } = input;
     const ownerId = requestedOwnerId === undefined ? existing.ownerId : resolveOwnerId(ctx.user, requestedOwnerId);
-    await assertOwnerPropertyCompatibility(ownerId, propertyId);
-    await db.update(companies).set({ ...changes, propertyId, ownerId }).where(eq(companies.id, id));
+    await db.update(companies).set({ ...changes, ownerId }).where(eq(companies.id, id));
     return { success: true };
   }),
 

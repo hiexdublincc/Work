@@ -1,11 +1,11 @@
-import { asc, eq, isNull } from "drizzle-orm";
+import { asc, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { companies, contacts, leads, opportunities } from "../../drizzle/schema";
+import { activities, ACTIVITY_ENTITY_TYPES, ACTIVITY_TYPES, companies, contacts, HOTEL_ACTIVITY_SUBTYPES, leads, opportunities, properties, users } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
-import { activeProcedure, assertOwnerPropertyCompatibility, resolveOwnerId, resolvePropertyId } from "./common";
+import { activeProcedure, assertEntityAccess, assertOwnerPropertyCompatibility, resolveOwnerId, resolvePropertyId } from "./common";
 
-const entitySchema = z.enum(["companies", "contacts", "leads", "opportunities"]);
+const entitySchema = z.enum(["companies", "contacts", "leads", "opportunities", "activities"]);
 const nullableText = z.preprocess(value => (value === "" || value === undefined ? null : value), z.string().trim().nullable());
 const nullablePositiveInt = z.preprocess(
   value => (value === "" || value === undefined || value === null ? null : Number(value)),
@@ -25,7 +25,6 @@ const importSchemas = {
     city: nullableText.optional(),
     country: nullableText.optional(),
     ownerId: nullablePositiveInt.optional(),
-    propertyId: nullablePositiveInt.optional(),
   }),
   contacts: z.object({
     firstName: z.string().trim().min(1).max(120),
@@ -38,7 +37,6 @@ const importSchemas = {
     companyId: nullablePositiveInt.optional(),
     status: z.enum(["Active", "Inactive"]).default("Active"),
     ownerId: nullablePositiveInt.optional(),
-    propertyId: nullablePositiveInt.optional(),
   }),
   leads: z.object({
     firstName: z.string().trim().min(1).max(120),
@@ -63,14 +61,37 @@ const importSchemas = {
     ownerId: nullablePositiveInt.optional(),
     propertyId: nullablePositiveInt.optional(),
   }),
+  activities: z.object({
+    type: z.enum(ACTIVITY_TYPES).default("note"),
+    subtype: z.enum(HOTEL_ACTIVITY_SUBTYPES).default("General"),
+    title: z.string().trim().min(1).max(240),
+    description: nullableText.optional(),
+    entityType: z.preprocess(value => (value === "" ? undefined : value), z.enum(ACTIVITY_ENTITY_TYPES).optional()),
+    entityId: nullablePositiveInt.optional(),
+    dueAt: z.preprocess(value => (value ? new Date(String(value)) : null), z.date().nullable()),
+    ownerId: nullablePositiveInt.optional(),
+    propertyId: nullablePositiveInt.optional(),
+  }),
 } as const;
 
 const templates = {
-  companies: ["name", "legalName", "website", "email", "phone", "industry", "status", "city", "country", "propertyId", "ownerId"],
-  contacts: ["firstName", "lastName", "email", "phone", "mobile", "jobTitle", "department", "companyId", "status", "propertyId", "ownerId"],
+  companies: ["name", "legalName", "website", "email", "phone", "industry", "status", "city", "country", "ownerId"],
+  contacts: ["firstName", "lastName", "email", "phone", "mobile", "jobTitle", "department", "companyId", "status", "ownerId"],
   leads: ["firstName", "lastName", "companyName", "email", "phone", "source", "status", "estimatedValueCents", "propertyId", "ownerId"],
   opportunities: ["name", "companyId", "contactId", "stage", "valueCents", "probability", "expectedCloseDate", "propertyId", "ownerId"],
+  activities: ["type", "subtype", "title", "description", "entityType", "entityId", "dueAt", "propertyId", "ownerId"],
 } as const;
+
+const PROPERTY_SCOPED_ENTITIES = new Set(["leads", "opportunities", "activities"]);
+
+function entityLinks(entityType: string | null | undefined, entityId: number | null | undefined) {
+  return {
+    companyId: entityType === "company" ? entityId : null,
+    contactId: entityType === "contact" ? entityId : null,
+    leadId: entityType === "lead" ? entityId : null,
+    opportunityId: entityType === "opportunity" ? entityId : null,
+  };
+}
 
 export const dataRouter = router({
   templates: activeProcedure.query(() => templates),
@@ -87,6 +108,7 @@ export const dataRouter = router({
       const valid: Array<Record<string, unknown>> = [];
       const errors: Array<{ row: number; message: string }> = [];
       const schema = importSchemas[input.entity];
+      const propertyScoped = PROPERTY_SCOPED_ENTITIES.has(input.entity);
 
       for (let index = 0; index < input.rows.length; index++) {
         const row = input.rows[index];
@@ -96,13 +118,26 @@ export const dataRouter = router({
           continue;
         }
         try {
-          const propertyId = await resolvePropertyId(ctx.user, result.data.propertyId ?? undefined);
-          const ownerId = resolveOwnerId(ctx.user, result.data.ownerId ?? undefined);
-          await assertOwnerPropertyCompatibility(ownerId, propertyId);
-          const { propertyId: _rowPropertyId, ...rest } = result.data;
-          valid.push({ ...rest, propertyId, ownerId, createdById: ctx.user.id });
+          const data = result.data as Record<string, unknown>;
+          const ownerId = resolveOwnerId(ctx.user, (data.ownerId as number | null) ?? undefined);
+          if (propertyScoped) {
+            const propertyId = await resolvePropertyId(ctx.user, (data.propertyId as number | null) ?? undefined);
+            await assertOwnerPropertyCompatibility(ownerId, propertyId);
+            const { propertyId: _rowPropertyId, ...rest } = data;
+            if (input.entity === "activities") {
+              const { entityType, entityId, ...activityRest } = rest as { entityType?: string; entityId?: number | null };
+              if (!entityType !== !entityId) throw new Error("Provide both entityType and entityId, or leave both blank.");
+              if (entityType && entityId) await assertEntityAccess(ctx.user, entityType as "company" | "contact" | "lead" | "opportunity", entityId);
+              valid.push({ ...activityRest, entityType: entityType ?? null, entityId: entityId ?? null, ...entityLinks(entityType, entityId), propertyId, ownerId, createdById: ctx.user.id });
+            } else {
+              valid.push({ ...rest, propertyId, ownerId, createdById: ctx.user.id });
+            }
+          } else {
+            if (input.entity === "contacts" && data.companyId) await assertEntityAccess(ctx.user, "company", data.companyId as number);
+            valid.push({ ...data, ownerId, createdById: ctx.user.id });
+          }
         } catch (error) {
-          errors.push({ row: index + 2, message: error instanceof Error ? error.message : "Invalid owner or property assignment." });
+          errors.push({ row: index + 2, message: error instanceof Error ? error.message : "Invalid owner, property, or linked record." });
         }
       }
 
@@ -115,6 +150,7 @@ export const dataRouter = router({
           if (input.entity === "contacts") await tx.insert(contacts).values(chunk as typeof contacts.$inferInsert[]);
           if (input.entity === "leads") await tx.insert(leads).values(chunk as typeof leads.$inferInsert[]);
           if (input.entity === "opportunities") await tx.insert(opportunities).values(chunk as typeof opportunities.$inferInsert[]);
+          if (input.entity === "activities") await tx.insert(activities).values(chunk as typeof activities.$inferInsert[]);
         }
       });
       return { imported: valid.length, errors: [], ready: true };
@@ -137,13 +173,12 @@ export const dataRouter = router({
           status: companies.status,
           city: companies.city,
           country: companies.country,
-          propertyId: companies.propertyId,
           ownerId: companies.ownerId,
           createdAt: companies.createdAt,
           updatedAt: companies.updatedAt,
         })
         .from(companies)
-        .where(scopedWhere(isNull(companies.archivedAt), propertyScope(companies.propertyId, propertyIds)))
+        .where(isNull(companies.archivedAt))
         .orderBy(asc(companies.name));
     }
     if (input.entity === "contacts") {
@@ -159,13 +194,12 @@ export const dataRouter = router({
           department: contacts.department,
           companyId: contacts.companyId,
           status: contacts.status,
-          propertyId: contacts.propertyId,
           ownerId: contacts.ownerId,
           createdAt: contacts.createdAt,
           updatedAt: contacts.updatedAt,
         })
         .from(contacts)
-        .where(scopedWhere(isNull(contacts.archivedAt), propertyScope(contacts.propertyId, propertyIds)))
+        .where(isNull(contacts.archivedAt))
         .orderBy(asc(contacts.lastName), asc(contacts.firstName));
     }
     if (input.entity === "leads") {
@@ -208,6 +242,30 @@ export const dataRouter = router({
         .from(opportunities)
         .where(scopedWhere(isNull(opportunities.archivedAt), propertyScope(opportunities.propertyId, propertyIds)))
         .orderBy(asc(opportunities.name));
+    }
+    if (input.entity === "activities") {
+      rows = await db
+        .select({
+          id: activities.id,
+          type: activities.type,
+          subtype: activities.subtype,
+          title: activities.title,
+          description: activities.description,
+          entityType: activities.entityType,
+          entityName: (companies.name),
+          propertyName: properties.name,
+          ownerName: users.name,
+          dueAt: activities.dueAt,
+          completedAt: activities.completedAt,
+          createdAt: activities.createdAt,
+          updatedAt: activities.updatedAt,
+        })
+        .from(activities)
+        .leftJoin(companies, eq(activities.companyId, companies.id))
+        .leftJoin(properties, eq(activities.propertyId, properties.id))
+        .leftJoin(users, eq(activities.ownerId, users.id))
+        .where(scopedWhere(isNull(activities.archivedAt), propertyScope(activities.propertyId, propertyIds)))
+        .orderBy(desc(activities.createdAt));
     }
 
     return {

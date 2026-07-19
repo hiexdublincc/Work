@@ -65,25 +65,20 @@ async function resolveOpportunityProperty(
   relations: { companyId?: number | null; contactId?: number | null; leadId?: number | null },
   fallbackPropertyId?: number,
 ) {
-  const linked = [] as Array<{ label: string; propertyId: number }>;
-  if (relations.companyId) {
-    const company = await assertEntityAccess(user, "company", relations.companyId);
-    linked.push({ label: "Company", propertyId: company.propertyId });
-  }
-  if (relations.contactId) {
-    const contact = await assertEntityAccess(user, "contact", relations.contactId);
-    linked.push({ label: "Contact", propertyId: contact.propertyId });
-  }
+  // Companies and contacts are shared across the group and carry no property of their own,
+  // so only a linked lead can constrain which property an opportunity belongs to.
+  if (relations.companyId) await assertEntityAccess(user, "company", relations.companyId);
+  if (relations.contactId) await assertEntityAccess(user, "contact", relations.contactId);
+  let leadPropertyId: number | undefined;
   if (relations.leadId) {
     const lead = await assertEntityAccess(user, "lead", relations.leadId);
-    linked.push({ label: "Lead", propertyId: lead.propertyId });
+    leadPropertyId = lead.propertyId;
   }
-  const propertyId = linked[0]?.propertyId ?? (requestedPropertyId === undefined && fallbackPropertyId
+  const propertyId = leadPropertyId ?? (requestedPropertyId === undefined && fallbackPropertyId
     ? fallbackPropertyId
     : await resolvePropertyId(user, requestedPropertyId));
-  const mismatch = linked.find(item => item.propertyId !== propertyId);
-  if (mismatch || (requestedPropertyId && requestedPropertyId !== propertyId)) {
-    throw new TRPCError({ code: "BAD_REQUEST", message: `${mismatch?.label ?? "Linked records"} must belong to the opportunity property.` });
+  if (leadPropertyId !== undefined && requestedPropertyId && requestedPropertyId !== leadPropertyId) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Lead must belong to the opportunity property." });
   }
   return propertyId;
 }

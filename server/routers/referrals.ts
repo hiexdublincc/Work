@@ -125,8 +125,7 @@ export const referralsRouter = router({
     await assertPropertyAccess(ctx.user, input.referringPropertyId);
     await assertReceivingProperty(input.receivingPropertyId);
     if (input.companyId) {
-      const company = await assertEntityAccess(ctx.user, "company", input.companyId);
-      if (company.propertyId !== input.referringPropertyId) throw new TRPCError({ code: "BAD_REQUEST", message: "The Company must belong to the referring property." });
+      await assertEntityAccess(ctx.user, "company", input.companyId);
     }
     if (input.opportunityId) {
       const opportunity = await assertEntityAccess(ctx.user, "opportunity", input.opportunityId);

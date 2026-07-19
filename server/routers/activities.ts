@@ -22,6 +22,7 @@ import {
   idInput,
   listInput,
   resolveOwnerId,
+  resolvePropertyId,
 } from "./common";
 
 const activityFields = z.object({
@@ -29,8 +30,8 @@ const activityFields = z.object({
   subtype: z.enum(HOTEL_ACTIVITY_SUBTYPES).default("General"),
   title: z.string().trim().min(1).max(240),
   description: z.string().trim().max(20000).nullish(),
-  entityType: z.enum(ACTIVITY_ENTITY_TYPES),
-  entityId: z.number().int().positive(),
+  entityType: z.enum(ACTIVITY_ENTITY_TYPES).nullish(),
+  entityId: z.number().int().positive().nullish(),
   propertyId: z.number().int().positive().optional(),
   ownerId: z.number().int().positive().optional(),
   priority: z.enum(["Low", "Normal", "High"]).default("Normal"),
@@ -40,13 +41,37 @@ const activityFields = z.object({
   reminderAt: z.coerce.date().nullish(),
 });
 
-function entityLinks(entityType: typeof ACTIVITY_ENTITY_TYPES[number], entityId: number) {
+function entityLinks(entityType: typeof ACTIVITY_ENTITY_TYPES[number] | null | undefined, entityId: number | null | undefined) {
   return {
     companyId: entityType === "company" ? entityId : null,
     contactId: entityType === "contact" ? entityId : null,
     leadId: entityType === "lead" ? entityId : null,
     opportunityId: entityType === "opportunity" ? entityId : null,
   };
+}
+
+// Companies/contacts are shared across the group and have no property of their own, so only a
+// linked lead/opportunity can pin an activity to a property; otherwise fall back to the user's own.
+async function resolveActivityProperty(
+  ctx: { user: Parameters<typeof resolvePropertyId>[0] },
+  entityType: typeof ACTIVITY_ENTITY_TYPES[number] | null | undefined,
+  entityId: number | null | undefined,
+  requestedPropertyId: number | undefined,
+) {
+  if (!entityType !== !entityId) {
+    throw new Error("Select both a record type and a record to link, or leave both empty.");
+  }
+  if (!entityType || !entityId) {
+    return resolvePropertyId(ctx.user, requestedPropertyId);
+  }
+  const entity = await assertEntityAccess(ctx.user, entityType, entityId);
+  if ((entityType === "lead" || entityType === "opportunity") && entity.propertyId !== undefined) {
+    if (requestedPropertyId && requestedPropertyId !== entity.propertyId) {
+      throw new Error("Activity and linked record must belong to the same property.");
+    }
+    return entity.propertyId;
+  }
+  return resolvePropertyId(ctx.user, requestedPropertyId);
 }
 
 const activitySelection = {
@@ -90,7 +115,7 @@ export const activitiesRouter = router({
     const now = new Date();
     const stateCondition = input.state === "open" ? isNull(activities.completedAt)
       : input.state === "completed" ? isNotNull(activities.completedAt)
-        : input.state === "overdue" ? and(eq(activities.type, "task"), isNull(activities.completedAt), lt(activities.dueAt, now))
+        : input.state === "overdue" ? and(isNotNull(activities.dueAt), isNull(activities.completedAt), lt(activities.dueAt, now))
           : undefined;
     const where = scopedWhere(
       isNull(activities.archivedAt), propertyScope(activities.propertyId, propertyIds),
@@ -153,11 +178,7 @@ export const activitiesRouter = router({
 
   create: activeProcedure.input(activityFields).mutation(async ({ ctx, input }) => {
     const db = await requireDb();
-    const entity = await assertEntityAccess(ctx.user, input.entityType, input.entityId);
-    const propertyId = entity.propertyId;
-    if (input.propertyId && input.propertyId !== propertyId) {
-      throw new Error("Activity and linked record must belong to the same property.");
-    }
+    const propertyId = await resolveActivityProperty(ctx, input.entityType, input.entityId, input.propertyId);
     const ownerId = resolveOwnerId(ctx.user, input.ownerId);
     await assertOwnerPropertyCompatibility(ownerId, propertyId);
     const result = await db.insert(activities).values({
@@ -173,11 +194,9 @@ export const activitiesRouter = router({
   update: activeProcedure.input(activityFields.partial().extend({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await requireDb();
     const existing = await assertActivityAccess(ctx.user, input.id);
-    const entityType = input.entityType ?? existing.entityType;
-    const entityId = input.entityId ?? existing.entityId;
-    const entity = await assertEntityAccess(ctx.user, entityType, entityId);
-    const propertyId = entity.propertyId;
-    if (input.propertyId && input.propertyId !== propertyId) throw new Error("Activity and linked record must belong to the same property.");
+    const entityType = input.entityType === undefined ? existing.entityType : input.entityType;
+    const entityId = input.entityId === undefined ? existing.entityId : input.entityId;
+    const propertyId = await resolveActivityProperty(ctx, entityType, entityId, input.propertyId);
     const { id, ownerId: requestedOwnerId, propertyId: _ignored, ...changes } = input;
     const ownerId = requestedOwnerId === undefined ? existing.ownerId : resolveOwnerId(ctx.user, requestedOwnerId);
     await assertOwnerPropertyCompatibility(ownerId, propertyId);

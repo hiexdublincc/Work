@@ -114,11 +114,41 @@ export async function entityAccessCondition(user: RequestUser, propertyColumn: P
 
 export async function assertEntityAccess(
   user: RequestUser,
+  entityType: "company" | "contact",
+  entityId: number,
+): Promise<{ id: number; ownerId: number }>;
+export async function assertEntityAccess(
+  user: RequestUser,
+  entityType: "lead" | "opportunity",
+  entityId: number,
+): Promise<{ id: number; ownerId: number; propertyId: number }>;
+export async function assertEntityAccess(
+  user: RequestUser,
+  entityType: "company" | "contact" | "lead" | "opportunity",
+  entityId: number,
+): Promise<{ id: number; ownerId: number; propertyId?: number }>;
+export async function assertEntityAccess(
+  user: RequestUser,
   entityType: "company" | "contact" | "lead" | "opportunity",
   entityId: number,
 ) {
   const db = await requireDb();
-  const table = entityType === "company" ? companies : entityType === "contact" ? contacts : entityType === "lead" ? leads : opportunities;
+
+  if (entityType === "company" || entityType === "contact") {
+    // Companies and contacts are shared across the whole group, not property-scoped.
+    const table = entityType === "company" ? companies : contacts;
+    const rows = await db
+      .select({ id: table.id, ownerId: table.ownerId })
+      .from(table)
+      .where(and(eq(table.id, entityId), isNull(table.archivedAt)))
+      .limit(1);
+    if (!rows[0]) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "The related record was not found or is not accessible." });
+    }
+    return rows[0];
+  }
+
+  const table = entityType === "lead" ? leads : opportunities;
   const propertyIds = await getAuthorizedPropertyIds(user);
   const rows = await db
     .select({ id: table.id, ownerId: table.ownerId, propertyId: table.propertyId })

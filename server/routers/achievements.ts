@@ -27,6 +27,9 @@ const achievementFields = z.object({
   organizationActivity: z.string().trim().min(1).max(300),
   potentialValueCents: z.number().int().min(0).default(0),
   averageRateCents: z.number().int().min(0).default(0),
+  eventDate: z.coerce.date().nullish(),
+  nights: z.number().int().min(0).default(0),
+  roomNights: z.number().int().min(0).default(0),
   city: z.string().trim().max(120).nullish(),
   notes: z.string().trim().max(10000).nullish(),
   status: z.enum(ACHIEVEMENT_STATUSES).default("Confirmed"),
@@ -51,8 +54,7 @@ async function validateLinks(
   opportunityId?: number | null,
 ) {
   if (companyId) {
-    const company = await assertEntityAccess(user, "company", companyId);
-    if (company.propertyId !== propertyId) throw new TRPCError({ code: "BAD_REQUEST", message: "The Company belongs to a different property." });
+    await assertEntityAccess(user, "company", companyId);
   }
   if (opportunityId) {
     const opportunity = await assertEntityAccess(user, "opportunity", opportunityId);
@@ -78,6 +80,7 @@ export const achievementsRouter = router({
       ownerId: achievements.ownerId, ownerName: users.name, month: achievements.month,
       organizationActivity: achievements.organizationActivity,
       potentialValueCents: achievements.potentialValueCents, averageRateCents: achievements.averageRateCents,
+      eventDate: achievements.eventDate, nights: achievements.nights, roomNights: achievements.roomNights,
       city: achievements.city, notes: achievements.notes, status: achievements.status,
       companyId: achievements.companyId, companyName: companies.name,
       opportunityId: achievements.opportunityId, opportunityName: opportunities.name,

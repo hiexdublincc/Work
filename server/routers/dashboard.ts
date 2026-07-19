@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, inArray, isNull, lt, lte, notInArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lt, lte, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   achievements,
@@ -49,7 +49,9 @@ export const dashboardRouter = router({
     const activityScope = scopeFor(activities.propertyId, activities.ownerId);
     const achievementScope = scopeFor(achievements.propertyId, achievements.ownerId);
     const weeklyScope = scopeFor(weeklyUpdates.propertyId, weeklyUpdates.ownerId);
-    const companyScope = scopeFor(companies.propertyId, companies.ownerId);
+    // Companies are shared across the whole group and carry no property of their own;
+    // only "personal" scope narrows them (to the records this user owns).
+    const companyScope = selectedScope === "personal" ? eq(companies.ownerId, ctx.user.id) : undefined;
 
     const openStages = OPPORTUNITY_STAGES.filter(stage => stage !== "Closed Won" && stage !== "Closed Lost");
     const now = new Date();
@@ -72,7 +74,7 @@ export const dashboardRouter = router({
       db.select({ value: sql<number>`count(*)` }).from(opportunities)
         .where(scopedWhere(isNull(opportunities.archivedAt), opportunityScope, eq(opportunities.stage, "Closed Won"))),
       db.select({ value: sql<number>`count(*)` }).from(activities)
-        .where(scopedWhere(isNull(activities.archivedAt), activityScope, eq(activities.type, "task"), isNull(activities.completedAt), lt(activities.dueAt, now))),
+        .where(scopedWhere(isNull(activities.archivedAt), activityScope, isNotNull(activities.dueAt), isNull(activities.completedAt), lt(activities.dueAt, now))),
       db.select({ stage: opportunities.stage, count: sql<number>`count(*)`, valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)` })
         .from(opportunities).where(scopedWhere(isNull(opportunities.archivedAt), opportunityScope)).groupBy(opportunities.stage),
       db.select({
@@ -92,7 +94,7 @@ export const dashboardRouter = router({
       }).from(activities)
         .leftJoin(properties, eq(activities.propertyId, properties.id))
         .leftJoin(users, eq(activities.ownerId, users.id))
-        .where(scopedWhere(isNull(activities.archivedAt), activityScope, eq(activities.type, "task"), isNull(activities.completedAt)))
+        .where(scopedWhere(isNull(activities.archivedAt), activityScope, isNotNull(activities.dueAt), isNull(activities.completedAt)))
         .orderBy(activities.dueAt).limit(6),
       db.select({
         id: activities.id, title: activities.title, subtype: activities.subtype,
@@ -148,10 +150,9 @@ export const dashboardRouter = router({
       db.select({
         id: companies.id, name: companies.name, status: companies.status,
         lastActivityAt: companies.lastActivityAt, nextFollowUpAt: companies.nextFollowUpAt,
-        contractExpiryDate: companies.contractExpiryDate, propertyName: properties.name,
+        contractExpiryDate: companies.contractExpiryDate,
       }).from(companies)
-        .leftJoin(properties, eq(companies.propertyId, properties.id))
-        .where(scopedWhere(isNull(companies.archivedAt), companyScope))
+        .where(and(isNull(companies.archivedAt), companyScope))
         .orderBy(desc(companies.updatedAt)).limit(120),
       db.select({
         id: opportunities.id, name: opportunities.name, stage: opportunities.stage,
@@ -197,7 +198,7 @@ export const dashboardRouter = router({
       .sort((a, b) => (a.accountHealth.state === "At Risk" ? 0 : 1) - (b.accountHealth.state === "At Risk" ? 0 : 1));
     const alerts: Array<{ id: string; kind: string; severity: keyof typeof severityRank; title: string; message: string; propertyName: string | null; href: string }> = [];
     for (const company of accountHealthRows) {
-      alerts.push({ id: `account-${company.id}`, kind: "Account health", severity: company.accountHealth.state === "At Risk" ? "critical" : "warning", title: company.name, message: company.accountHealth.reasons[0], propertyName: company.propertyName, href: "/companies" });
+      alerts.push({ id: `account-${company.id}`, kind: "Account health", severity: company.accountHealth.state === "At Risk" ? "critical" : "warning", title: company.name, message: company.accountHealth.reasons[0], propertyName: null, href: "/companies" });
     }
     const stageAgeThresholdDays: Partial<Record<(typeof OPPORTUNITY_STAGES)[number], number>> = {
       Prospecting: 21, Qualified: 21, Proposal: 14, Negotiation: 14,

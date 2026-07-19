@@ -27,7 +27,11 @@ export function GroupLogo({ className, imageClassName }: LogoProps) {
   );
 }
 
-const HOTEL_LOGO_TILE = "h-11 w-28 shrink-0 rounded-xl border border-[#d9e3ed] bg-white shadow-[0_1px_2px_rgba(0,36,96,0.04)]";
+// A fixed-width box would letterbox narrow-aspect logos (e.g. a square mark) so they read
+// visually much smaller than wide banner logos even though the box is identical. Instead every
+// tile shares a fixed height and horizontal padding, and the image keeps its own aspect ratio
+// (w-auto), so a square logo and a wide banner logo both fill the same fraction of their tile.
+const HOTEL_LOGO_TILE = "h-11 min-w-[3.5rem] max-w-[8rem] shrink-0 rounded-xl border border-[#d9e3ed] bg-white px-2.5 shadow-[0_1px_2px_rgba(0,36,96,0.04)]";
 
 export function BrandLogo({ brand, className, imageClassName }: LogoProps & { brand: BrandIdentity }) {
   const [failed, setFailed] = useState(false);
@@ -49,7 +53,7 @@ export function BrandLogo({ brand, className, imageClassName }: LogoProps & { br
           src={brand.logoUrl}
           alt={`${brand.name} logo`}
           onError={() => setFailed(true)}
-          className={cn("block h-full w-full object-contain", imageClassName)}
+          className={cn("block h-full w-auto max-w-full object-contain", imageClassName)}
         />
       )}
     </span>

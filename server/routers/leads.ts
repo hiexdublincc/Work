@@ -130,14 +130,8 @@ export const leadsRouter = router({
     if (!visible[0]) throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found." });
     if (visible[0].convertedAt) throw new TRPCError({ code: "CONFLICT", message: "This lead has already been converted." });
 
-    if (input.companyId) {
-      const company = await assertEntityAccess(ctx.user, "company", input.companyId);
-      if (company.propertyId !== visible[0].propertyId) throw new TRPCError({ code: "BAD_REQUEST", message: "Company and lead must belong to the same property." });
-    }
-    if (input.contactId) {
-      const contact = await assertEntityAccess(ctx.user, "contact", input.contactId);
-      if (contact.propertyId !== visible[0].propertyId) throw new TRPCError({ code: "BAD_REQUEST", message: "Contact and lead must belong to the same property." });
-    }
+    if (input.companyId) await assertEntityAccess(ctx.user, "company", input.companyId);
+    if (input.contactId) await assertEntityAccess(ctx.user, "contact", input.contactId);
 
     return db.transaction(async tx => {
       const lead = visible[0];
@@ -145,7 +139,7 @@ export const leadsRouter = router({
       let contactId = input.contactId ?? null;
       if (!companyId && lead.companyName) {
         const created = await tx.insert(companies).values({
-          name: lead.companyName, status: "Prospect", propertyId: lead.propertyId,
+          name: lead.companyName, status: "Prospect",
           potentialRoomNights: lead.potentialRoomNights, potentialRevenueCents: lead.estimatedValueCents,
           leadSource: lead.source, ownerId: lead.ownerId, createdById: ctx.user.id,
         });
@@ -154,7 +148,7 @@ export const leadsRouter = router({
       if (!contactId) {
         const created = await tx.insert(contacts).values({
           firstName: lead.firstName, lastName: lead.lastName, email: lead.email, phone: lead.phone,
-          jobTitle: lead.jobTitle, companyId, propertyId: lead.propertyId,
+          jobTitle: lead.jobTitle, companyId,
           ownerId: lead.ownerId, createdById: ctx.user.id,
         });
         contactId = Number(created[0].insertId);

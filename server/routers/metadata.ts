@@ -39,15 +39,15 @@ export const metadataRouter = router({
         .from(properties)
         .where(scopedWhere(eq(properties.isActive, true), propertyScope(properties.id, propertyIds)))
         .orderBy(asc(properties.name)),
-      db.select({ id: companies.id, label: companies.name, ownerId: companies.ownerId, propertyId: companies.propertyId })
+      db.select({ id: companies.id, label: companies.name, ownerId: companies.ownerId })
         .from(companies)
-        .where(scopedWhere(isNull(companies.archivedAt), propertyScope(companies.propertyId, propertyIds)))
+        .where(isNull(companies.archivedAt))
         .orderBy(asc(companies.name)).limit(1000),
       db.select({
         id: contacts.id, firstName: contacts.firstName, lastName: contacts.lastName,
-        companyId: contacts.companyId, ownerId: contacts.ownerId, propertyId: contacts.propertyId,
+        companyId: contacts.companyId, ownerId: contacts.ownerId,
       }).from(contacts)
-        .where(scopedWhere(isNull(contacts.archivedAt), propertyScope(contacts.propertyId, propertyIds)))
+        .where(isNull(contacts.archivedAt))
         .orderBy(asc(contacts.lastName), asc(contacts.firstName)).limit(1000),
       db.select({ id: leads.id, firstName: leads.firstName, lastName: leads.lastName, ownerId: leads.ownerId, propertyId: leads.propertyId })
         .from(leads)

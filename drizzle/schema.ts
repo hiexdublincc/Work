@@ -21,7 +21,7 @@ export const OPPORTUNITY_STAGES = [
   "Closed Lost",
 ] as const;
 export const LEAD_STATUSES = ["New", "Contacted", "Qualified", "Nurturing", "Converted", "Disqualified"] as const;
-export const ACTIVITY_TYPES = ["task", "call", "meeting", "note"] as const;
+export const ACTIVITY_TYPES = ["note", "call", "meeting"] as const;
 export const ACTIVITY_ENTITY_TYPES = ["company", "contact", "lead", "opportunity"] as const;
 export const ACCOUNT_CATEGORIES = [
   "Corporate", "Agency", "Government", "Tour operator", "TMC", "Event organiser", "Crew", "Extended stay", "Meeting room client", "Conference lead",
@@ -33,9 +33,9 @@ export const COMMERCIAL_STATUSES = [
   "New lead", "Contact made", "Proposal sent", "RFP received", "RFP submitted", "On option", "Contracted", "Rate loaded", "Live", "Declined",
 ] as const;
 export const HOTEL_ACTIVITY_SUBTYPES = [
-  "General", "Call made", "Email sent", "Meeting held", "Appointment booked", "Site visit/showaround", "Webinar attended", "Sales trip", "Event attended", "Follow-up completed", "Proposal sent", "RFP received", "RFP submitted", "Contract signed", "Achievement/win logged", "Weekly update logged",
+  "General", "Call made", "Email sent", "Meeting held", "Appointment booked", "Site visit/showaround", "Webinar attended", "Sales trip", "Event attended", "Follow-up completed", "Proposal sent", "RFP received", "RFP submitted", "Contract signed", "Achievement/win logged", "Weekly update logged", "Other",
 ] as const;
-export const ACHIEVEMENT_STATUSES = ["Confirmed", "RFP accepted", "Declined", "Contracted", "Proposal sent", "On option"] as const;
+export const ACHIEVEMENT_STATUSES = ["Confirmed", "Tentative", "RFP accepted", "Declined", "Contracted", "Proposal sent", "On option"] as const;
 export const ACCOUNT_HEALTH_STATES = ["Healthy", "Needs Attention", "At Risk"] as const;
 export const LOST_REASONS = [
   "Lost on price", "No availability", "Competitor selected", "Location", "Facilities", "Parking", "Client cancelled", "Budget", "Timing", "Other",
@@ -91,7 +91,6 @@ export const companies = mysqlTable("companies", {
   industry: varchar("industry", { length: 160 }),
   category: mysqlEnum("category", ACCOUNT_CATEGORIES).default("Corporate").notNull(),
   segment: varchar("segment", { length: 160 }),
-  propertyId: int("propertyId").notNull(),
   destinationCity: varchar("destinationCity", { length: 120 }),
   leadSource: varchar("leadSource", { length: 160 }),
   preferredRateType: varchar("preferredRateType", { length: 120 }),
@@ -120,7 +119,7 @@ export const companies = mysqlTable("companies", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   archivedAt: timestamp("archivedAt"),
 }, table => [
-  index("companies_owner_idx").on(table.ownerId), index("companies_property_idx").on(table.propertyId), index("companies_name_idx").on(table.name), index("companies_status_idx").on(table.status),
+  index("companies_owner_idx").on(table.ownerId), index("companies_name_idx").on(table.name), index("companies_status_idx").on(table.status),
 ]);
 
 export const contacts = mysqlTable("contacts", {
@@ -134,7 +133,6 @@ export const contacts = mysqlTable("contacts", {
   jobTitle: varchar("jobTitle", { length: 160 }),
   department: varchar("department", { length: 160 }),
   companyId: int("companyId"),
-  propertyId: int("propertyId").notNull(),
   relationshipStatus: varchar("relationshipStatus", { length: 120 }),
   status: mysqlEnum("status", ["Active", "Inactive"]).default("Active").notNull(),
   addressLine1: varchar("addressLine1", { length: 240 }),
@@ -150,7 +148,7 @@ export const contacts = mysqlTable("contacts", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   archivedAt: timestamp("archivedAt"),
 }, table => [
-  index("contacts_owner_idx").on(table.ownerId), index("contacts_property_idx").on(table.propertyId), index("contacts_company_idx").on(table.companyId), index("contacts_name_idx").on(table.lastName, table.firstName),
+  index("contacts_owner_idx").on(table.ownerId), index("contacts_company_idx").on(table.companyId), index("contacts_name_idx").on(table.lastName, table.firstName),
 ]);
 
 export const leads = mysqlTable("leads", {
@@ -225,8 +223,8 @@ export const activities = mysqlTable("activities", {
   subtype: mysqlEnum("subtype", HOTEL_ACTIVITY_SUBTYPES).default("General").notNull(),
   title: varchar("title", { length: 240 }).notNull(),
   description: text("description"),
-  entityType: mysqlEnum("entityType", ACTIVITY_ENTITY_TYPES).notNull(),
-  entityId: int("entityId").notNull(),
+  entityType: mysqlEnum("entityType", ACTIVITY_ENTITY_TYPES),
+  entityId: int("entityId"),
   companyId: int("companyId"),
   contactId: int("contactId"),
   leadId: int("leadId"),
@@ -277,6 +275,9 @@ export const achievements = mysqlTable("achievements", {
   organizationActivity: varchar("organizationActivity", { length: 300 }).notNull(),
   potentialValueCents: int("potentialValueCents").default(0).notNull(),
   averageRateCents: int("averageRateCents").default(0).notNull(),
+  eventDate: date("eventDate"),
+  nights: int("nights").default(0).notNull(),
+  roomNights: int("roomNights").default(0).notNull(),
   city: varchar("city", { length: 120 }),
   notes: text("notes"),
   status: mysqlEnum("status", ACHIEVEMENT_STATUSES).default("Confirmed").notNull(),

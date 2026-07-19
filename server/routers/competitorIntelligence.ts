@@ -42,7 +42,7 @@ async function resolveIntelligenceProperty(
   fallbackPropertyId?: number,
 ) {
   const linkedProperties: number[] = [];
-  if (companyId) linkedProperties.push((await assertEntityAccess(user, "company", companyId)).propertyId);
+  if (companyId) await assertEntityAccess(user, "company", companyId);
   if (opportunityId) linkedProperties.push((await assertEntityAccess(user, "opportunity", opportunityId)).propertyId);
   if (linkedProperties.some(propertyId => propertyId !== linkedProperties[0])) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Linked records must belong to the same property." });

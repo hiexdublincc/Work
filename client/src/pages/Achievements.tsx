@@ -43,7 +43,7 @@ import { toast } from "sonner";
 import type { AppRouter } from "../../../server/routers";
 
 type Row = inferRouterOutputs<AppRouter>["achievements"]["list"][number];
-type AchievementStatus = "Confirmed" | "RFP accepted" | "Declined" | "Contracted" | "Proposal sent" | "On option";
+type AchievementStatus = "Confirmed" | "Tentative" | "RFP accepted" | "Declined" | "Contracted" | "Proposal sent" | "On option";
 type Form = {
   propertyId: string;
   ownerId: string;
@@ -51,6 +51,9 @@ type Form = {
   organizationActivity: string;
   potentialValueCents: number;
   averageRateCents: number;
+  eventDate: string;
+  nights: number;
+  roomNights: number;
   city: string;
   notes: string;
   status: AchievementStatus;
@@ -60,6 +63,7 @@ type Form = {
 
 const STATUS_OPTIONS: { value: AchievementStatus; label: string }[] = [
   { value: "Confirmed", label: "Confirmed" },
+  { value: "Tentative", label: "Tentative" },
   { value: "RFP accepted", label: "RFP accepted" },
   { value: "Declined", label: "Declined" },
   { value: "Contracted", label: "Contracted" },
@@ -74,6 +78,9 @@ const emptyForm: Form = {
   organizationActivity: "",
   potentialValueCents: 0,
   averageRateCents: 0,
+  eventDate: "",
+  nights: 0,
+  roomNights: 0,
   city: "",
   notes: "",
   status: "Confirmed",
@@ -126,7 +133,7 @@ export default function Achievements() {
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
-  const scopedCompanies = refs.data?.companies.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
+  const scopedCompanies = refs.data?.companies ?? [];
   const scopedOpportunities = refs.data?.opportunities.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
   const companyOptions = [{ value: "none", label: "No linked company" }, ...scopedCompanies.map(item => ({ value: String(item.id), label: item.label }))];
   const opportunityOptions = [{ value: "none", label: "No linked opportunity" }, ...scopedOpportunities.map(item => ({ value: String(item.id), label: item.label }))];
@@ -166,6 +173,9 @@ export default function Achievements() {
       organizationActivity: row.organizationActivity,
       potentialValueCents: row.potentialValueCents,
       averageRateCents: row.averageRateCents,
+      eventDate: row.eventDate ? new Date(row.eventDate).toISOString().slice(0, 10) : "",
+      nights: row.nights,
+      roomNights: row.roomNights,
       city: row.city || "",
       notes: row.notes || "",
       status: row.status,
@@ -193,6 +203,9 @@ export default function Achievements() {
       organizationActivity: form.organizationActivity.trim(),
       potentialValueCents: form.potentialValueCents,
       averageRateCents: form.averageRateCents,
+      eventDate: form.eventDate ? new Date(`${form.eventDate}T12:00:00`) : null,
+      nights: form.nights,
+      roomNights: form.roomNights,
       city: form.city.trim() || null,
       notes: form.notes.trim() || null,
       status: form.status,
@@ -300,7 +313,9 @@ export default function Achievements() {
               <MoneyField label="Potential value" valueCents={form.potentialValueCents} onChange={value => set("potentialValueCents", value)} />
               <MoneyField label="Average rate" valueCents={form.averageRateCents} onChange={value => set("averageRateCents", value)} />
               <TextField label="City" value={form.city} onChange={value => set("city", value)} placeholder="Dublin" />
-              <div />
+              <TextField label="Event / arrival date" type="date" value={form.eventDate} onChange={value => set("eventDate", value)} />
+              <TextField label="Nights" type="number" min={0} value={form.nights} onChange={value => set("nights", Number(value) || 0)} />
+              <TextField label="Room nights" type="number" min={0} value={form.roomNights} onChange={value => set("roomNights", Number(value) || 0)} />
               <SelectField label="Linked company" value={form.companyId} onChange={value => set("companyId", value)} options={companyOptions} />
               <SelectField label="Linked opportunity" value={form.opportunityId} onChange={value => set("opportunityId", value)} options={opportunityOptions} />
             </FieldGrid>
@@ -340,6 +355,9 @@ export default function Achievements() {
               <DetailPair label="Month" value={monthLabel(selected.month)} />
               <DetailPair label="Potential value" value={money(selected.potentialValueCents)} />
               <DetailPair label="Average rate" value={money(selected.averageRateCents)} />
+              <DetailPair label="Event / arrival date" value={selected.eventDate ? shortDate(selected.eventDate) : "—"} />
+              <DetailPair label="Nights" value={selected.nights || "—"} />
+              <DetailPair label="Room nights" value={selected.roomNights || "—"} />
               <DetailPair label="City" value={selected.city ? <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />{selected.city}</span> : "—"} />
               <DetailPair label="Last updated" value={shortDate(selected.updatedAt)} />
               <DetailPair label="Company" value={selected.companyName || "—"} />

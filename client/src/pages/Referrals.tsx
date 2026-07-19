@@ -87,7 +87,7 @@ export default function Referrals() {
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
-  const scopedCompanies = refs.data?.companies.filter(item => !form.referringPropertyId || item.propertyId === Number(form.referringPropertyId)) ?? [];
+  const scopedCompanies = refs.data?.companies ?? [];
   const scopedOpportunities = refs.data?.opportunities.filter(item => !form.referringPropertyId || item.propertyId === Number(form.referringPropertyId)) ?? [];
   const companyOptions = [{ value: "none", label: "No linked company" }, ...scopedCompanies.map(item => ({ value: String(item.id), label: item.label }))];
   const opportunityOptions = [{ value: "none", label: "No linked opportunity" }, ...scopedOpportunities.map(item => ({ value: String(item.id), label: item.label }))];
