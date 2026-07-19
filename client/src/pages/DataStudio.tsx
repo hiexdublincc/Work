@@ -1,4 +1,4 @@
-import { SelectField } from "@/components/crm/CRMForms";
+import { FilterSelect, SelectField } from "@/components/crm/CRMForms";
 import { ErrorPanel, LoadingPanel, PageHeader } from "@/components/crm/CRMPrimitives";
 import { Button } from "@/components/ui/button";
 import { parseCsv } from "@/lib/csv";
@@ -17,15 +17,27 @@ const ENTITY_OPTIONS = [
   { value: "activities", label: "Activities" },
 ];
 
+// Companies/contacts are shared across the group and carry no property; only these entities can be scoped to one hotel.
+const PROPERTY_SCOPED: Entity[] = ["leads", "opportunities", "activities"];
+
 export default function DataStudio() {
   const [entity, setEntity] = useState<Entity>("companies");
+  const [exportPropertyId, setExportPropertyId] = useState("");
+  const [exportOwnerId, setExportOwnerId] = useState("");
   const [step, setStep] = useState<"select" | "preview">("select");
   const [rows, setRows] = useState<Array<Record<string, string>>>([]);
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState<{ imported: number; errors: Array<{ row: number; message: string }>; ready: boolean } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const templates = trpc.data.templates.useQuery();
-  const exportQuery = trpc.data.exportCsv.useQuery({ entity }, { enabled: false });
+  const references = trpc.metadata.references.useQuery();
+  const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
+  const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
+  const exportQuery = trpc.data.exportCsv.useQuery({
+    entity,
+    propertyId: exportPropertyId ? Number(exportPropertyId) : undefined,
+    ownerId: exportOwnerId ? Number(exportOwnerId) : undefined,
+  }, { enabled: false });
   const importRows = trpc.data.importRows.useMutation({
     onSuccess: data => {
       setResult(data);
@@ -101,7 +113,13 @@ export default function DataStudio() {
             <div><h3 className="font-display text-lg tracking-[-0.015em]">Export</h3><p className="mt-0.5 text-xs text-muted-foreground">Download the entity in your authorised scope as CSV.</p></div>
           </div>
           <div className="mt-5 space-y-4">
-            <SelectField label="Entity" value={entity} onChange={value => setEntity(value as Entity)} options={ENTITY_OPTIONS} />
+            <SelectField label="Entity" value={entity} onChange={value => { setEntity(value as Entity); setExportPropertyId(""); setExportOwnerId(""); }} options={ENTITY_OPTIONS} />
+            {PROPERTY_SCOPED.includes(entity) && (
+              <div className="flex flex-wrap gap-2">
+                <FilterSelect value={exportPropertyId} onChange={setExportPropertyId} options={propertyOptions} placeholder="All properties" className="flex-1" />
+                <FilterSelect value={exportOwnerId} onChange={setExportOwnerId} options={ownerOptions} placeholder="All owners" className="flex-1" />
+              </div>
+            )}
             <Button onClick={handleExport} disabled={exportQuery.isFetching} className="w-full rounded-xl">
               {exportQuery.isFetching ? "Preparing export…" : `Export ${entity} to CSV`}
             </Button>

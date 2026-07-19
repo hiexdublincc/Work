@@ -1,4 +1,4 @@
-import { asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { activities, ACTIVITY_ENTITY_TYPES, ACTIVITY_TYPES, companies, contacts, HOTEL_ACTIVITY_SUBTYPES, leads, opportunities, properties, users } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
@@ -156,7 +156,11 @@ export const dataRouter = router({
       return { imported: valid.length, errors: [], ready: true };
     }),
 
-  exportCsv: activeProcedure.input(z.object({ entity: entitySchema })).query(async ({ ctx, input }) => {
+  exportCsv: activeProcedure.input(z.object({
+    entity: entitySchema,
+    propertyId: z.number().int().positive().optional(),
+    ownerId: z.number().int().positive().optional(),
+  })).query(async ({ ctx, input }) => {
     const db = await requireDb();
     const propertyIds = await getAuthorizedPropertyIds(ctx.user);
     let rows: Array<Record<string, unknown>> = [];
@@ -174,11 +178,13 @@ export const dataRouter = router({
           city: companies.city,
           country: companies.country,
           ownerId: companies.ownerId,
+          ownerName: users.name,
           createdAt: companies.createdAt,
           updatedAt: companies.updatedAt,
         })
         .from(companies)
-        .where(isNull(companies.archivedAt))
+        .leftJoin(users, eq(companies.ownerId, users.id))
+        .where(and(isNull(companies.archivedAt), input.ownerId ? eq(companies.ownerId, input.ownerId) : undefined))
         .orderBy(asc(companies.name));
     }
     if (input.entity === "contacts") {
@@ -195,11 +201,13 @@ export const dataRouter = router({
           companyId: contacts.companyId,
           status: contacts.status,
           ownerId: contacts.ownerId,
+          ownerName: users.name,
           createdAt: contacts.createdAt,
           updatedAt: contacts.updatedAt,
         })
         .from(contacts)
-        .where(isNull(contacts.archivedAt))
+        .leftJoin(users, eq(contacts.ownerId, users.id))
+        .where(and(isNull(contacts.archivedAt), input.ownerId ? eq(contacts.ownerId, input.ownerId) : undefined))
         .orderBy(asc(contacts.lastName), asc(contacts.firstName));
     }
     if (input.entity === "leads") {
@@ -215,12 +223,20 @@ export const dataRouter = router({
           status: leads.status,
           estimatedValueCents: leads.estimatedValueCents,
           propertyId: leads.propertyId,
+          propertyName: properties.name,
           ownerId: leads.ownerId,
+          ownerName: users.name,
           createdAt: leads.createdAt,
           updatedAt: leads.updatedAt,
         })
         .from(leads)
-        .where(scopedWhere(isNull(leads.archivedAt), propertyScope(leads.propertyId, propertyIds)))
+        .leftJoin(properties, eq(leads.propertyId, properties.id))
+        .leftJoin(users, eq(leads.ownerId, users.id))
+        .where(scopedWhere(
+          isNull(leads.archivedAt), propertyScope(leads.propertyId, propertyIds),
+          input.propertyId ? eq(leads.propertyId, input.propertyId) : undefined,
+          input.ownerId ? eq(leads.ownerId, input.ownerId) : undefined,
+        ))
         .orderBy(asc(leads.lastName), asc(leads.firstName));
     }
     if (input.entity === "opportunities") {
@@ -235,12 +251,20 @@ export const dataRouter = router({
           probability: opportunities.probability,
           expectedCloseDate: opportunities.expectedCloseDate,
           propertyId: opportunities.propertyId,
+          propertyName: properties.name,
           ownerId: opportunities.ownerId,
+          ownerName: users.name,
           createdAt: opportunities.createdAt,
           updatedAt: opportunities.updatedAt,
         })
         .from(opportunities)
-        .where(scopedWhere(isNull(opportunities.archivedAt), propertyScope(opportunities.propertyId, propertyIds)))
+        .leftJoin(properties, eq(opportunities.propertyId, properties.id))
+        .leftJoin(users, eq(opportunities.ownerId, users.id))
+        .where(scopedWhere(
+          isNull(opportunities.archivedAt), propertyScope(opportunities.propertyId, propertyIds),
+          input.propertyId ? eq(opportunities.propertyId, input.propertyId) : undefined,
+          input.ownerId ? eq(opportunities.ownerId, input.ownerId) : undefined,
+        ))
         .orderBy(asc(opportunities.name));
     }
     if (input.entity === "activities") {
@@ -252,7 +276,7 @@ export const dataRouter = router({
           title: activities.title,
           description: activities.description,
           entityType: activities.entityType,
-          entityName: (companies.name),
+          entityName: sql<string>`coalesce(${companies.name}, concat(${contacts.firstName}, ' ', ${contacts.lastName}), concat(${leads.firstName}, ' ', ${leads.lastName}), ${opportunities.name})`,
           propertyName: properties.name,
           ownerName: users.name,
           dueAt: activities.dueAt,
@@ -262,9 +286,16 @@ export const dataRouter = router({
         })
         .from(activities)
         .leftJoin(companies, eq(activities.companyId, companies.id))
+        .leftJoin(contacts, eq(activities.contactId, contacts.id))
+        .leftJoin(leads, eq(activities.leadId, leads.id))
+        .leftJoin(opportunities, eq(activities.opportunityId, opportunities.id))
         .leftJoin(properties, eq(activities.propertyId, properties.id))
         .leftJoin(users, eq(activities.ownerId, users.id))
-        .where(scopedWhere(isNull(activities.archivedAt), propertyScope(activities.propertyId, propertyIds)))
+        .where(scopedWhere(
+          isNull(activities.archivedAt), propertyScope(activities.propertyId, propertyIds),
+          input.propertyId ? eq(activities.propertyId, input.propertyId) : undefined,
+          input.ownerId ? eq(activities.ownerId, input.ownerId) : undefined,
+        ))
         .orderBy(desc(activities.createdAt));
     }
 
