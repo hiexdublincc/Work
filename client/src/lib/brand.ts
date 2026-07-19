@@ -21,7 +21,7 @@ export const HOTEL_BRANDS = {
   home2: {
     key: "home2",
     name: "Home2 Suites by Hilton",
-    logoUrl: "/brand/Home2_Suites_by_Hilton_logo.svg.webp",
+    logoUrl: "/brand/Home2_Suites_by_Hilton_logo.png",
     accent: "#a9b500",
     softAccent: "#f6f7dc",
     ink: "#4c3729",
@@ -29,7 +29,7 @@ export const HOTEL_BRANDS = {
   holidayInnExpress: {
     key: "holiday-inn-express",
     name: "Holiday Inn Express by IHG",
-    logoUrl: "/brand/hiex-logo-banner-white.png",
+    logoUrl: "/brand/Holiday_Inn_Express_logo.png",
     accent: "#003a78",
     softAccent: "#eaf1f8",
     ink: "#052f68",
@@ -37,7 +37,7 @@ export const HOTEL_BRANDS = {
   residenceInn: {
     key: "residence-inn",
     name: "Residence Inn by Marriott",
-    logoUrl: "/brand/Residence_Inn_logo.svg.webp",
+    logoUrl: "/brand/Residence_Inn_logo.png",
     accent: "#5e2f3d",
     softAccent: "#f5ecef",
     ink: "#48222f",
@@ -45,7 +45,7 @@ export const HOTEL_BRANDS = {
   aloft: {
     key: "aloft",
     name: "Aloft Hotels",
-    logoUrl: "/brand/Aloft_Hotels_logo.svg.webp",
+    logoUrl: "/brand/Aloft_Hotels_logo.png",
     accent: "#b01f64",
     softAccent: "#faedf3",
     ink: "#34383c",
@@ -53,7 +53,7 @@ export const HOTEL_BRANDS = {
   hampton: {
     key: "hampton",
     name: "Hampton by Hilton",
-    logoUrl: "/brand/Hampton-by-Hilton-Logo-Color.png",
+    logoUrl: "/brand/Hampton_by_Hilton_logo.png",
     accent: "#0754b8",
     softAccent: "#eaf2fd",
     ink: "#063e8c",
@@ -61,7 +61,7 @@ export const HOTEL_BRANDS = {
   moxy: {
     key: "moxy",
     name: "Moxy Hotels",
-    logoUrl: "/brand/mxyDUBOXrgb.1434020.jpg",
+    logoUrl: "/brand/Moxy_Hotels_logo.png",
     accent: "#b1127f",
     softAccent: "#f9eaf5",
     ink: "#24282b",

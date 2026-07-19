@@ -30,7 +30,7 @@ export function GroupLogo({ className, imageClassName }: LogoProps) {
 // Every tile is the same fixed size. The source logo files are pre-trimmed (see
 // client/public/brand/) to remove the inconsistent blank padding each brand shipped with, so at
 // this uniform box size every mark now fills a comparable share of its tile.
-const HOTEL_LOGO_TILE = "h-11 w-28 shrink-0 rounded-xl border border-[#d9e3ed] bg-white shadow-[0_1px_2px_rgba(0,36,96,0.04)]";
+const HOTEL_LOGO_TILE = "h-9 w-24 shrink-0 rounded-xl border border-[#d9e3ed] bg-white shadow-[0_1px_2px_rgba(0,36,96,0.04)]";
 
 export function BrandLogo({ brand, className, imageClassName }: LogoProps & { brand: BrandIdentity }) {
   const [failed, setFailed] = useState(false);
