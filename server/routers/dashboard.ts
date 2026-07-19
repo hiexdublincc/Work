@@ -11,7 +11,6 @@ import {
   opportunities,
   properties,
   users,
-  weeklyUpdates,
 } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
@@ -48,7 +47,6 @@ export const dashboardRouter = router({
     const opportunityScope = scopeFor(opportunities.propertyId, opportunities.ownerId);
     const activityScope = scopeFor(activities.propertyId, activities.ownerId);
     const achievementScope = scopeFor(achievements.propertyId, achievements.ownerId);
-    const weeklyScope = scopeFor(weeklyUpdates.propertyId, weeklyUpdates.ownerId);
     // Companies are shared across the whole group and carry no property of their own;
     // only "personal" scope narrows them (to the records this user owns).
     const companyScope = selectedScope === "personal" ? eq(companies.ownerId, ctx.user.id) : undefined;
@@ -64,7 +62,7 @@ export const dashboardRouter = router({
     const [
       openLeadRows, pipelineRows, wonRows, overdueRows, funnelRows, recentOpportunities,
       upcomingTasks, todayAppointments, upcomingEngagements, recentActivities,
-      recentAchievements, weeklySummaries, companyAlertRows, opportunityAlertRows,
+      recentAchievements, companyAlertRows, opportunityAlertRows,
       openEnquiries, keyWins, businessPotential,
     ] = await Promise.all([
       db.select({ value: sql<number>`count(*)` }).from(leads)
@@ -135,18 +133,6 @@ export const dashboardRouter = router({
         .leftJoin(users, eq(achievements.ownerId, users.id))
         .where(scopedWhere(isNull(achievements.archivedAt), achievementScope))
         .orderBy(desc(achievements.month), desc(achievements.updatedAt)).limit(6),
-      db.select({
-        id: weeklyUpdates.id, weekCommencing: weeklyUpdates.weekCommencing,
-        keyWins: weeklyUpdates.keyWins, businessPotential: weeklyUpdates.businessPotential,
-        status: weeklyUpdates.status, propertyName: properties.name, ownerName: users.name,
-      }).from(weeklyUpdates)
-        .leftJoin(properties, eq(weeklyUpdates.propertyId, properties.id))
-        .leftJoin(users, eq(weeklyUpdates.ownerId, users.id))
-        .where(scopedWhere(
-          weeklyScope,
-          selectedScope === "group" ? eq(weeklyUpdates.isGroupVisible, true) : undefined,
-          selectedScope !== "personal" ? eq(weeklyUpdates.status, "Submitted") : undefined,
-        )).orderBy(desc(weeklyUpdates.weekCommencing)).limit(7),
       db.select({
         id: companies.id, name: companies.name, status: companies.status,
         lastActivityAt: companies.lastActivityAt, nextFollowUpAt: companies.nextFollowUpAt,
@@ -242,7 +228,6 @@ export const dashboardRouter = router({
       upcomingEngagements,
       recentActivities,
       recentAchievements,
-      weeklySummaries,
       openEnquiries,
       keyWins,
       businessPotential,

@@ -245,28 +245,6 @@ export const activities = mysqlTable("activities", {
   index("activities_owner_idx").on(table.ownerId), index("activities_property_idx").on(table.propertyId), index("activities_entity_idx").on(table.entityType, table.entityId), index("activities_due_idx").on(table.dueAt), index("activities_type_idx").on(table.type),
 ]);
 
-export const weeklyUpdates = mysqlTable("weekly_updates", {
-  id: int("id").autoincrement().primaryKey(),
-  propertyId: int("propertyId").notNull(),
-  ownerId: int("ownerId").notNull(),
-  weekCommencing: date("weekCommencing").notNull(),
-  keyWins: text("keyWins"),
-  businessPotential: text("businessPotential"),
-  keyActivity: text("keyActivity"),
-  corporateUpdates: text("corporateUpdates"),
-  groupUpdates: text("groupUpdates"),
-  eventTradeActivity: text("eventTradeActivity"),
-  completedActions: text("completedActions"),
-  nextWeekPriorities: text("nextWeekPriorities"),
-  status: mysqlEnum("status", ["Draft", "Submitted"]).default("Draft").notNull(),
-  isGroupVisible: boolean("isGroupVisible").default(true).notNull(),
-  submittedAt: timestamp("submittedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, table => [
-  uniqueIndex("weekly_update_property_week_unique").on(table.propertyId, table.weekCommencing), index("weekly_updates_owner_idx").on(table.ownerId), index("weekly_updates_week_idx").on(table.weekCommencing),
-]);
-
 export const achievements = mysqlTable("achievements", {
   id: int("id").autoincrement().primaryKey(),
   propertyId: int("propertyId").notNull(),
@@ -385,7 +363,6 @@ export type Contact = typeof contacts.$inferSelect;
 export type Lead = typeof leads.$inferSelect;
 export type Opportunity = typeof opportunities.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
-export type WeeklyUpdate = typeof weeklyUpdates.$inferSelect;
 export type Achievement = typeof achievements.$inferSelect;
 export type CrossPropertyReferral = typeof crossPropertyReferrals.$inferSelect;
 export type CompetitorIntelligence = typeof competitorIntelligence.$inferSelect;

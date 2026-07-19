@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, isNotNull, isNull, like, lt, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
+  achievements,
   activities,
   ACTIVITY_ENTITY_TYPES,
   ACTIVITY_TYPES,
@@ -19,6 +20,7 @@ import {
   assertActivityAccess,
   assertEntityAccess,
   assertOwnerPropertyCompatibility,
+  assertPropertyAccess,
   idInput,
   listInput,
   resolveOwnerId,
@@ -223,5 +225,93 @@ export const activitiesRouter = router({
     await assertActivityAccess(ctx.user, input.id);
     await db.update(activities).set({ archivedAt: new Date() }).where(eq(activities.id, input.id));
     return { success: true };
+  }),
+
+  // A live report built directly from Activities + Achievements for one property (and optionally
+  // one owner) over one week — no separate drafted/submitted record, just what was actually logged.
+  weeklyReport: activeProcedure.input(z.object({
+    propertyId: z.number().int().positive(),
+    ownerId: z.number().int().positive().optional(),
+    weekStart: z.coerce.date(),
+  })).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    const property = await assertPropertyAccess(ctx.user, input.propertyId);
+    const owner = input.ownerId ? await db.select({ name: users.name }).from(users).where(eq(users.id, input.ownerId)).limit(1) : [];
+
+    const weekStart = input.weekStart;
+    const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+
+    const [weekActivities, weekAchievements] = await Promise.all([
+      db.select({
+        id: activities.id, subtype: activities.subtype, title: activities.title, description: activities.description,
+        entityName: sql<string>`coalesce(${companies.name}, concat(${contacts.firstName}, ' ', ${contacts.lastName}), concat(${leads.firstName}, ' ', ${leads.lastName}), ${opportunities.name})`,
+      }).from(activities)
+        .leftJoin(companies, eq(activities.companyId, companies.id))
+        .leftJoin(contacts, eq(activities.contactId, contacts.id))
+        .leftJoin(leads, eq(activities.leadId, leads.id))
+        .leftJoin(opportunities, eq(activities.opportunityId, opportunities.id))
+        .where(and(
+          isNull(activities.archivedAt), eq(activities.propertyId, input.propertyId),
+          input.ownerId ? eq(activities.ownerId, input.ownerId) : undefined,
+          gte(activities.createdAt, weekStart), lt(activities.createdAt, weekEnd),
+        )).orderBy(asc(activities.createdAt)),
+      db.select({
+        id: achievements.id, organizationActivity: achievements.organizationActivity, status: achievements.status,
+        potentialValueCents: achievements.potentialValueCents, eventDate: achievements.eventDate,
+        nights: achievements.nights, roomNights: achievements.roomNights, companyName: companies.name,
+      }).from(achievements)
+        .leftJoin(companies, eq(achievements.companyId, companies.id))
+        .where(and(
+          isNull(achievements.archivedAt), eq(achievements.propertyId, input.propertyId),
+          input.ownerId ? eq(achievements.ownerId, input.ownerId) : undefined,
+          gte(achievements.createdAt, weekStart), lt(achievements.createdAt, weekEnd),
+        )).orderBy(desc(achievements.potentialValueCents)),
+    ]);
+
+    const money = (cents: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(cents / 100);
+    const date = (value: Date | string) => new Date(value).toLocaleDateString("en-GB");
+    const bullet = (lines: string[]) => (lines.length ? lines.map(line => `- ${line}`).join("\n") : "");
+
+    const topWins = weekAchievements.slice(0, 5).map(item => {
+      const parts = [
+        `**${item.companyName || item.organizationActivity}**`,
+        item.potentialValueCents ? money(item.potentialValueCents) : null,
+        item.eventDate ? date(item.eventDate) : null,
+        item.nights ? `${item.nights} night${item.nights === 1 ? "" : "s"}` : null,
+        item.roomNights ? `${item.roomNights} rooms` : null,
+      ].filter(Boolean);
+      return `${parts.join(" | ")} – ${item.status}`;
+    });
+
+    const activityVerb: Record<string, string> = {
+      "Call made": "Had a call with",
+      "Email sent": "Sent a proposal to",
+      "Meeting held": "Met with",
+      "Appointment booked": "Had a catch-up with",
+      "Site visit/showaround": "Conducted a show-around for",
+      "Webinar attended": "Attended a webinar hosted by",
+      "Sales trip": "Attended a sales trip meeting with",
+      "Event attended": "Attended an event with",
+      "Follow-up completed": "Completed a follow-up with",
+      "Proposal sent": "Sent a proposal to",
+      "RFP received": "Received an RFP from",
+      "RFP submitted": "Submitted an RFP response to",
+      "Contract signed": "Signed a contract with",
+    };
+    const narrativeActivity = (item: (typeof weekActivities)[number]) => {
+      const verb = activityVerb[item.subtype];
+      const subject = item.entityName ? `**${item.entityName}**` : null;
+      const lead = verb && subject ? `${verb} ${subject}` : subject ? `${item.subtype} with ${subject}` : item.title;
+      const detail = item.description?.trim();
+      return `${lead}${detail ? `, ${detail.charAt(0).toLowerCase()}${detail.slice(1)}` : ""}.`;
+    };
+
+    return {
+      propertyName: property.name,
+      ownerName: owner[0]?.name ?? null,
+      weekLabel: `${date(weekStart)} - ${date(new Date(weekEnd.getTime() - 86_400_000))}`,
+      keyWins: bullet(topWins),
+      keyActivity: bullet(weekActivities.map(narrativeActivity)),
+    };
   }),
 });

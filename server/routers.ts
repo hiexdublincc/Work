@@ -16,7 +16,6 @@ import { metadataRouter } from "./routers/metadata";
 import { opportunitiesRouter } from "./routers/opportunities";
 import { referralsRouter } from "./routers/referrals";
 import { reportsRouter } from "./routers/reports";
-import { weeklyUpdatesRouter } from "./routers/weeklyUpdates";
 
 export const appRouter = router({
   system: systemRouter,
@@ -36,7 +35,6 @@ export const appRouter = router({
   opportunities: opportunitiesRouter,
   activities: activitiesRouter,
   achievements: achievementsRouter,
-  weeklyUpdates: weeklyUpdatesRouter,
   referrals: referralsRouter,
   hotelKnowledge: propertyKnowledgeRouter,
   reports: reportsRouter,

@@ -4,7 +4,7 @@ import { CreateButton, EmptyState, ErrorPanel, LoadingPanel, PageHeader, Paginat
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
-import { CalendarClock, Check, CheckCircle2, Circle, Clock3, FileText, Pencil, Phone, UsersRound } from "lucide-react";
+import { CalendarClock, Check, CheckCircle2, Circle, Clock3, FileBarChart2, FileText, Pencil, Phone, Printer, UsersRound } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -19,10 +19,19 @@ type ActivityRow = inferRouterOutputs<AppRouter>["activities"]["list"]["items"][
 export default function Activities() {
   const [page, setPage] = useState(1); const [search, setSearch] = useState(""); const [type, setType] = useState(""); const [subtype, setSubtype] = useState(""); const [state, setState] = useState<typeof states[number]>("open"); const [propertyId, setPropertyId] = useState("");
   const [editorOpen, setEditorOpen] = useState(false); const [editingId, setEditingId] = useState<number | null>(null); const [selected, setSelected] = useState<ActivityRow | null>(null); const [form, setForm] = useState<ActivityForm>(emptyForm);
+  const [reportOpen, setReportOpen] = useState(false); const [reportPropertyId, setReportPropertyId] = useState(""); const [reportOwnerId, setReportOwnerId] = useState(""); const [reportWeek, setReportWeek] = useState(mondayInput(new Date()));
+  useEffect(() => {
+    document.body.classList.toggle("printing-report", reportOpen);
+    return () => document.body.classList.remove("printing-report");
+  }, [reportOpen]);
   const searchRef = useSearchShortcut(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
   const query = trpc.activities.list.useQuery({ page, pageSize: 25, search, type: type as typeof types[number] || undefined, subtype: subtype as any || undefined, state, propertyId: propertyId ? Number(propertyId) : undefined, sort: "due" });
   const create = trpc.activities.create.useMutation({ onSuccess: () => saved("Activity logged"), onError: error => toast.error(error.message) }); const update = trpc.activities.update.useMutation({ onSuccess: () => saved("Activity updated"), onError: error => toast.error(error.message) });
   const complete = trpc.activities.setCompleted.useMutation({ onSuccess: (_, input) => { toast.success(input.completed ? "Activity completed" : "Activity reopened"); utils.activities.invalidate(); utils.dashboard.invalidate(); } });
+  const reportQuery = trpc.activities.weeklyReport.useQuery(
+    { propertyId: Number(reportPropertyId), ownerId: reportOwnerId ? Number(reportOwnerId) : undefined, weekStart: new Date(`${reportWeek}T12:00:00`) },
+    { enabled: false },
+  );
   const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? []; const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? []; const subtypeOptions = (references.data?.taxonomy.activitySubtypes ?? []).map(value => ({ value, label: value }));
   const entityOptions = useMemo(() => { const data = references.data; if (!data || !form.entityType) return []; if (form.entityType === "company") return data.companies.map(item => ({ value: String(item.id), label: item.label })); if (form.entityType === "contact") return data.contacts.map(item => ({ value: String(item.id), label: item.label })); if (form.entityType === "lead") return data.leads.map(item => ({ value: String(item.id), label: item.label })); return data.opportunities.map(item => ({ value: String(item.id), label: item.label })); }, [references.data, form.entityType]);
   useEffect(() => setPage(1), [search, type, subtype, state, propertyId]);
@@ -52,7 +61,7 @@ export default function Activities() {
   }
   const rows = useMemo(() => query.data?.items ?? [], [query.data]);
   return <>
-    <PageHeader eyebrow="Commercial rhythm" title="Activities" description="Log a touchpoint in seconds, keep follow-ups visible, and preserve a chronological record around every relationship and opportunity." action={<CreateButton label="Log activity" onClick={() => openCreate()} />} />
+    <PageHeader eyebrow="Commercial rhythm" title="Activities" description="Log a touchpoint in seconds, keep follow-ups visible, and preserve a chronological record around every relationship and opportunity." action={<div className="flex items-center gap-2"><Button variant="outline" onClick={() => { setReportPropertyId(propertyOptions.length === 1 ? propertyOptions[0].value : ""); setReportOwnerId(""); setReportWeek(mondayInput(new Date())); setReportOpen(true); }} className="h-10 rounded-xl bg-white px-4"><FileBarChart2 className="mr-2 h-4 w-4" />Weekly report</Button><CreateButton label="Log activity" onClick={() => openCreate()} /></div>} />
     <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">{types.map(value => { const Icon = typeIcon(value); return <button key={value} onClick={() => openCreate(value)} className="surface flex items-center gap-3 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-[#a9bbae] hover:shadow-[0_10px_24px_rgba(26,54,43,0.07)]"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf2ed] text-[#416a56]"><Icon className="h-4 w-4" /></span><span><span className="block text-xs font-semibold capitalize">{value}</span><span className="mt-0.5 block text-[9px] text-muted-foreground">Quick log</span></span></button>; })}</div>
     <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[type, subtype, propertyId, state !== "open" ? state : ""].filter(Boolean).length} onClear={() => { setType(""); setSubtype(""); setPropertyId(""); setState("open"); }}><FilterSelect value={propertyId} onChange={setPropertyId} options={propertyOptions} placeholder="All properties" className="w-[180px]" /><FilterSelect value={type} onChange={setType} options={types.map(value => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} placeholder="All types" /><FilterSelect value={subtype} onChange={setSubtype} options={subtypeOptions} placeholder="All activity types" className="w-[170px]" /><FilterSelect value={state} onChange={value => setState(value as typeof states[number])} options={states.map(value => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} placeholder="State" /></SearchFilters>
     {query.isLoading ? <LoadingPanel rows={8} /> : query.error ? <ErrorPanel message={query.error.message} onRetry={() => query.refetch()} /> : !rows.length ? <div className="surface"><EmptyState icon={CheckCircle2} title={state === "open" ? "No open activities" : "No activities in this view"} description={state === "open" ? "Your current scope is clear. Log the next call, meeting, or note when it arises." : "Try changing the state or broadening the filters."} action={<CreateButton label="Log activity" onClick={() => openCreate()} />} /></div> : <div className="surface overflow-hidden"><RecordTable columns={["Activity", "Linked record", "Property", "Owner", "Timing", "State"]}>{rows.map(row => { const overdue = !!row.dueAt && !row.completedAt && new Date(row.dueAt).getTime() < Date.now(); const Icon = typeIcon(row.type); return <tr key={row.id} onClick={() => setSelected(row)} className="cursor-pointer border-b border-[#edf0ed] transition-colors last:border-0 hover:bg-[#f8faf7]"><td className="px-4 py-3.5"><div className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#eef2ee] text-[#466b58]"><Icon className="h-4 w-4" /></span><div><p className="text-xs font-semibold">{row.title}</p><p className="mt-1 text-[10px] text-muted-foreground capitalize">{row.type} · {row.subtype}{row.dueAt ? " · Task" : ""}</p></div></div></td><td className="px-4 py-3.5"><p className="max-w-[210px] truncate text-xs">{row.entityName || "—"}</p><p className="mt-1 text-[9px] capitalize text-muted-foreground">{row.entityType || "No linked record"}</p></td><td className="px-4 py-3.5 text-xs">{row.propertyName}</td><td className="px-4 py-3.5 text-xs">{row.ownerName || "—"}</td><td className="px-4 py-3.5"><p className={`text-[11px] font-medium ${overdue ? "text-rose-700" : ""}`}>{fullDateTime(row.dueAt || row.startedAt)}</p><p className="mt-1 text-[9px] text-muted-foreground">{row.priority} priority</p></td><td className="px-4 py-3.5"><button onClick={event => { event.stopPropagation(); complete.mutate({ id: row.id, completed: !row.completedAt }); }} className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] font-semibold ${row.completedAt ? "bg-emerald-50 text-emerald-700" : overdue ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-600"}`}>{row.completedAt ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3" />}{row.completedAt ? "Completed" : overdue ? "Overdue" : "Open"}</button></td></tr>; })}</RecordTable><Pagination page={query.data?.page ?? page} pageSize={query.data?.pageSize ?? 25} total={query.data?.total ?? 0} onPage={setPage} /></div>}
@@ -80,6 +89,57 @@ export default function Activities() {
     <CRMDetailSheet open={selected !== null} onOpenChange={open => !open && setSelected(null)} title={selected?.title || "Activity"} eyebrow={selected ? `${selected.type} · ${selected.subtype}` : "Commercial activity"} action={<Button size="sm" onClick={openEdit} className="rounded-xl"><Pencil className="mr-2 h-3.5 w-3.5" />Edit</Button>}>
       {selected && <div className="space-y-6"><div className="rounded-2xl bg-[#173a2e] p-5 text-white"><div className="flex items-start gap-3"><CalendarClock className="mt-1 h-5 w-5 text-[#d9b777]" /><div><p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/55">{selected.completedAt ? "Completed" : "Scheduled"}</p><p className="mt-2 font-display text-xl">{fullDateTime(selected.dueAt || selected.startedAt)}</p><p className="mt-2 text-xs text-white/60">{selected.propertyName} · {selected.ownerName}</p></div></div></div><div className="grid gap-2 sm:grid-cols-2"><DetailPair label="Linked record" value={selected.entityName || "None"} /><DetailPair label="Record type" value={selected.entityType || "—"} /><DetailPair label="Activity type" value={selected.subtype} /><DetailPair label="Priority" value={<StatusBadge value={selected.priority} />} /><DetailPair label="Start" value={fullDateTime(selected.startedAt)} /><DetailPair label="End" value={fullDateTime(selected.endsAt)} /><DetailPair label="Reminder" value={fullDateTime(selected.reminderAt)} /><DetailPair label="Details / outcome" value={selected.description} wide /></div><Button onClick={() => complete.mutate({ id: selected.id, completed: !selected.completedAt })} variant={selected.completedAt ? "outline" : "default"} className="w-full rounded-xl">{selected.completedAt ? "Reopen activity" : "Mark complete"}</Button></div>}
     </CRMDetailSheet>
+
+    <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+      <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto rounded-2xl p-6">
+        <DialogHeader><DialogTitle className="font-display text-2xl">Weekly report</DialogTitle><DialogDescription>Built live from what's logged in Activities and Achievements — pick a property, a person, and a week.</DialogDescription></DialogHeader>
+        <div className="mt-3 space-y-4">
+          <FieldGrid>
+            <SelectField label="Property" value={reportPropertyId} onChange={setReportPropertyId} options={propertyOptions} required />
+            <SelectField label="Who logged it" value={reportOwnerId} onChange={setReportOwnerId} options={ownerOptions} placeholder="Everyone at this property" />
+            <TextField label="Week commencing" type="date" value={reportWeek} onChange={setReportWeek} required />
+          </FieldGrid>
+          <Button onClick={() => reportQuery.refetch()} disabled={!reportPropertyId || reportQuery.isFetching} className="w-full rounded-xl">
+            {reportQuery.isFetching ? "Generating…" : "Generate report"}
+          </Button>
+          {reportQuery.data && (
+            <div id="weekly-report-print" className="rounded-2xl border border-[#dce5ee] bg-white p-6">
+              <ReportBody data={reportQuery.data} />
+              <div className="mt-6 flex justify-end print:hidden">
+                <Button variant="outline" onClick={() => window.print()} className="rounded-xl"><Printer className="mr-2 h-3.5 w-3.5" />Print</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   </>;
 }
 function typeIcon(type: typeof types[number]) { return type === "call" ? Phone : type === "meeting" ? UsersRound : FileText; }
+
+type WeeklyReportData = inferRouterOutputs<AppRouter>["activities"]["weeklyReport"];
+function ReportBody({ data }: { data: WeeklyReportData }) {
+  return (
+    <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#111" }}>
+      <div className="flex items-start justify-between gap-4">
+        <p className="text-xs text-[#555]">{data.propertyName}{data.ownerName ? ` · ${data.ownerName}` : ""}</p>
+        <p className="text-base font-bold">{data.weekLabel}</p>
+      </div>
+      <h1 className="mt-7 border-b-2 border-[#111] pb-1.5 text-[13px] font-bold uppercase tracking-[0.07em]">Key Wins</h1>
+      <div className="mt-2 text-[13px] leading-6"><Narrative text={data.keyWins} /></div>
+      <h1 className="mt-7 border-b-2 border-[#111] pb-1.5 text-[13px] font-bold uppercase tracking-[0.07em]">Key Activity</h1>
+      <div className="mt-2 text-[13px] leading-6"><Narrative text={data.keyActivity} /></div>
+    </div>
+  );
+}
+function Narrative({ text }: { text: string | null }) {
+  const lines = (text || "").split("\n").map(line => line.replace(/^-\s*/, "").trim()).filter(Boolean);
+  if (!lines.length) return <span className="text-muted-foreground">No entries recorded this week.</span>;
+  return <ul className="list-disc space-y-1.5 pl-4">{lines.map((line, index) => <li key={index}>{boldSegments(line)}</li>)}</ul>;
+}
+function boldSegments(line: string) {
+  return line.split(/(\*\*.+?\*\*)/g).map((part, index) => part.startsWith("**") && part.endsWith("**")
+    ? <strong key={index}>{part.slice(2, -2)}</strong>
+    : <span key={index}>{part}</span>);
+}
+function mondayInput(value: Date) { const date = new Date(value); const day = date.getDay(); const distance = day === 0 ? -6 : 1 - day; date.setDate(date.getDate() + distance); return date.toISOString().slice(0, 10); }

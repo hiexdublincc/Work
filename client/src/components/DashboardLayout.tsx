@@ -25,7 +25,6 @@ import {
   BarChart3,
   BookOpen,
   CalendarDays,
-  CalendarRange,
   Building2,
   ChevronDown,
   CircleDollarSign,
@@ -60,7 +59,6 @@ const primaryItems = [
 ];
 
 const insightItems = [
-  { icon: CalendarRange, label: "Weekly updates", path: "/weekly-updates" },
   { icon: Trophy, label: "Achievements", path: "/achievements" },
   { icon: Radar, label: "Competitor intelligence", path: "/competitor-intelligence" },
   { icon: Share2, label: "Referrals", path: "/referrals" },
@@ -196,7 +194,7 @@ function CRMLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button size="sm" className="h-9 rounded-xl px-3 shadow-[0_8px_18px_rgba(0,36,96,0.16)]"><Plus className="h-3.5 w-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Quick add</span></Button></DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5"><div className="px-2 py-2"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Create a record</p><p className="mt-1 text-[10px] text-muted-foreground">Start the most common sales actions.</p></div><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/activities?create=1")} className="cursor-pointer rounded-lg"><Activity className="mr-2 h-4 w-4" />Log activity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/leads?create=1")} className="cursor-pointer rounded-lg"><Target className="mr-2 h-4 w-4" />Add enquiry</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/opportunities?create=1")} className="cursor-pointer rounded-lg"><CircleDollarSign className="mr-2 h-4 w-4" />Add opportunity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/companies?create=1")} className="cursor-pointer rounded-lg"><Building2 className="mr-2 h-4 w-4" />Add company</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/contacts?create=1")} className="cursor-pointer rounded-lg"><ContactRound className="mr-2 h-4 w-4" />Add contact</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/achievements?create=1")} className="cursor-pointer rounded-lg"><Trophy className="mr-2 h-4 w-4" />Add achievement</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/weekly-updates?create=1")} className="cursor-pointer rounded-lg"><Sparkles className="mr-2 h-4 w-4" />Weekly update</DropdownMenuItem></DropdownMenuContent>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5"><div className="px-2 py-2"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Create a record</p><p className="mt-1 text-[10px] text-muted-foreground">Start the most common sales actions.</p></div><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/activities?create=1")} className="cursor-pointer rounded-lg"><Activity className="mr-2 h-4 w-4" />Log activity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/leads?create=1")} className="cursor-pointer rounded-lg"><Target className="mr-2 h-4 w-4" />Add enquiry</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/opportunities?create=1")} className="cursor-pointer rounded-lg"><CircleDollarSign className="mr-2 h-4 w-4" />Add opportunity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/companies?create=1")} className="cursor-pointer rounded-lg"><Building2 className="mr-2 h-4 w-4" />Add company</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/contacts?create=1")} className="cursor-pointer rounded-lg"><ContactRound className="mr-2 h-4 w-4" />Add contact</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/achievements?create=1")} className="cursor-pointer rounded-lg"><Trophy className="mr-2 h-4 w-4" />Add achievement</DropdownMenuItem></DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline" size="sm" onClick={() => document.dispatchEvent(new CustomEvent("jmk:search"))} className="hidden h-9 min-w-52 justify-between rounded-xl border-[#d9e3ed] bg-white px-3 text-muted-foreground shadow-none md:flex"><span className="flex items-center gap-2"><Search className="h-3.5 w-3.5" />Search this view</span><kbd className="rounded border bg-[#f1f5f9] px-1.5 py-0.5 text-[9px]">⌘ K</kbd></Button>
             {user?.role === "admin" && <Badge variant="outline" className="h-8 rounded-lg border-[#b9e3e8] bg-[#e8f7f9] px-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#005a73]"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Admin</Badge>}

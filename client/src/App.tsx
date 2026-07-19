@@ -17,7 +17,6 @@ const Opportunities = lazy(() => import("./pages/Opportunities"));
 const Activities = lazy(() => import("./pages/Activities"));
 const CalendarPage = lazy(() => import("./pages/Calendar"));
 const Achievements = lazy(() => import("./pages/Achievements"));
-const WeeklyUpdates = lazy(() => import("./pages/WeeklyUpdates"));
 const CompetitorIntelligence = lazy(() => import("./pages/CompetitorIntelligence"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const HotelKnowledge = lazy(() => import("./pages/HotelKnowledge"));
@@ -54,7 +53,6 @@ function Router() {
           <Route path="/activities" component={Activities} />
           <Route path="/calendar" component={CalendarPage} />
           <Route path="/achievements" component={Achievements} />
-          <Route path="/weekly-updates" component={WeeklyUpdates} />
           <Route path="/competitor-intelligence" component={CompetitorIntelligence} />
           <Route path="/referrals" component={Referrals} />
           <Route path="/hotel-knowledge" component={HotelKnowledge} />
