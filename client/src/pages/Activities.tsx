@@ -146,7 +146,7 @@ function ReportBody({ data }: { data: WeeklyReportData }) {
 }
 function Narrative({ text }: { text: string | null }) {
   const lines = (text || "").split("\n").map(line => line.replace(/^-\s*/, "").trim()).filter(Boolean);
-  if (!lines.length) return <span className="text-muted-foreground">No entries recorded this week.</span>;
+  if (!lines.length) return <span className="text-muted-foreground">No entries recorded in this period.</span>;
   return <ul className="list-disc space-y-1.5 pl-4">{lines.map((line, index) => <li key={index}>{boldSegments(line)}</li>)}</ul>;
 }
 function boldSegments(line: string) {
