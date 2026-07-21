@@ -137,7 +137,7 @@ export default function UserManagement() {
                   <td><UserIdentity user={user as AdminUser} /></td>
                   <td><RoleBadge role={user.role} active={user.isActive} /></td>
                   <td className="max-w-72"><PropertySummary ids={user.propertyIds} properties={usersQuery.data.properties} /></td>
-                  <td><p className="text-xs font-medium">{user.department || "—"}</p><p className="mt-1 text-[10px] text-muted-foreground">{user.jobTitle || "No title"}</p></td>
+                  <td><p className="text-xs font-medium">{user.department || "—"}</p><p className="mt-1 text-[12px] text-muted-foreground">{user.jobTitle || "No title"}</p></td>
                   <td className="text-xs text-muted-foreground">{fullDateTime(user.lastSignedIn)}</td>
                   <td className="text-right"><Button variant="outline" size="sm" onClick={() => openEditor(user as AdminUser)} className="rounded-xl bg-white"><UserCog className="mr-2 h-3.5 w-3.5" />Manage</Button></td>
                 </tr>
@@ -149,7 +149,7 @@ export default function UserManagement() {
             {usersQuery.data?.users.map(user => (
               <button key={user.id} onClick={() => openEditor(user as AdminUser)} className="surface flex w-full items-start gap-3 p-4 text-left transition-transform active:scale-[0.99]">
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#e8f4f5] text-xs font-bold text-[#005a73]">{initials(user.name || user.email || "JMK user")}</div>
-                <div className="min-w-0 flex-1"><UserIdentity user={user as AdminUser} compact /><div className="mt-3 flex flex-wrap items-center gap-2"><RoleBadge role={user.role} active={user.isActive} /><span className="text-[10px] text-muted-foreground">{user.propertyIds.length} hotel{user.propertyIds.length === 1 ? "" : "s"}</span></div></div>
+                <div className="min-w-0 flex-1"><UserIdentity user={user as AdminUser} compact /><div className="mt-3 flex flex-wrap items-center gap-2"><RoleBadge role={user.role} active={user.isActive} /><span className="text-[12px] text-muted-foreground">{user.propertyIds.length} hotel{user.propertyIds.length === 1 ? "" : "s"}</span></div></div>
               </button>
             ))}
           </div>
@@ -160,20 +160,20 @@ export default function UserManagement() {
         <DialogContent className="max-h-[92vh] overflow-y-auto rounded-2xl sm:max-w-2xl">
           <DialogHeader><DialogTitle className="font-display text-2xl">Manage user access</DialogTitle><DialogDescription>Update role, hotel assignments, and profile details. Users are provisioned through secure sign-in.</DialogDescription></DialogHeader>
           {selected && <form onSubmit={submit} className="mt-2 space-y-6">
-            <div className="rounded-2xl border border-[#e0e6ec] bg-[#f6f8fa] p-4"><UserIdentity user={selected} /><p className="mt-2 text-[10px] text-muted-foreground">Joined {fullDateTime(selected.createdAt)}</p></div>
+            <div className="rounded-2xl border border-[#e0e6ec] bg-[#f6f8fa] p-4"><UserIdentity user={selected} /><p className="mt-2 text-[12px] text-muted-foreground">Joined {fullDateTime(selected.createdAt)}</p></div>
             <FieldGrid>
               <SelectField label="CRM role" required value={form.role} onChange={value => setForm(current => ({ ...current, role: value as UserForm["role"] }))} options={[{ value: "user", label: "User", description: "Limited to assigned hotels" }, { value: "admin", label: "Admin", description: "Group-wide access and administration" }]} />
-              <div className="space-y-2"><Label className="text-[11px] font-semibold">Account status</Label><div className="flex h-10 items-center justify-between rounded-xl border border-[#dde4de] bg-white px-3"><span className="text-xs font-medium">{form.isActive ? "Active" : "Inactive"}</span><Switch checked={form.isActive} onCheckedChange={checked => setForm(current => ({ ...current, isActive: checked }))} /></div></div>
+              <div className="space-y-2"><Label className="text-[13px] font-semibold">Account status</Label><div className="flex h-10 items-center justify-between rounded-xl border border-[#dde4de] bg-white px-3"><span className="text-xs font-medium">{form.isActive ? "Active" : "Inactive"}</span><Switch checked={form.isActive} onCheckedChange={checked => setForm(current => ({ ...current, isActive: checked }))} /></div></div>
               <TextField label="Job title" value={form.jobTitle} onChange={value => setForm(current => ({ ...current, jobTitle: value }))} placeholder="e.g. Director of Sales" />
               <TextField label="Department" value={form.department} onChange={value => setForm(current => ({ ...current, department: value }))} placeholder="e.g. Commercial" />
             </FieldGrid>
 
             <div>
-              <div className="mb-3"><Label className="text-[11px] font-semibold">Hotel access</Label><p className="mt-1 text-[10px] leading-4 text-muted-foreground">Active Users require at least one hotel. Admins have group-wide visibility, but assignments can still identify their primary properties.</p></div>
+              <div className="mb-3"><Label className="text-[13px] font-semibold">Hotel access</Label><p className="mt-1 text-[12px] leading-4 text-muted-foreground">Active Users require at least one hotel. Admins have group-wide visibility, but assignments can still identify their primary properties.</p></div>
               <div className="grid gap-2 sm:grid-cols-2">
                 {usersQuery.data?.properties.filter(property => property.isActive).map(property => {
                   const checked = form.propertyIds.includes(property.id);
-                  return <label key={property.id} className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e0e6ec] bg-white p-3 transition-colors hover:bg-[#f8fafc]"><Checkbox checked={checked} onCheckedChange={value => setForm(current => ({ ...current, propertyIds: value ? [...current.propertyIds, property.id] : current.propertyIds.filter(id => id !== property.id) }))} /><span><span className="block text-xs font-semibold">{property.name}</span><span className="mt-0.5 block text-[10px] text-muted-foreground">{property.city} · {property.code}</span></span></label>;
+                  return <label key={property.id} className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e0e6ec] bg-white p-3 transition-colors hover:bg-[#f8fafc]"><Checkbox checked={checked} onCheckedChange={value => setForm(current => ({ ...current, propertyIds: value ? [...current.propertyIds, property.id] : current.propertyIds.filter(id => id !== property.id) }))} /><span><span className="block text-xs font-semibold">{property.name}</span><span className="mt-0.5 block text-[12px] text-muted-foreground">{property.city} · {property.code}</span></span></label>;
                 })}
               </div>
             </div>
@@ -187,11 +187,11 @@ export default function UserManagement() {
 
 function Metric({ label, value, tone = "slate" }: { label: string; value: number; tone?: "slate" | "teal" | "navy" }) {
   const className = tone === "teal" ? "bg-[#e8f7f9] text-[#005a73]" : tone === "navy" ? "bg-[#e9eef8] text-[#002460]" : "bg-white text-foreground";
-  return <div className={`surface px-4 py-4 ${className}`}><p className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-65">{label}</p><p className="mt-2 font-display text-3xl">{value}</p></div>;
+  return <div className={`surface px-4 py-4 ${className}`}><p className="text-[12px] font-bold uppercase tracking-[0.14em] opacity-65">{label}</p><p className="mt-2 font-display text-3xl">{value}</p></div>;
 }
 
 function UserIdentity({ user, compact = false }: { user: AdminUser; compact?: boolean }) {
-  return <div className="min-w-0"><p className="truncate text-xs font-semibold text-foreground">{user.name || "Unnamed user"}</p><p className={`truncate text-muted-foreground ${compact ? "mt-0.5 text-[10px]" : "mt-1 text-[11px]"}`}>{user.email || "No email"}</p></div>;
+  return <div className="min-w-0"><p className="truncate text-xs font-semibold text-foreground">{user.name || "Unnamed user"}</p><p className={`truncate text-muted-foreground ${compact ? "mt-0.5 text-[12px]" : "mt-1 text-[13px]"}`}>{user.email || "No email"}</p></div>;
 }
 
 function RoleBadge({ role, active }: { role: "admin" | "user"; active: boolean }) {
@@ -201,5 +201,5 @@ function RoleBadge({ role, active }: { role: "admin" | "user"; active: boolean }
 function PropertySummary({ ids, properties }: { ids: number[]; properties: Array<{ id: number; name: string }> }) {
   if (!ids.length) return <span className="text-xs text-muted-foreground">Group-wide / unassigned</span>;
   const names = ids.map(id => properties.find(property => property.id === id)?.name).filter(Boolean) as string[];
-  return <div className="flex flex-wrap gap-1">{names.slice(0, 2).map(name => <Badge key={name} variant="outline" className="max-w-full truncate border-[#dce4e9] bg-white text-[9px] text-[#46576a]">{name}</Badge>)}{names.length > 2 && <Badge variant="outline" className="border-[#dce4e9] bg-white text-[9px] text-[#46576a]">+{names.length - 2}</Badge>}</div>;
+  return <div className="flex flex-wrap gap-1">{names.slice(0, 2).map(name => <Badge key={name} variant="outline" className="max-w-full truncate border-[#dce4e9] bg-white text-[11px] text-[#46576a]">{name}</Badge>)}{names.length > 2 && <Badge variant="outline" className="border-[#dce4e9] bg-white text-[11px] text-[#46576a]">+{names.length - 2}</Badge>}</div>;
 }

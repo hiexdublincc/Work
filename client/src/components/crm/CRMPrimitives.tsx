@@ -31,7 +31,7 @@ export function EmptyState({ icon: Icon = Inbox, title, description, action }: {
 
 export function StatusBadge({ value }: { value: string }) {
   const palette = statusPalette(value);
-  return <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold", palette.bg, palette.text)}><span className={cn("status-dot", palette.dot)} />{value}</span>;
+  return <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold", palette.bg, palette.text)}><span className={cn("status-dot", palette.dot)} />{value}</span>;
 }
 
 function statusPalette(value: string) {
@@ -61,7 +61,7 @@ export function initials(name: string) {
 
 export function Pagination({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (page: number) => void }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
-  return <div className="flex items-center justify-between border-t border-[#eaeeea] px-4 py-3"><p className="text-[11px] text-muted-foreground">{total === 0 ? "No records" : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}</p><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page"><ArrowLeft className="h-3.5 w-3.5" /></Button><span className="min-w-16 text-center text-[11px] font-medium">{page} / {pages}</span><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page"><ArrowRight className="h-3.5 w-3.5" /></Button></div></div>;
+  return <div className="flex items-center justify-between border-t border-[#eaeeea] px-4 py-3"><p className="text-[13px] text-muted-foreground">{total === 0 ? "No records" : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}</p><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page"><ArrowLeft className="h-3.5 w-3.5" /></Button><span className="min-w-16 text-center text-[13px] font-medium">{page} / {pages}</span><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page"><ArrowRight className="h-3.5 w-3.5" /></Button></div></div>;
 }
 
 export function useSearchShortcut() {

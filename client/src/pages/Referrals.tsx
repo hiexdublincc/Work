@@ -191,7 +191,7 @@ export default function Referrals() {
               <tr key={row.id} onClick={() => setSelected(row)} className="cursor-pointer border-b border-[#e8edf3] transition-colors last:border-0 hover:bg-[#f7fafc]">
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-2"><PropertyLogo propertyName={row.referringPropertyName} /><ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /><PropertyLogo propertyName={row.receivingPropertyName} /></div>
-                  <p className="mt-1.5 truncate text-[10px] text-muted-foreground">{row.companyName || row.opportunityName || "No linked record"}</p>
+                  <p className="mt-1.5 truncate text-[12px] text-muted-foreground">{row.companyName || row.opportunityName || "No linked record"}</p>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3.5"><StatusBadge value={row.status} /></td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs font-semibold">{money(row.valueCents)}</td>
@@ -263,5 +263,5 @@ export default function Referrals() {
 }
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
-  return <div className="surface flex items-center gap-3 p-4"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#e8f7f9] text-[#00758f]"><Share2 className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 truncate font-display text-xl text-foreground">{value}</p></div></div>;
+  return <div className="surface flex items-center gap-3 p-4"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#e8f7f9] text-[#00758f]"><Share2 className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 truncate font-display text-xl text-foreground">{value}</p></div></div>;
 }

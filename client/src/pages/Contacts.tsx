@@ -209,7 +209,7 @@ export default function Contacts() {
               const name = `${row.firstName} ${row.lastName}`;
               return (
                 <tr key={row.id} onClick={() => setSelectedId(row.id)} className="cursor-pointer border-b border-[#edf0ed] transition-colors last:border-0 hover:bg-[#f8faf7]">
-                  <td className="px-4 py-3.5"><div className="flex items-center gap-3"><Avatar className="h-9 w-9 border border-[#dce5de]"><AvatarFallback className="bg-[#e8f0e9] text-[11px] font-bold text-[#2e5d48]">{row.firstName[0]}{row.lastName[0]}</AvatarFallback></Avatar><div><p className="text-xs font-semibold">{name}</p><p className="mt-1 text-[10px] text-muted-foreground">{row.jobTitle || row.email || "Contact profile"}</p></div></div></td>
+                  <td className="px-4 py-3.5"><div className="flex items-center gap-3"><Avatar className="h-9 w-9 border border-[#dce5de]"><AvatarFallback className="bg-[#e8f0e9] text-[13px] font-bold text-[#2e5d48]">{row.firstName[0]}{row.lastName[0]}</AvatarFallback></Avatar><div><p className="text-xs font-semibold">{name}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.jobTitle || row.email || "Contact profile"}</p></div></div></td>
                   <td className="px-4 py-3.5 text-xs">{row.companyName || "Independent"}</td>
                   <td className="px-4 py-3.5 text-xs">{row.relationshipStatus || "—"}</td>
                   <td className="px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
@@ -230,7 +230,7 @@ export default function Contacts() {
           </DialogHeader>
           <form onSubmit={submit} className="mt-3 space-y-5">
             <div className="rounded-2xl border border-[#e3e8e3] bg-[#fbfcfa] p-4">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#577363]">Essential contact details</p>
+              <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#577363]">Essential contact details</p>
               <FieldGrid>
                 <TextField label="First name" value={form.firstName} onChange={value => set("firstName", value)} required />
                 <TextField label="Last name" value={form.lastName} onChange={value => set("lastName", value)} required />
@@ -242,7 +242,7 @@ export default function Contacts() {
 
             {duplicateMatches.length > 0 && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate contact</p><p className="mt-1 text-[11px] leading-5">{duplicateMatches.map(match => `${match.firstName} ${match.lastName} · ${match.companyName || "Independent"}`).join("; ")}. You can still save after checking these records.</p></div></div>
+                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate contact</p><p className="mt-1 text-[13px] leading-5">{duplicateMatches.map(match => `${match.firstName} ${match.lastName} · ${match.companyName || "Independent"}`).join("; ")}. You can still save after checking these records.</p></div></div>
               </div>
             )}
 
@@ -267,7 +267,7 @@ export default function Contacts() {
       </Dialog>
 
       <CRMDetailSheet open={selectedId !== null} onOpenChange={open => !open && setSelectedId(null)} title={detail.data ? `${detail.data.contact.firstName} ${detail.data.contact.lastName}` : "Contact profile"} eyebrow={detail.data?.companyName || "Relationship"} loading={detail.isLoading} error={detail.error?.message} action={<Button size="sm" onClick={openEdit} className="rounded-xl"><Pencil className="mr-2 h-3.5 w-3.5" />Edit</Button>}>
-        {detail.data && <div className="space-y-7"><div className="grid gap-2 sm:grid-cols-2"><DetailPair label="Company" value={detail.data.companyName} /><DetailPair label="Role" value={detail.data.contact.jobTitle} /><DetailPair label="Department" value={detail.data.contact.department} /><DetailPair label="Email" value={detail.data.contact.email} /><DetailPair label="Mobile" value={detail.data.contact.mobile || detail.data.contact.phone} /><DetailPair label="Relationship" value={detail.data.contact.relationshipStatus} /><DetailPair label="Owner" value={detail.data.ownerName} /><DetailPair label="Notes" value={detail.data.contact.notes} wide /></div><div><SectionTitle>Connected commercial work</SectionTitle><div className="grid gap-3 sm:grid-cols-2"><MiniStat icon={Target} label="Opportunities" value={detail.data.opportunities.length} /><MiniStat icon={Activity} label="Activities" value={detail.data.activities.length} /></div></div>{detail.data.opportunities.length > 0 && <div><SectionTitle>Opportunities</SectionTitle><div className="space-y-2">{detail.data.opportunities.slice(0, 5).map(item => <div key={item.id} className="flex items-center justify-between rounded-xl border border-[#e5eae5] p-3"><div><p className="text-xs font-semibold">{item.name}</p><p className="mt-1 text-[10px] text-muted-foreground">{fullDateTime(item.nextActionAt)}</p></div><div className="text-right"><p className="text-xs font-semibold">{money(item.valueCents)}</p><StatusBadge value={item.stage} /></div></div>)}</div></div>}<Button variant="outline" onClick={() => setArchiveOpen(true)} className="w-full rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800"><Archive className="mr-2 h-4 w-4" />Archive contact</Button></div>}
+        {detail.data && <div className="space-y-7"><div className="grid gap-2 sm:grid-cols-2"><DetailPair label="Company" value={detail.data.companyName} /><DetailPair label="Role" value={detail.data.contact.jobTitle} /><DetailPair label="Department" value={detail.data.contact.department} /><DetailPair label="Email" value={detail.data.contact.email} /><DetailPair label="Mobile" value={detail.data.contact.mobile || detail.data.contact.phone} /><DetailPair label="Relationship" value={detail.data.contact.relationshipStatus} /><DetailPair label="Owner" value={detail.data.ownerName} /><DetailPair label="Notes" value={detail.data.contact.notes} wide /></div><div><SectionTitle>Connected commercial work</SectionTitle><div className="grid gap-3 sm:grid-cols-2"><MiniStat icon={Target} label="Opportunities" value={detail.data.opportunities.length} /><MiniStat icon={Activity} label="Activities" value={detail.data.activities.length} /></div></div>{detail.data.opportunities.length > 0 && <div><SectionTitle>Opportunities</SectionTitle><div className="space-y-2">{detail.data.opportunities.slice(0, 5).map(item => <div key={item.id} className="flex items-center justify-between rounded-xl border border-[#e5eae5] p-3"><div><p className="text-xs font-semibold">{item.name}</p><p className="mt-1 text-[12px] text-muted-foreground">{fullDateTime(item.nextActionAt)}</p></div><div className="text-right"><p className="text-xs font-semibold">{money(item.valueCents)}</p><StatusBadge value={item.stage} /></div></div>)}</div></div>}<Button variant="outline" onClick={() => setArchiveOpen(true)} className="w-full rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800"><Archive className="mr-2 h-4 w-4" />Archive contact</Button></div>}
       </CRMDetailSheet>
 
       <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
@@ -281,5 +281,5 @@ export default function Contacts() {
 }
 
 function MiniStat({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
-  return <div className="rounded-xl border border-[#e5eae5] p-3"><Icon className="h-4 w-4 text-[#47735f]" /><p className="mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p></div>;
+  return <div className="rounded-xl border border-[#e5eae5] p-3"><Icon className="h-4 w-4 text-[#47735f]" /><p className="mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-[12px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p></div>;
 }

@@ -12,7 +12,7 @@ export function GroupLogo({ className, imageClassName }: LogoProps) {
   return (
     <span className={cn("inline-flex items-center justify-center overflow-hidden", className)}>
       {failed ? (
-        <span role="img" aria-label="JMK Group UK & Ireland logo unavailable" className="px-2 text-center text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#002460]">
+        <span role="img" aria-label="JMK Group UK & Ireland logo unavailable" className="px-2 text-center text-[12px] font-extrabold uppercase tracking-[0.12em] text-[#002460]">
           JMK Group
         </span>
       ) : (
@@ -43,7 +43,7 @@ export function BrandLogo({ brand, className, imageClassName }: LogoProps & { br
         <span
           role="img"
           aria-label={`${brand.name} logo unavailable`}
-          className="px-2 text-center text-[9px] font-bold leading-tight text-slate-700"
+          className="px-2 text-center text-[11px] font-bold leading-tight text-slate-700"
         >
           {brand.name}
         </span>

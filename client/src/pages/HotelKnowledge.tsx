@@ -145,7 +145,7 @@ export default function HotelKnowledge() {
           </div>
 
           <div className="surface overflow-hidden">
-            <div className="border-b border-[#e8edf3] px-5 py-4"><h3 className="text-sm font-semibold">Collateral</h3><p className="mt-1 text-[10px] text-muted-foreground">Brochures, floor plans, and brand documents.</p></div>
+            <div className="border-b border-[#e8edf3] px-5 py-4"><h3 className="text-sm font-semibold">Collateral</h3><p className="mt-1 text-[12px] text-muted-foreground">Brochures, floor plans, and brand documents.</p></div>
             {isAdmin && (
               <div className="space-y-2 border-b border-[#e8edf3] p-4">
                 <TextField label="Label" value={uploadLabel} onChange={setUploadLabel} placeholder="e.g. 2026 brochure" />
@@ -168,7 +168,7 @@ export default function HotelKnowledge() {
                 detail.data.collateral.map(item => (
                   <div key={item.id} className="flex items-center gap-3 px-5 py-3.5">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#edf3f8] text-[#00758f]"><FileText className="h-4 w-4" /></span>
-                    <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold">{item.label}</p><p className="mt-0.5 truncate text-[9px] uppercase tracking-[0.08em] text-muted-foreground">{item.category} · {shortDate(item.createdAt)}</p></div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold">{item.label}</p><p className="mt-0.5 truncate text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{item.category} · {shortDate(item.createdAt)}</p></div>
                     <a href={item.fileUrl} target="_blank" rel="noreferrer"><Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg"><Download className="h-3.5 w-3.5" /></Button></a>
                     {isAdmin && <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-rose-600 hover:text-rose-700" onClick={() => archiveCollateral.mutate({ id: item.id })}><Archive className="h-3.5 w-3.5" /></Button>}
                   </div>

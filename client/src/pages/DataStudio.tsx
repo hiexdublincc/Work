@@ -149,7 +149,7 @@ export default function DataStudio() {
       {step === "preview" && (
         <div className="surface mt-4 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e8edf3] px-5 py-4 sm:px-6">
-            <div><h3 className="text-sm font-semibold">Preview · {rows.length} row{rows.length === 1 ? "" : "s"}</h3><p className="mt-1 text-[10px] text-muted-foreground">Review parsed rows before confirming the import.</p></div>
+            <div><h3 className="text-sm font-semibold">Preview · {rows.length} row{rows.length === 1 ? "" : "s"}</h3><p className="mt-1 text-[12px] text-muted-foreground">Review parsed rows before confirming the import.</p></div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={reset} className="rounded-xl bg-white">Cancel</Button>
               <Button size="sm" onClick={confirmImport} disabled={importRows.isPending} className="rounded-xl">
@@ -161,7 +161,7 @@ export default function DataStudio() {
           {result && !result.ready && (
             <div className="border-b border-rose-100 bg-rose-50 px-5 py-4 sm:px-6">
               <div className="flex items-center gap-2 text-rose-800"><FileWarning className="h-4 w-4" /><p className="text-xs font-semibold">{result.errors.length} row{result.errors.length === 1 ? "" : "s"} failed validation — fix and re-upload</p></div>
-              <ul className="mt-2 space-y-1 text-[11px] text-rose-700">
+              <ul className="mt-2 space-y-1 text-[13px] text-rose-700">
                 {result.errors.slice(0, 20).map((issue, index) => <li key={index}>Row {issue.row}: {issue.message}</li>)}
               </ul>
             </div>
@@ -176,7 +176,7 @@ export default function DataStudio() {
             <table className="w-full min-w-[780px] border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#e5eae5] bg-[#fafbf9]">
-                  {columns.map(column => <th key={column} className="px-4 py-3 text-left text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>)}
+                  {columns.map(column => <th key={column} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -187,7 +187,7 @@ export default function DataStudio() {
                 ))}
               </tbody>
             </table>
-            {rows.length > 50 && <p className="px-5 py-3 text-[10px] text-muted-foreground">Showing first 50 of {rows.length} rows.</p>}
+            {rows.length > 50 && <p className="px-5 py-3 text-[12px] text-muted-foreground">Showing first 50 of {rows.length} rows.</p>}
           </div>
         </div>
       )}

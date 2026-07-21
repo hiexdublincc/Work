@@ -131,7 +131,7 @@ function CRMLayout({ children }: { children: ReactNode }) {
               isActive={isActive}
               onClick={() => setLocation(item.path)}
               tooltip={item.label}
-              className="h-10 rounded-xl px-3 text-[13px] font-medium data-[active=true]:bg-white data-[active=true]:text-[#002460] data-[active=true]:[box-shadow:inset_3px_0_0_#6cccd8,0_7px_20px_rgba(0,36,96,0.08)]"
+              className="h-10 rounded-xl px-3 text-[15px] font-medium data-[active=true]:bg-white data-[active=true]:text-[#002460] data-[active=true]:[box-shadow:inset_3px_0_0_#6cccd8,0_7px_20px_rgba(0,36,96,0.08)]"
             >
               <item.icon className="h-[17px] w-[17px]" />
               <span>{item.label}</span>
@@ -153,27 +153,27 @@ function CRMLayout({ children }: { children: ReactNode }) {
         </SidebarHeader>
         <SidebarContent className="px-1">
           <SidebarGroup className="p-0">
-            <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Workspace</SidebarGroupLabel>
+            <SidebarGroupLabel className="px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Workspace</SidebarGroupLabel>
             {menu(primaryItems)}
           </SidebarGroup>
           <SidebarSeparator className="mx-4 my-3 w-auto bg-[#d9e3ed]" />
           <SidebarGroup className="p-0">
-            <SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Insights</SidebarGroupLabel>
+            <SidebarGroupLabel className="px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Insights</SidebarGroupLabel>
             {menu(insightItems)}
           </SidebarGroup>
-          {user?.role === "admin" && <><SidebarSeparator className="mx-4 my-3 w-auto bg-[#d9e3ed]" /><SidebarGroup className="p-0"><SidebarGroupLabel className="px-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Administration</SidebarGroupLabel>{menu(adminItems)}</SidebarGroup></>}
+          {user?.role === "admin" && <><SidebarSeparator className="mx-4 my-3 w-auto bg-[#d9e3ed]" /><SidebarGroup className="p-0"><SidebarGroupLabel className="px-5 text-[12px] font-bold uppercase tracking-[0.18em] text-[#77869a] group-data-[collapsible=icon]:hidden">Administration</SidebarGroupLabel>{menu(adminItems)}</SidebarGroup></>}
         </SidebarContent>
         <SidebarFooter className="p-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-data-[collapsible=icon]:justify-center">
                 <Avatar className="h-9 w-9 border border-white bg-[#dff3f6]"><AvatarFallback className="bg-[#dff3f6] text-xs font-bold text-[#002460]">{initials(user?.name)}</AvatarFallback></Avatar>
-                <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden"><p className="truncate text-xs font-semibold text-[#102b50]">{user?.name || "JMK user"}</p><p className="mt-0.5 truncate text-[10px] capitalize text-[#6c7c91]">{user?.role}</p></div>
+                <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden"><p className="truncate text-xs font-semibold text-[#102b50]">{user?.name || "JMK user"}</p><p className="mt-0.5 truncate text-[12px] capitalize text-[#6c7c91]">{user?.role}</p></div>
                 <ChevronDown className="h-3.5 w-3.5 text-[#738298] group-data-[collapsible=icon]:hidden" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="top" className="w-56 rounded-xl p-1.5">
-              <div className="px-2 py-2"><p className="truncate text-xs font-semibold">{user?.name}</p><p className="mt-1 truncate text-[11px] text-muted-foreground">{user?.email}</p></div>
+              <div className="px-2 py-2"><p className="truncate text-xs font-semibold">{user?.name}</p><p className="mt-1 truncate text-[13px] text-muted-foreground">{user?.email}</p></div>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="cursor-pointer rounded-lg text-destructive focus:text-destructive"><LogOut className="mr-2 h-4 w-4" />Sign out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -186,18 +186,18 @@ function CRMLayout({ children }: { children: ReactNode }) {
             <SidebarTrigger className="h-9 w-9 rounded-xl border border-[#d9e3ed] bg-white lg:hidden"><Menu className="h-4 w-4" /></SidebarTrigger>
             <div className="sm:hidden">
               <GroupLogo className="h-6 w-20 rounded-md bg-white px-1.5 py-0.5" />
-              <h1 className="mt-0.5 max-w-20 truncate text-[10px] font-semibold text-foreground">{active?.label ?? "Workspace"}</h1>
+              <h1 className="mt-0.5 max-w-20 truncate text-[12px] font-semibold text-foreground">{active?.label ?? "Workspace"}</h1>
             </div>
             <GroupLogo className="hidden h-7 w-24 rounded-md bg-white px-1.5 py-1 sm:inline-flex lg:hidden" />
-            <div className="hidden sm:block"><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">JMK Group CRM</p><h1 className="mt-0.5 text-sm font-semibold text-foreground">{active?.label ?? "Workspace"}</h1></div>
+            <div className="hidden sm:block"><p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">JMK Group CRM</p><h1 className="mt-0.5 text-sm font-semibold text-foreground">{active?.label ?? "Workspace"}</h1></div>
           </div>
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button size="sm" className="h-9 rounded-xl px-3 shadow-[0_8px_18px_rgba(0,36,96,0.16)]"><Plus className="h-3.5 w-3.5 sm:mr-1.5" /><span className="hidden sm:inline">Quick add</span></Button></DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5"><div className="px-2 py-2"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Create a record</p><p className="mt-1 text-[10px] text-muted-foreground">Start the most common sales actions.</p></div><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/activities?create=1")} className="cursor-pointer rounded-lg"><Activity className="mr-2 h-4 w-4" />Log activity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/leads?create=1")} className="cursor-pointer rounded-lg"><Target className="mr-2 h-4 w-4" />Add enquiry</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/opportunities?create=1")} className="cursor-pointer rounded-lg"><CircleDollarSign className="mr-2 h-4 w-4" />Add opportunity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/companies?create=1")} className="cursor-pointer rounded-lg"><Building2 className="mr-2 h-4 w-4" />Add company</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/contacts?create=1")} className="cursor-pointer rounded-lg"><ContactRound className="mr-2 h-4 w-4" />Add contact</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/achievements?create=1")} className="cursor-pointer rounded-lg"><Trophy className="mr-2 h-4 w-4" />Add achievement</DropdownMenuItem></DropdownMenuContent>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5"><div className="px-2 py-2"><p className="text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Create a record</p><p className="mt-1 text-[12px] text-muted-foreground">Start the most common sales actions.</p></div><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/activities?create=1")} className="cursor-pointer rounded-lg"><Activity className="mr-2 h-4 w-4" />Log activity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/leads?create=1")} className="cursor-pointer rounded-lg"><Target className="mr-2 h-4 w-4" />Add enquiry</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/opportunities?create=1")} className="cursor-pointer rounded-lg"><CircleDollarSign className="mr-2 h-4 w-4" />Add opportunity</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/companies?create=1")} className="cursor-pointer rounded-lg"><Building2 className="mr-2 h-4 w-4" />Add company</DropdownMenuItem><DropdownMenuItem onClick={() => setLocation("/contacts?create=1")} className="cursor-pointer rounded-lg"><ContactRound className="mr-2 h-4 w-4" />Add contact</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setLocation("/achievements?create=1")} className="cursor-pointer rounded-lg"><Trophy className="mr-2 h-4 w-4" />Add achievement</DropdownMenuItem></DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="sm" onClick={() => document.dispatchEvent(new CustomEvent("jmk:search"))} className="hidden h-9 min-w-52 justify-between rounded-xl border-[#d9e3ed] bg-white px-3 text-muted-foreground shadow-none md:flex"><span className="flex items-center gap-2"><Search className="h-3.5 w-3.5" />Search this view</span><kbd className="rounded border bg-[#f1f5f9] px-1.5 py-0.5 text-[9px]">⌘ K</kbd></Button>
-            {user?.role === "admin" && <Badge variant="outline" className="h-8 rounded-lg border-[#b9e3e8] bg-[#e8f7f9] px-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#005a73]"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Admin</Badge>}
+            <Button variant="outline" size="sm" onClick={() => document.dispatchEvent(new CustomEvent("jmk:search"))} className="hidden h-9 min-w-52 justify-between rounded-xl border-[#d9e3ed] bg-white px-3 text-muted-foreground shadow-none md:flex"><span className="flex items-center gap-2"><Search className="h-3.5 w-3.5" />Search this view</span><kbd className="rounded border bg-[#f1f5f9] px-1.5 py-0.5 text-[11px]">⌘ K</kbd></Button>
+            {user?.role === "admin" && <Badge variant="outline" className="h-8 rounded-lg border-[#b9e3e8] bg-[#e8f7f9] px-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-[#005a73]"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Admin</Badge>}
           </div>
         </header>
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>

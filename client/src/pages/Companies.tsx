@@ -261,10 +261,10 @@ export default function Companies() {
           <RecordTable columns={["Company", "Owner", "Category", "Potential", "Next follow-up", "Health"]}>
             {rows.map(row => (
               <tr key={row.id} onClick={() => setSelectedId(row.id)} className="cursor-pointer border-b border-[#e8edf3] transition-colors last:border-0 hover:bg-[#f7fafc]">
-                <td className="px-4 py-3.5"><div className="flex items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e6f7f9] text-[#00677f]"><Building2 className="h-4 w-4" /></div><div><p className="text-xs font-semibold">{row.name}</p><p className="mt-1 text-[10px] text-muted-foreground">{row.segment || row.industry || row.destinationCity || "Account profile"}</p></div></div></td>
+                <td className="px-4 py-3.5"><div className="flex items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e6f7f9] text-[#00677f]"><Building2 className="h-4 w-4" /></div><div><p className="text-xs font-semibold">{row.name}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.segment || row.industry || row.destinationCity || "Account profile"}</p></div></div></td>
                 <td className="px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
                 <td className="px-4 py-3.5 text-xs">{row.category}</td>
-                <td className="px-4 py-3.5"><p className="text-xs font-semibold">{money(row.potentialRevenueCents)}</p><p className="mt-1 text-[10px] text-muted-foreground">{row.potentialRoomNights.toLocaleString()} room nights</p></td>
+                <td className="px-4 py-3.5"><p className="text-xs font-semibold">{money(row.potentialRevenueCents)}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.potentialRoomNights.toLocaleString()} room nights</p></td>
                 <td className="px-4 py-3.5 text-xs">{shortDate(row.nextFollowUpAt)}</td>
                 <td className="px-4 py-3.5"><StatusBadge value={row.accountHealth.state} /></td>
               </tr>
@@ -282,7 +282,7 @@ export default function Companies() {
           </DialogHeader>
           <form onSubmit={submit} className="mt-3 space-y-5">
             <div className="rounded-2xl border border-[#dce5ee] bg-[#f7fafc] p-4">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#00677f]">Essential account details</p>
+              <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#00677f]">Essential account details</p>
               <FieldGrid>
                 <TextField label="Company name" value={form.name} onChange={value => set("name", value)} required />
                 <SelectField label="Owner" value={form.ownerId} onChange={value => set("ownerId", value)} options={ownerOptions} required />
@@ -294,7 +294,7 @@ export default function Companies() {
 
             {duplicateMatches.length > 0 && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate account</p><p className="mt-1 text-[11px] leading-5">{duplicateMatches.map(match => match.name).join("; ")}. You can still save after checking these records.</p></div></div>
+                <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-xs font-semibold">Possible duplicate account</p><p className="mt-1 text-[13px] leading-5">{duplicateMatches.map(match => match.name).join("; ")}. You can still save after checking these records.</p></div></div>
               </div>
             )}
 
@@ -335,7 +335,7 @@ export default function Companies() {
         {detail.data && (
           <div className="space-y-7">
             <div className="rounded-2xl border border-[#dce5ee] bg-[#f5fbfc] p-4">
-              <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#00677f] shadow-sm"><HeartPulse className="h-4 w-4" /></div><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Account health</p><div className="mt-1"><StatusBadge value={detail.data.accountHealth.state} /></div></div></div><p className="max-w-[17rem] text-right text-[11px] leading-5 text-muted-foreground">{detail.data.accountHealth.reasons.join(" · ")}</p></div>
+              <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#00677f] shadow-sm"><HeartPulse className="h-4 w-4" /></div><div><p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Account health</p><div className="mt-1"><StatusBadge value={detail.data.accountHealth.state} /></div></div></div><p className="max-w-[17rem] text-right text-[13px] leading-5 text-muted-foreground">{detail.data.accountHealth.reasons.join(" · ")}</p></div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               <DetailPair label="Category" value={<StatusBadge value={detail.data.company.category} />} />
@@ -353,7 +353,7 @@ export default function Companies() {
               <DetailPair label="Commercial notes" value={detail.data.company.notes} wide />
             </div>
             <div><SectionTitle>Relationships</SectionTitle><div className="grid gap-3 sm:grid-cols-3"><MiniStat icon={ContactRound} label="Contacts" value={detail.data.contacts.length} /><MiniStat icon={Target} label="Opportunities" value={detail.data.opportunities.length} /><MiniStat icon={CalendarClock} label="Activities" value={detail.data.activities.length} /></div></div>
-            <div><SectionTitle>Open opportunities</SectionTitle>{detail.data.opportunities.length ? <div className="space-y-2">{detail.data.opportunities.slice(0, 5).map(item => <div key={item.id} className="flex items-center justify-between rounded-xl border border-[#dce5ee] p-3"><div><p className="text-xs font-semibold">{item.name}</p><p className="mt-1 text-[10px] text-muted-foreground">{item.businessType}</p></div><div className="text-right"><p className="text-xs font-semibold">{money(item.valueCents)}</p><StatusBadge value={item.stage} /></div></div>)}</div> : <p className="text-xs text-muted-foreground">No linked opportunities yet.</p>}</div>
+            <div><SectionTitle>Open opportunities</SectionTitle>{detail.data.opportunities.length ? <div className="space-y-2">{detail.data.opportunities.slice(0, 5).map(item => <div key={item.id} className="flex items-center justify-between rounded-xl border border-[#dce5ee] p-3"><div><p className="text-xs font-semibold">{item.name}</p><p className="mt-1 text-[12px] text-muted-foreground">{item.businessType}</p></div><div className="text-right"><p className="text-xs font-semibold">{money(item.valueCents)}</p><StatusBadge value={item.stage} /></div></div>)}</div> : <p className="text-xs text-muted-foreground">No linked opportunities yet.</p>}</div>
             <Button variant="outline" onClick={() => setArchiveOpen(true)} className="w-full rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800"><Archive className="mr-2 h-4 w-4" />Archive company</Button>
           </div>
         )}
@@ -370,5 +370,5 @@ export default function Companies() {
 }
 
 function MiniStat({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
-  return <div className="rounded-xl border border-[#dce5ee] p-3"><Icon className="h-4 w-4 text-[#00758f]" /><p className="mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p></div>;
+  return <div className="rounded-xl border border-[#dce5ee] p-3"><Icon className="h-4 w-4 text-[#00758f]" /><p className="mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-[12px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p></div>;
 }

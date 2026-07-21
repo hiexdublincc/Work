@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import type { ReactNode } from "react";
 
 export function RecordTable({ columns, children }: { columns: string[]; children: ReactNode }) {
-  return <div className="overflow-x-auto"><table className="w-full min-w-[780px] border-collapse"><thead><tr className="border-b border-[#e5eae5] bg-[#fafbf9]">{columns.map(column => <th key={column} className="px-4 py-3 text-left text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>)}</tr></thead><tbody>{children}</tbody></table></div>;
+  return <div className="overflow-x-auto"><table className="w-full min-w-[780px] border-collapse"><thead><tr className="border-b border-[#e5eae5] bg-[#fafbf9]">{columns.map(column => <th key={column} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>)}</tr></thead><tbody>{children}</tbody></table></div>;
 }
 
 export function CRMDetailSheet({ open, onOpenChange, title, eyebrow, description, loading, error, action, children }: {

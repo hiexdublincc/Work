@@ -1,9 +1,10 @@
 import { FilterSelect, SearchFilters } from "@/components/crm/CRMForms";
 import { EmptyState, ErrorPanel, LoadingPanel, PageHeader, StatusBadge, money } from "@/components/crm/CRMPrimitives";
+import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
-import { BarChart3, CalendarClock, PhoneCall, ShieldAlert, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { BarChart3, CalendarClock, PhoneCall, Printer, ShieldAlert, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import type { AppRouter } from "../../../server/routers";
 
 type Summary = inferRouterOutputs<AppRouter>["reports"]["summary"];
@@ -34,6 +35,21 @@ export default function Reports() {
   const activeFilters = [propertyId, ownerId, from, to].filter(Boolean).length;
   const loading = summary.isLoading || forecast.isLoading || lostBusiness.isLoading || refs.isLoading;
   const error = summary.error || forecast.error || lostBusiness.error || refs.error;
+  const [printing, setPrinting] = useState(false);
+  useEffect(() => {
+    document.body.classList.toggle("printing-report", printing);
+    return () => document.body.classList.remove("printing-report");
+  }, [printing]);
+  useEffect(() => {
+    const reset = () => setPrinting(false);
+    window.addEventListener("afterprint", reset);
+    return () => window.removeEventListener("afterprint", reset);
+  }, []);
+  const scopeLabel = [
+    propertyOptions.find(item => item.value === propertyId)?.label || "All properties",
+    ownerOptions.find(item => item.value === ownerId)?.label || "All owners",
+    from && to ? `${new Date(from).toLocaleDateString("en-GB")} - ${new Date(to).toLocaleDateString("en-GB")}` : from ? `From ${new Date(from).toLocaleDateString("en-GB")}` : to ? `To ${new Date(to).toLocaleDateString("en-GB")}` : "All dates",
+  ].join(" · ");
 
   return (
     <div className="page-enter max-w-[1500px]">
@@ -41,6 +57,7 @@ export default function Reports() {
         eyebrow="Commercial reporting"
         title="Reports"
         description="Leads by status, pipeline by stage, activity levels, and weighted revenue forecast across your authorised scope."
+        action={!loading && !error ? <Button variant="outline" onClick={() => { setPrinting(true); requestAnimationFrame(() => window.print()); }} className="h-10 rounded-xl bg-white px-4"><Printer className="mr-2 h-4 w-4" />Print report</Button> : undefined}
       />
 
       <SearchFilters
@@ -65,7 +82,11 @@ export default function Reports() {
       ) : error ? (
         <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); lostBusiness.refetch(); }} />
       ) : (
-        <div className="space-y-4">
+        <div data-print-target className="space-y-4">
+          <div className="hidden items-baseline justify-between border-b-2 border-[#111] pb-2 print:flex" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#111" }}>
+            <div><p className="text-lg font-bold">JMK Group — Commercial Report</p><p className="text-xs text-[#555]">{scopeLabel}</p></div>
+            <p className="text-xs text-[#555]">Generated {new Date().toLocaleDateString("en-GB")}</p>
+          </div>
           <LeadsByStatus data={summary.data!.leadsByStatus} />
           <OpportunitiesByStage data={summary.data!.opportunitiesByStage} />
           <ActivitySummary data={summary.data!.activitySummary} />
@@ -100,13 +121,13 @@ function LeadsByStatus({ data }: { data: Summary["leadsByStatus"] }) {
         <div className="space-y-3">
           {data.map(item => (
             <div key={item.status} className="grid items-center gap-3 sm:grid-cols-[130px_1fr_110px]">
-              <p className="text-[11px] font-semibold text-[#44566c]">{item.status}</p>
+              <p className="text-[13px] font-semibold text-[#44566c]">{item.status}</p>
               <div className="h-7 overflow-hidden rounded-lg bg-[#edf3f8]">
-                <div className="flex h-full items-center rounded-lg bg-[#00758f] px-3 text-[10px] font-semibold text-white transition-[width] duration-500" style={{ width: `${item.count === 0 ? 3 : Math.max(8, (item.count / max) * 100)}%` }}>
+                <div className="flex h-full items-center rounded-lg bg-[#00758f] px-3 text-[12px] font-semibold text-white transition-[width] duration-500" style={{ width: `${item.count === 0 ? 3 : Math.max(8, (item.count / max) * 100)}%` }}>
                   {item.count > 0 ? item.count : ""}
                 </div>
               </div>
-              <p className="text-right text-[11px] font-semibold tabular-nums">{money(item.estimatedValueCents)}</p>
+              <p className="text-right text-[13px] font-semibold tabular-nums">{money(item.estimatedValueCents)}</p>
             </div>
           ))}
         </div>
@@ -126,17 +147,17 @@ function OpportunitiesByStage({ data }: { data: Summary["opportunitiesByStage"] 
         <div className="space-y-3">
           {data.map((item, index) => (
             <div key={item.stage} className="grid items-center gap-3 sm:grid-cols-[130px_1fr_110px_110px]">
-              <p className="text-[11px] font-semibold text-[#44566c]">{item.stage}</p>
+              <p className="text-[13px] font-semibold text-[#44566c]">{item.stage}</p>
               <div className="h-7 overflow-hidden rounded-lg bg-[#edf3f8]">
                 <div
-                  className="flex h-full items-center rounded-lg px-3 text-[10px] font-semibold text-white transition-[width] duration-500"
+                  className="flex h-full items-center rounded-lg px-3 text-[12px] font-semibold text-white transition-[width] duration-500"
                   style={{ width: `${item.count === 0 ? 3 : Math.max(8, (item.count / max) * 100)}%`, background: `color-mix(in oklab, #002460 ${100 - index * 8}%, #6cccd8)` }}
                 >
                   {item.count > 0 ? item.count : ""}
                 </div>
               </div>
-              <p className="text-right text-[11px] font-semibold tabular-nums">{money(item.valueCents)}</p>
-              <p className="text-right text-[11px] tabular-nums text-muted-foreground">{money(item.weightedValueCents)} wtd.</p>
+              <p className="text-right text-[13px] font-semibold tabular-nums">{money(item.valueCents)}</p>
+              <p className="text-right text-[13px] tabular-nums text-muted-foreground">{money(item.weightedValueCents)} wtd.</p>
             </div>
           ))}
         </div>
@@ -155,9 +176,9 @@ function ActivitySummary({ data }: { data: Summary["activitySummary"] }) {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {data.map(item => (
             <div key={item.type} className="rounded-2xl border border-[#e8edf3] bg-[#f7fafc] p-4">
-              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{item.type}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{item.type}</p>
               <p className="mt-2 font-display text-2xl">{item.count}</p>
-              <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+              <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
                 <span>{item.completed} completed</span>
                 <span>{item.open} open</span>
                 {item.overdue > 0 && <span className="font-semibold text-rose-700">{item.overdue} overdue</span>}
@@ -183,18 +204,18 @@ function RevenueForecast({ data }: { data: Forecast }) {
           <div className="space-y-3">
             {data.map(item => (
               <div key={item.month} className="grid items-center gap-3 sm:grid-cols-[110px_1fr_110px_110px]">
-                <p className="text-[11px] font-semibold text-[#44566c]">{monthLabel(item.month)}</p>
+                <p className="text-[13px] font-semibold text-[#44566c]">{monthLabel(item.month)}</p>
                 <div className="h-7 overflow-hidden rounded-lg bg-[#edf3f8]">
-                  <div className="flex h-full items-center rounded-lg bg-[#8a6a3f] px-3 text-[10px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.grossValueCents / max) * 100)}%` }}>
+                  <div className="flex h-full items-center rounded-lg bg-[#8a6a3f] px-3 text-[12px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.grossValueCents / max) * 100)}%` }}>
                     {item.count}
                   </div>
                 </div>
-                <p className="text-right text-[11px] font-semibold tabular-nums">{money(item.grossValueCents)}</p>
-                <p className="text-right text-[11px] tabular-nums text-muted-foreground">{money(item.weightedValueCents)} wtd.</p>
+                <p className="text-right text-[13px] font-semibold tabular-nums">{money(item.grossValueCents)}</p>
+                <p className="text-right text-[13px] tabular-nums text-muted-foreground">{money(item.weightedValueCents)} wtd.</p>
               </div>
             ))}
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-[#e3e9f0] pt-4 text-[10px] text-muted-foreground">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-[#e3e9f0] pt-4 text-[12px] text-muted-foreground">
             <span><strong className="text-foreground">{money(totalGross)}</strong> gross forecast</span>
             <span><strong className="text-foreground">{money(totalWeighted)}</strong> weighted forecast</span>
           </div>
@@ -219,21 +240,21 @@ function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
         <EmptyState icon={ShieldAlert} title="No lost business in this view" description="Opportunities marked Closed Lost with their required lost reason will appear here." />
       ) : (
         <div className="space-y-6">
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[10px] text-muted-foreground">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-muted-foreground">
             <span><strong className="text-foreground">{data.totalCount}</strong> lost opportunities</span>
             <span><strong className="text-foreground">{money(data.totalValueCents)}</strong> lost value</span>
           </div>
 
           <div>
-            <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By lost reason</p>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By lost reason</p>
             <div className="space-y-2.5">
               {reasonsWithData.map(item => (
                 <div key={item.reason} className="grid items-center gap-3 sm:grid-cols-[150px_1fr_100px]">
-                  <p className="text-[11px] font-semibold text-[#44566c]">{item.reason}</p>
+                  <p className="text-[13px] font-semibold text-[#44566c]">{item.reason}</p>
                   <div className="h-6 overflow-hidden rounded-lg bg-[#edf3f8]">
-                    <div className="flex h-full items-center rounded-lg bg-rose-600 px-3 text-[10px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.count / max) * 100)}%` }}>{item.count}</div>
+                    <div className="flex h-full items-center rounded-lg bg-rose-600 px-3 text-[12px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.count / max) * 100)}%` }}>{item.count}</div>
                   </div>
-                  <p className="text-right text-[11px] font-semibold tabular-nums">{money(item.valueCents)}</p>
+                  <p className="text-right text-[13px] font-semibold tabular-nums">{money(item.valueCents)}</p>
                 </div>
               ))}
             </div>
@@ -241,10 +262,10 @@ function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By property</p>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By property</p>
               <div className="space-y-2">
                 {data.byProperty.map(item => (
-                  <div key={item.propertyId} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                  <div key={item.propertyId} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[13px]">
                     <span className="font-medium">{item.propertyName || "Unassigned"}</span>
                     <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
                   </div>
@@ -252,10 +273,10 @@ function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
               </div>
             </div>
             <div>
-              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By business type</p>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By business type</p>
               <div className="space-y-2">
                 {data.byType.map(item => (
-                  <div key={item.type} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                  <div key={item.type} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[13px]">
                     <span className="font-medium">{item.type}</span>
                     <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
                   </div>
@@ -263,10 +284,10 @@ function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
               </div>
             </div>
             <div>
-              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By stage at loss</p>
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By stage at loss</p>
               <div className="space-y-2">
                 {data.byStageAtLoss.map(item => (
-                  <div key={item.stage} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                  <div key={item.stage} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[13px]">
                     <StatusBadge value={item.stage} />
                     <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
                   </div>
@@ -275,10 +296,10 @@ function LostBusinessAnalysis({ data }: { data: LostBusiness }) {
             </div>
             {data.byCompetitor.length > 0 && (
               <div>
-                <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By competitor</p>
+                <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">By competitor</p>
                 <div className="space-y-2">
                   {data.byCompetitor.slice(0, 6).map(item => (
-                    <div key={item.competitorHotel} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[11px]">
+                    <div key={item.competitorHotel} className="flex items-center justify-between rounded-xl bg-[#f7fafc] px-3 py-2 text-[13px]">
                       <span className="font-medium">{item.competitorHotel}</span>
                       <span className="font-semibold tabular-nums">{item.count} · {money(item.valueCents)}</span>
                     </div>

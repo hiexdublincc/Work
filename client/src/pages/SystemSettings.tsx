@@ -129,7 +129,7 @@ export default function SystemSettings() {
         </section>
 
         <section>
-          <div className="mb-3 flex items-end justify-between gap-4"><div><p className="eyebrow">Portfolio directory</p><h3 className="mt-2 font-display text-2xl tracking-[-0.025em]">Hotels</h3></div><p className="text-right text-[10px] leading-4 text-muted-foreground">Edit naming and status.<br />Logo identity follows the mapped hotel brand.</p></div>
+          <div className="mb-3 flex items-end justify-between gap-4"><div><p className="eyebrow">Portfolio directory</p><h3 className="mt-2 font-display text-2xl tracking-[-0.025em]">Hotels</h3></div><p className="text-right text-[12px] leading-4 text-muted-foreground">Edit naming and status.<br />Logo identity follows the mapped hotel brand.</p></div>
           <div className="grid gap-3">
             {propertiesQuery.data?.map(row => (
               <article key={row.id} className="surface flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
@@ -156,7 +156,7 @@ export default function SystemSettings() {
               <TextField label="City" required value={propertyForm.city} onChange={value => setPropertyForm(current => ({ ...current, city: value }))} />
               <TextField label="Country" required value={propertyForm.country} onChange={value => setPropertyForm(current => ({ ...current, country: value }))} />
             </FieldGrid>
-            <div className="mt-4 flex items-center justify-between rounded-xl border border-[#dde4de] bg-white px-4 py-3"><div><Label className="text-xs font-semibold">Hotel status</Label><p className="mt-1 text-[10px] text-muted-foreground">{propertyForm.isActive ? "Available for assignments and new records" : "Retained for historical reporting only"}</p></div><Switch checked={propertyForm.isActive} onCheckedChange={checked => setPropertyForm(current => ({ ...current, isActive: checked }))} /></div>
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-[#dde4de] bg-white px-4 py-3"><div><Label className="text-xs font-semibold">Hotel status</Label><p className="mt-1 text-[12px] text-muted-foreground">{propertyForm.isActive ? "Available for assignments and new records" : "Retained for historical reporting only"}</p></div><Switch checked={propertyForm.isActive} onCheckedChange={checked => setPropertyForm(current => ({ ...current, isActive: checked }))} /></div>
             <DialogActions onCancel={() => setProperty(null)} saving={updateProperty.isPending} submitLabel="Save hotel" disabled={!propertyForm.name.trim() || !propertyForm.code.trim() || !propertyForm.city.trim() || !propertyForm.country.trim()} />
           </form>}
         </DialogContent>
@@ -167,5 +167,5 @@ export default function SystemSettings() {
 
 function Metric({ icon: Icon, label, value, tone = "slate" }: { icon: typeof Building2; label: string; value: number; tone?: "slate" | "teal" | "navy" }) {
   const palette = tone === "teal" ? "bg-[#e8f7f9] text-[#005a73]" : tone === "navy" ? "bg-[#e9eef8] text-[#002460]" : "bg-white text-foreground";
-  return <div className={`surface flex items-center gap-3 px-4 py-4 ${palette}`}><div className="grid h-9 w-9 place-items-center rounded-xl bg-white/70"><Icon className="h-4 w-4" /></div><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-65">{label}</p><p className="mt-1 font-display text-2xl">{value}</p></div></div>;
+  return <div className={`surface flex items-center gap-3 px-4 py-4 ${palette}`}><div className="grid h-9 w-9 place-items-center rounded-xl bg-white/70"><Icon className="h-4 w-4" /></div><div><p className="text-[12px] font-bold uppercase tracking-[0.14em] opacity-65">{label}</p><p className="mt-1 font-display text-2xl">{value}</p></div></div>;
 }

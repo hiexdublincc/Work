@@ -280,10 +280,10 @@ export default function Achievements() {
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs font-semibold">{monthLabel(row.month)}</td>
                 <td className="max-w-[300px] px-4 py-3.5">
                   <p className="truncate text-xs font-semibold">{row.organizationActivity}</p>
-                  <p className="mt-1 truncate text-[9px] text-muted-foreground">{row.companyName || row.opportunityName || row.city || "Standalone achievement"}</p>
+                  <p className="mt-1 truncate text-[11px] text-muted-foreground">{row.companyName || row.opportunityName || row.city || "Standalone achievement"}</p>
                 </td>
                 <td className="px-4 py-3.5">
-                  <div className="flex min-w-[190px] items-center gap-2.5"><PropertyLogo propertyName={row.propertyName} /><span className="text-[11px] font-semibold leading-4">{row.propertyName}</span></div>
+                  <div className="flex min-w-[190px] items-center gap-2.5"><PropertyLogo propertyName={row.propertyName} /><span className="text-[13px] font-semibold leading-4">{row.propertyName}</span></div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs font-semibold">{money(row.potentialValueCents)}</td>
@@ -344,7 +344,7 @@ export default function Achievements() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <PropertyLogo propertyName={selected.propertyName} />
                 <div className="min-w-0">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#6cccd8]">{monthLabel(selected.month)}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#6cccd8]">{monthLabel(selected.month)}</p>
                   <h3 className="mt-1 text-lg font-semibold">{selected.organizationActivity}</h3>
                   <p className="mt-1.5 text-xs text-white/65">{selected.propertyName} · {selected.ownerName || "JMK user"}</p>
                 </div>
@@ -367,7 +367,7 @@ export default function Achievements() {
             {(selected.companyName || selected.opportunityName) && (
               <div className="flex items-start gap-3 rounded-2xl border border-[#dce5ee] bg-[#f7fafc] p-4">
                 <Link2 className="mt-0.5 h-4 w-4 text-[#00758f]" />
-                <div><p className="text-xs font-semibold">Linked commercial context</p><p className="mt-1 text-[10px] text-muted-foreground">{[selected.companyName, selected.opportunityName].filter(Boolean).join(" · ")}</p></div>
+                <div><p className="text-xs font-semibold">Linked commercial context</p><p className="mt-1 text-[12px] text-muted-foreground">{[selected.companyName, selected.opportunityName].filter(Boolean).join(" · ")}</p></div>
               </div>
             )}
             <Button variant="outline" onClick={() => setArchiveOpen(true)} className="w-full rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800"><Archive className="mr-2 h-4 w-4" />Archive achievement</Button>
@@ -392,7 +392,7 @@ export default function Achievements() {
 }
 
 function SummaryCard({ icon: Icon, label, value }: { icon: typeof Trophy; label: string; value: string }) {
-  return <div className="surface flex items-center gap-3 p-4"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#e8f7f9] text-[#00758f]"><Icon className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 truncate font-display text-xl text-foreground">{value}</p></div></div>;
+  return <div className="surface flex items-center gap-3 p-4"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#e8f7f9] text-[#00758f]"><Icon className="h-4 w-4" /></span><div className="min-w-0"><p className="truncate text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p><p className="mt-1 truncate font-display text-xl text-foreground">{value}</p></div></div>;
 }
 
 function monthInput(value: Date | string) {

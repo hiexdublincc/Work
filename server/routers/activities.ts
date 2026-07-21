@@ -227,21 +227,21 @@ export const activitiesRouter = router({
     return { success: true };
   }),
 
-  // A live report built directly from Activities + Achievements for one property (and optionally
-  // one owner) over one week — no separate drafted/submitted record, just what was actually logged.
+  // A live report built directly from Activities + Achievements for one property over a chosen
+  // date range — no separate drafted/submitted record, just what was actually logged by anyone
+  // at that property.
   weeklyReport: activeProcedure.input(z.object({
     propertyId: z.number().int().positive(),
-    ownerId: z.number().int().positive().optional(),
-    weekStart: z.coerce.date(),
+    from: z.coerce.date(),
+    to: z.coerce.date(),
   })).query(async ({ ctx, input }) => {
     const db = await requireDb();
     const property = await assertPropertyAccess(ctx.user, input.propertyId);
-    const owner = input.ownerId ? await db.select({ name: users.name }).from(users).where(eq(users.id, input.ownerId)).limit(1) : [];
 
-    const weekStart = input.weekStart;
-    const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+    const rangeStart = input.from;
+    const rangeEnd = new Date(input.to.getTime() + 86_400_000);
 
-    const [weekActivities, weekAchievements] = await Promise.all([
+    const [rangeActivities, rangeAchievements] = await Promise.all([
       db.select({
         id: activities.id, subtype: activities.subtype, title: activities.title, description: activities.description,
         entityName: sql<string>`coalesce(${companies.name}, concat(${contacts.firstName}, ' ', ${contacts.lastName}), concat(${leads.firstName}, ' ', ${leads.lastName}), ${opportunities.name})`,
@@ -252,8 +252,7 @@ export const activitiesRouter = router({
         .leftJoin(opportunities, eq(activities.opportunityId, opportunities.id))
         .where(and(
           isNull(activities.archivedAt), eq(activities.propertyId, input.propertyId),
-          input.ownerId ? eq(activities.ownerId, input.ownerId) : undefined,
-          gte(activities.createdAt, weekStart), lt(activities.createdAt, weekEnd),
+          gte(activities.createdAt, rangeStart), lt(activities.createdAt, rangeEnd),
         )).orderBy(asc(activities.createdAt)),
       db.select({
         id: achievements.id, organizationActivity: achievements.organizationActivity, status: achievements.status,
@@ -263,8 +262,7 @@ export const activitiesRouter = router({
         .leftJoin(companies, eq(achievements.companyId, companies.id))
         .where(and(
           isNull(achievements.archivedAt), eq(achievements.propertyId, input.propertyId),
-          input.ownerId ? eq(achievements.ownerId, input.ownerId) : undefined,
-          gte(achievements.createdAt, weekStart), lt(achievements.createdAt, weekEnd),
+          gte(achievements.createdAt, rangeStart), lt(achievements.createdAt, rangeEnd),
         )).orderBy(desc(achievements.potentialValueCents)),
     ]);
 
@@ -272,7 +270,7 @@ export const activitiesRouter = router({
     const date = (value: Date | string) => new Date(value).toLocaleDateString("en-GB");
     const bullet = (lines: string[]) => (lines.length ? lines.map(line => `- ${line}`).join("\n") : "");
 
-    const topWins = weekAchievements.slice(0, 5).map(item => {
+    const topWins = rangeAchievements.slice(0, 5).map(item => {
       const parts = [
         `**${item.companyName || item.organizationActivity}**`,
         item.potentialValueCents ? money(item.potentialValueCents) : null,
@@ -298,7 +296,7 @@ export const activitiesRouter = router({
       "RFP submitted": "Submitted an RFP response to",
       "Contract signed": "Signed a contract with",
     };
-    const narrativeActivity = (item: (typeof weekActivities)[number]) => {
+    const narrativeActivity = (item: (typeof rangeActivities)[number]) => {
       const verb = activityVerb[item.subtype];
       const subject = item.entityName ? `**${item.entityName}**` : null;
       const lead = verb && subject ? `${verb} ${subject}` : subject ? `${item.subtype} with ${subject}` : item.title;
@@ -308,10 +306,9 @@ export const activitiesRouter = router({
 
     return {
       propertyName: property.name,
-      ownerName: owner[0]?.name ?? null,
-      weekLabel: `${date(weekStart)} - ${date(new Date(weekEnd.getTime() - 86_400_000))}`,
+      rangeLabel: `${date(rangeStart)} - ${date(input.to)}`,
       keyWins: bullet(topWins),
-      keyActivity: bullet(weekActivities.map(narrativeActivity)),
+      keyActivity: bullet(rangeActivities.map(narrativeActivity)),
     };
   }),
 });

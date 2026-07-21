@@ -188,9 +188,9 @@ export default function CompetitorIntelligence() {
               <tr key={row.id} onClick={() => setSelected(row)} className="cursor-pointer border-b border-[#e8edf3] transition-colors last:border-0 hover:bg-[#f7fafc]">
                 <td className="max-w-[260px] px-4 py-3.5">
                   <p className="truncate text-xs font-semibold">{row.competitorHotelName}</p>
-                  {!row.isGroupVisible && <p className="mt-1 text-[9px] uppercase tracking-[0.1em] text-muted-foreground">Property-only</p>}
+                  {!row.isGroupVisible && <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Property-only</p>}
                 </td>
-                <td className="px-4 py-3.5"><div className="flex min-w-[190px] items-center gap-2.5"><PropertyLogo propertyName={row.propertyName} /><span className="text-[11px] font-semibold leading-4">{row.propertyName}</span></div></td>
+                <td className="px-4 py-3.5"><div className="flex min-w-[190px] items-center gap-2.5"><PropertyLogo propertyName={row.propertyName} /><span className="text-[13px] font-semibold leading-4">{row.propertyName}</span></div></td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs font-semibold">{row.quotedRateCents != null ? money(row.quotedRateCents) : "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-xs">{shortDate(row.capturedAt)}</td>
@@ -253,7 +253,7 @@ export default function CompetitorIntelligence() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <PropertyLogo propertyName={selected.propertyName} />
                 <div className="min-w-0">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#6cccd8]"><Globe2 className="mr-1 inline h-3 w-3" />Competitor</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#6cccd8]"><Globe2 className="mr-1 inline h-3 w-3" />Competitor</p>
                   <h3 className="mt-1 text-lg font-semibold">{selected.competitorHotelName}</h3>
                   <p className="mt-1.5 text-xs text-white/65">{selected.propertyName} · {selected.ownerName || "JMK user"}</p>
                 </div>
@@ -272,7 +272,7 @@ export default function CompetitorIntelligence() {
             {(selected.companyName || selected.opportunityName) && (
               <div className="flex items-start gap-3 rounded-2xl border border-[#dce5ee] bg-[#f7fafc] p-4">
                 <Building2 className="mt-0.5 h-4 w-4 text-[#00758f]" />
-                <div><p className="text-xs font-semibold">Linked commercial context</p><p className="mt-1 text-[10px] text-muted-foreground">{[selected.companyName, selected.opportunityName].filter(Boolean).join(" · ")}</p></div>
+                <div><p className="text-xs font-semibold">Linked commercial context</p><p className="mt-1 text-[12px] text-muted-foreground">{[selected.companyName, selected.opportunityName].filter(Boolean).join(" · ")}</p></div>
               </div>
             )}
             <Button variant="outline" onClick={() => setArchiveOpen(true)} className="w-full rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800"><Archive className="mr-2 h-4 w-4" />Archive entry</Button>
