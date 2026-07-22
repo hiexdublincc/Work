@@ -94,11 +94,11 @@ export default function Activities() {
       <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto rounded-2xl p-6">
         <DialogHeader><DialogTitle className="font-display text-2xl">Activity report</DialogTitle><DialogDescription>Built live from what's logged in Activities and Achievements for everyone at a property — pick a property and a date range.</DialogDescription></DialogHeader>
         <div className="mt-3 space-y-4">
-          <FieldGrid>
-            <SelectField label="Property" value={reportPropertyId} onChange={setReportPropertyId} options={propertyOptions} required />
+          <SelectField label="Property" value={reportPropertyId} onChange={setReportPropertyId} options={propertyOptions} required />
+          <div className="grid grid-cols-2 gap-4">
             <TextField label="From" type="date" value={reportFrom} onChange={setReportFrom} required />
             <TextField label="To" type="date" value={reportTo} onChange={setReportTo} required />
-          </FieldGrid>
+          </div>
           <div className="flex flex-wrap gap-2">
             {reportPresets.map(preset => (
               <button
