@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { trpc } from "@/lib/trpc";
 import { Activity, AlertTriangle, Archive, Building2, ContactRound, Pencil, Target } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
 
 const statuses = ["Active", "Inactive"] as const;
@@ -65,6 +66,7 @@ export default function Contacts() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState<ContactForm>(emptyForm);
   const searchRef = useSearchShortcut();
+  const routeSearch = useSearch();
   const utils = trpc.useUtils();
   const references = trpc.metadata.references.useQuery();
 
@@ -110,12 +112,15 @@ export default function Contacts() {
   useEffect(() => setPage(1), [search, status, companyId, sort]);
   useEffect(() => {
     if (!references.data) return;
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(routeSearch);
     if (params.get("create") === "1") {
       openCreate();
       window.history.replaceState({}, "", window.location.pathname);
+    } else if (params.get("open")) {
+      setSelectedId(Number(params.get("open")));
+      window.history.replaceState({}, "", window.location.pathname);
     }
-  }, [references.data]);
+  }, [references.data, routeSearch]);
 
   function set<K extends keyof ContactForm>(key: K, value: ContactForm[K]) {
     setForm(current => ({ ...current, [key]: value }));

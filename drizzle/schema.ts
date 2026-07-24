@@ -26,6 +26,7 @@ export const ACTIVITY_ENTITY_TYPES = ["company", "contact", "lead", "opportunity
 export const ACCOUNT_CATEGORIES = [
   "Corporate", "Agency", "Government", "Tour operator", "TMC", "Event organiser", "Crew", "Extended stay", "Meeting room client", "Conference lead",
 ] as const;
+export const ACCOUNT_TIERS = ["Key Account", "Growth Account", "Standard"] as const;
 export const OPPORTUNITY_TYPES = [
   "Corporate account", "Group booking", "LNR", "RFP", "Tour series", "Crew", "Long stay", "Meeting room booking", "Conference or event",
 ] as const;
@@ -90,6 +91,7 @@ export const companies = mysqlTable("companies", {
   phone: varchar("phone", { length: 80 }),
   industry: varchar("industry", { length: 160 }),
   category: mysqlEnum("category", ACCOUNT_CATEGORIES).default("Corporate").notNull(),
+  tier: mysqlEnum("tier", ACCOUNT_TIERS).default("Standard").notNull(),
   segment: varchar("segment", { length: 160 }),
   destinationCity: varchar("destinationCity", { length: 120 }),
   leadSource: varchar("leadSource", { length: 160 }),

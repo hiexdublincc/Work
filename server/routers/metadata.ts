@@ -1,6 +1,8 @@
-import { asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, like, or } from "drizzle-orm";
+import { z } from "zod";
 import {
   ACCOUNT_CATEGORIES,
+  ACCOUNT_TIERS,
   ACTIVITY_TYPES,
   companies,
   COMMERCIAL_STATUSES,
@@ -68,6 +70,7 @@ export const metadataRouter = router({
       opportunities: opportunityRows,
       taxonomy: {
         accountCategories: ACCOUNT_CATEGORIES,
+        accountTiers: ACCOUNT_TIERS,
         opportunityTypes: OPPORTUNITY_TYPES,
         opportunityStages: OPPORTUNITY_STAGES,
         commercialStatuses: COMMERCIAL_STATUSES,
@@ -75,6 +78,43 @@ export const metadataRouter = router({
         activityTypes: ACTIVITY_TYPES,
         activitySubtypes: HOTEL_ACTIVITY_SUBTYPES,
       },
+    };
+  }),
+
+  // Backs the ⌘K global search palette — finds a record from anywhere in the app, regardless of
+  // which page is currently open.
+  globalSearch: activeProcedure.input(z.object({ query: z.string().trim().min(1).max(120) })).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
+    const term = `%${input.query}%`;
+
+    const [companyRows, contactRows, leadRows, opportunityRows] = await Promise.all([
+      db.select({ id: companies.id, name: companies.name, segment: companies.segment, industry: companies.industry })
+        .from(companies)
+        .where(and(isNull(companies.archivedAt), like(companies.name, term)))
+        .orderBy(asc(companies.name)).limit(6),
+      db.select({ id: contacts.id, firstName: contacts.firstName, lastName: contacts.lastName, jobTitle: contacts.jobTitle, companyId: contacts.companyId })
+        .from(contacts)
+        .where(and(isNull(contacts.archivedAt), or(like(contacts.firstName, term), like(contacts.lastName, term), like(contacts.email, term))))
+        .orderBy(asc(contacts.lastName)).limit(6),
+      db.select({ id: leads.id, firstName: leads.firstName, lastName: leads.lastName, companyName: leads.companyName })
+        .from(leads)
+        .where(scopedWhere(
+          isNull(leads.archivedAt), propertyScope(leads.propertyId, propertyIds),
+          or(like(leads.firstName, term), like(leads.lastName, term), like(leads.companyName, term)),
+        ))
+        .orderBy(asc(leads.lastName)).limit(6),
+      db.select({ id: opportunities.id, name: opportunities.name, businessType: opportunities.businessType })
+        .from(opportunities)
+        .where(scopedWhere(isNull(opportunities.archivedAt), propertyScope(opportunities.propertyId, propertyIds), like(opportunities.name, term)))
+        .orderBy(asc(opportunities.name)).limit(6),
+    ]);
+
+    return {
+      companies: companyRows.map(row => ({ id: row.id, label: row.name, subtitle: row.segment || row.industry || "Company" })),
+      contacts: contactRows.map(row => ({ id: row.id, label: `${row.firstName} ${row.lastName}`, subtitle: row.jobTitle || "Contact" })),
+      leads: leadRows.map(row => ({ id: row.id, label: `${row.firstName} ${row.lastName}`, subtitle: row.companyName || "Lead" })),
+      opportunities: opportunityRows.map(row => ({ id: row.id, label: row.name, subtitle: row.businessType || "Opportunity" })),
     };
   }),
 });

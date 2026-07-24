@@ -57,6 +57,13 @@
       "when": 1784498585890,
       "tag": "0007_abandoned_ben_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1784930633456,
+      "tag": "0008_right_silvermane",
+      "breakpoints": true
     }
   ]
 }

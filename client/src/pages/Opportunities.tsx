@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { Building2, CalendarClock, ChevronRight, CircleDollarSign, LayoutGrid, List, Pencil, Target, UsersRound } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
 
 const stages = ["Prospecting", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"] as const;
@@ -16,7 +17,7 @@ const emptyForm: OpportunityForm = { name: "", propertyId: "", ownerId: "", comp
 export default function Opportunities() {
   const [page, setPage] = useState(1); const [search, setSearch] = useState(""); const [stage, setStageFilter] = useState(""); const [businessType, setBusinessType] = useState(""); const [propertyId, setPropertyId] = useState(""); const [view, setView] = useState("pipeline");
   const [editorOpen, setEditorOpen] = useState(false); const [editingId, setEditingId] = useState<number | null>(null); const [selectedId, setSelectedId] = useState<number | null>(null); const [form, setForm] = useState<OpportunityForm>(emptyForm);
-  const searchRef = useSearchShortcut(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
+  const searchRef = useSearchShortcut(); const routeSearch = useSearch(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
   const list = trpc.opportunities.list.useQuery({ page, pageSize: 20, search, stage: stage as typeof stages[number] || undefined, businessType: businessType as any || undefined, propertyId: propertyId ? Number(propertyId) : undefined, sort: "updated" });
   const pipeline = trpc.opportunities.pipeline.useQuery({ propertyId: propertyId ? Number(propertyId) : undefined });
   const detail = trpc.opportunities.get.useQuery({ id: selectedId! }, { enabled: selectedId !== null });
@@ -25,7 +26,7 @@ export default function Opportunities() {
   const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? []; const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? []; const typeOptions = (references.data?.taxonomy.opportunityTypes ?? []).map(value => ({ value, label: value })); const commercialStatusOptions = (references.data?.taxonomy.commercialStatuses ?? []).map(value => ({ value, label: value }));
   const companyOptions = (references.data?.companies ?? []).map(item => ({ value: String(item.id), label: item.label })); const contactOptions = (references.data?.contacts ?? []).map(item => ({ value: String(item.id), label: item.label }));
   useEffect(() => setPage(1), [search, stage, businessType, propertyId]);
-  useEffect(() => { if (!references.data) return; const params = new URLSearchParams(window.location.search); if (params.get("create") === "1") { openCreate(); window.history.replaceState({}, "", window.location.pathname); } }, [references.data]);
+  useEffect(() => { if (!references.data) return; const params = new URLSearchParams(routeSearch); if (params.get("create") === "1") { openCreate(); window.history.replaceState({}, "", window.location.pathname); } else if (params.get("open")) { setSelectedId(Number(params.get("open"))); window.history.replaceState({}, "", window.location.pathname); } }, [references.data, routeSearch]);
   function set<K extends keyof OpportunityForm>(key: K, value: OpportunityForm[K]) { setForm(current => ({ ...current, [key]: value })); }
   function saved(message: string) { toast.success(message); setEditorOpen(false); setEditingId(null); utils.opportunities.invalidate(); utils.dashboard.invalidate(); utils.reports.invalidate(); }
   function openCreate() { setEditingId(null); setForm({ ...emptyForm, propertyId: propertyOptions.length === 1 ? propertyOptions[0].value : "", ownerId: ownerOptions.length === 1 ? ownerOptions[0].value : "", nextActionAt: new Date(Date.now() + 86400000).toISOString().slice(0, 16) }); setEditorOpen(true); }

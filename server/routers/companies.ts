@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ACCOUNT_CATEGORIES, activities, companies, contacts, opportunities, users } from "../../drizzle/schema";
+import { ACCOUNT_CATEGORIES, ACCOUNT_TIERS, activities, companies, contacts, opportunities, users } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { requireDb } from "../db";
 import {
@@ -17,7 +17,7 @@ const nullableDate = z.coerce.date().nullish();
 const companyFields = z.object({
   name: z.string().trim().min(1).max(240),
   legalName: nullableText(240), website: nullableText(500), email: nullableText(320), phone: nullableText(80),
-  industry: nullableText(160), category: z.enum(ACCOUNT_CATEGORIES).default("Corporate"), segment: nullableText(160),
+  industry: nullableText(160), category: z.enum(ACCOUNT_CATEGORIES).default("Corporate"), tier: z.enum(ACCOUNT_TIERS).default("Standard"), segment: nullableText(160),
   destinationCity: nullableText(120), leadSource: nullableText(160),
   preferredRateType: nullableText(120), productionHistory: nullableText(20000),
   potentialRoomNights: z.number().int().min(0).default(0), potentialRevenueCents: z.number().int().min(0).default(0),
@@ -72,6 +72,7 @@ export function calculateAccountHealth(company: HealthSource) {
 export const companiesRouter = router({
   list: activeProcedure.input(listInput.extend({
     status: z.enum(["Prospect", "Active", "Inactive"]).optional(), category: z.enum(ACCOUNT_CATEGORIES).optional(),
+    tier: z.enum(ACCOUNT_TIERS).optional(),
     industry: z.string().trim().max(160).optional(), sort: z.enum(["updated", "name", "created", "potential"]).default("updated"),
   })).query(async ({ ctx, input }) => {
     const db = await requireDb();
@@ -81,6 +82,7 @@ export const companiesRouter = router({
       input.ownerId ? eq(companies.ownerId, input.ownerId) : undefined,
       input.status ? eq(companies.status, input.status) : undefined,
       input.category ? eq(companies.category, input.category) : undefined,
+      input.tier ? eq(companies.tier, input.tier) : undefined,
       input.industry ? like(companies.industry, `%${input.industry}%`) : undefined,
       search ? or(like(companies.name, search), like(companies.legalName, search), like(companies.email, search),
         like(companies.phone, search), like(companies.industry, search), like(companies.segment, search), like(companies.destinationCity, search)) : undefined,
@@ -90,7 +92,7 @@ export const companiesRouter = router({
     const [rows, totals] = await Promise.all([
       db.select({
         id: companies.id, name: companies.name, legalName: companies.legalName, email: companies.email, phone: companies.phone,
-        industry: companies.industry, category: companies.category, segment: companies.segment, status: companies.status,
+        industry: companies.industry, category: companies.category, tier: companies.tier, segment: companies.segment, status: companies.status,
         city: companies.city, destinationCity: companies.destinationCity,
         ownerId: companies.ownerId, ownerName: users.name, potentialRoomNights: companies.potentialRoomNights,
         potentialRevenueCents: companies.potentialRevenueCents, relationshipStatus: companies.relationshipStatus,

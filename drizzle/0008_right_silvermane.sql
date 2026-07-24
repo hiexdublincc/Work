@@ -1,0 +1,1 @@
+ALTER TABLE `companies` ADD `tier` enum('Key Account','Growth Account','Standard') DEFAULT 'Standard' NOT NULL;

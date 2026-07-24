@@ -52,6 +52,27 @@ function entityLinks(entityType: typeof ACTIVITY_ENTITY_TYPES[number] | null | u
   };
 }
 
+// Keeps Companies' account-health scoring honest: a logged activity (direct, via a contact, or
+// via an opportunity) refreshes the company's lastActivityAt instead of relying on manual upkeep.
+async function touchCompanyLastActivity(
+  db: Awaited<ReturnType<typeof requireDb>>,
+  entityType: typeof ACTIVITY_ENTITY_TYPES[number] | null | undefined,
+  entityId: number | null | undefined,
+  at: Date,
+) {
+  if (!entityType || !entityId) return;
+  let companyId: number | null = null;
+  if (entityType === "company") companyId = entityId;
+  else if (entityType === "contact") {
+    const rows = await db.select({ companyId: contacts.companyId }).from(contacts).where(eq(contacts.id, entityId)).limit(1);
+    companyId = rows[0]?.companyId ?? null;
+  } else if (entityType === "opportunity") {
+    const rows = await db.select({ companyId: opportunities.companyId }).from(opportunities).where(eq(opportunities.id, entityId)).limit(1);
+    companyId = rows[0]?.companyId ?? null;
+  }
+  if (companyId) await db.update(companies).set({ lastActivityAt: at }).where(eq(companies.id, companyId));
+}
+
 // Companies/contacts are shared across the group and have no property of their own, so only a
 // linked lead/opportunity can pin an activity to a property; otherwise fall back to the user's own.
 async function resolveActivityProperty(
@@ -190,6 +211,7 @@ export const activitiesRouter = router({
       ownerId,
       createdById: ctx.user.id,
     });
+    await touchCompanyLastActivity(db, input.entityType, input.entityId, new Date());
     return { id: Number(result[0].insertId) };
   }),
 
@@ -210,6 +232,7 @@ export const activitiesRouter = router({
       propertyId,
       ownerId,
     }).where(eq(activities.id, id));
+    await touchCompanyLastActivity(db, entityType, entityId, new Date());
     return { success: true };
   }),
 

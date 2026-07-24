@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, BadgePoundSterling, Building2, CheckCircle2, Pencil, Target, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
 
 const statuses = ["New", "Contacted", "Qualified", "Nurturing", "Converted", "Disqualified"] as const;
@@ -18,14 +19,14 @@ const emptyConvert: ConvertForm = { opportunityName: "", valueCents: 0, probabil
 export default function Leads() {
   const [page, setPage] = useState(1); const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [businessType, setBusinessType] = useState(""); const [propertyId, setPropertyId] = useState("");
   const [editorOpen, setEditorOpen] = useState(false); const [convertOpen, setConvertOpen] = useState(false); const [editingId, setEditingId] = useState<number | null>(null); const [selectedId, setSelectedId] = useState<number | null>(null); const [form, setForm] = useState<LeadForm>(emptyLead); const [convertForm, setConvertForm] = useState<ConvertForm>(emptyConvert);
-  const searchRef = useSearchShortcut(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
+  const searchRef = useSearchShortcut(); const routeSearch = useSearch(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
   const query = trpc.leads.list.useQuery({ page, pageSize: 20, search, status: status as typeof statuses[number] || undefined, businessType: businessType as any || undefined, propertyId: propertyId ? Number(propertyId) : undefined, sort: "updated" });
   const detail = trpc.leads.get.useQuery({ id: selectedId! }, { enabled: selectedId !== null });
   const create = trpc.leads.create.useMutation({ onSuccess: () => saved("Lead captured") }); const update = trpc.leads.update.useMutation({ onSuccess: () => saved("Lead updated") });
   const convert = trpc.leads.convert.useMutation({ onSuccess: result => { toast.success("Lead converted to an Opportunity", { description: `Opportunity #${result.opportunityId} is ready in Prospecting.` }); setConvertOpen(false); setSelectedId(null); utils.leads.invalidate(); utils.opportunities.invalidate(); utils.companies.invalidate(); utils.contacts.invalidate(); utils.dashboard.invalidate(); } });
   const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? []; const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? []; const typeOptions = (references.data?.taxonomy.opportunityTypes ?? []).map(value => ({ value, label: value }));
   useEffect(() => setPage(1), [search, status, businessType, propertyId]);
-  useEffect(() => { if (!references.data) return; const params = new URLSearchParams(window.location.search); if (params.get("create") === "1") { openCreate(); window.history.replaceState({}, "", window.location.pathname); } }, [references.data]);
+  useEffect(() => { if (!references.data) return; const params = new URLSearchParams(routeSearch); if (params.get("create") === "1") { openCreate(); window.history.replaceState({}, "", window.location.pathname); } else if (params.get("open")) { setSelectedId(Number(params.get("open"))); window.history.replaceState({}, "", window.location.pathname); } }, [references.data, routeSearch]);
   function set<K extends keyof LeadForm>(key: K, value: LeadForm[K]) { setForm(current => ({ ...current, [key]: value })); } function setConvert<K extends keyof ConvertForm>(key: K, value: ConvertForm[K]) { setConvertForm(current => ({ ...current, [key]: value })); }
   function saved(message: string) { toast.success(message); setEditorOpen(false); setEditingId(null); utils.leads.invalidate(); utils.dashboard.invalidate(); }
   function openCreate() { setEditingId(null); setForm({ ...emptyLead, propertyId: propertyOptions.length === 1 ? propertyOptions[0].value : "", ownerId: ownerOptions.length === 1 ? ownerOptions[0].value : "" }); setEditorOpen(true); }

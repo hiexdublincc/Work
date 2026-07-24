@@ -3,13 +3,14 @@ import { EmptyState, ErrorPanel, LoadingPanel, PageHeader, StatusBadge, money } 
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
-import { BarChart3, CalendarClock, PhoneCall, Printer, ShieldAlert, TrendingUp } from "lucide-react";
+import { BarChart3, CalendarClock, PhoneCall, Printer, ShieldAlert, Trophy, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { AppRouter } from "../../../server/routers";
 
 type Summary = inferRouterOutputs<AppRouter>["reports"]["summary"];
 type Forecast = inferRouterOutputs<AppRouter>["reports"]["revenueForecast"];
 type LostBusiness = inferRouterOutputs<AppRouter>["reports"]["lostBusiness"];
+type AccountProduction = inferRouterOutputs<AppRouter>["reports"]["accountProduction"];
 
 export default function Reports() {
   const [propertyId, setPropertyId] = useState("");
@@ -29,12 +30,13 @@ export default function Reports() {
   const summary = trpc.reports.summary.useQuery(filters);
   const forecast = trpc.reports.revenueForecast.useQuery(filters);
   const lostBusiness = trpc.reports.lostBusiness.useQuery(filters);
+  const accountProduction = trpc.reports.accountProduction.useQuery(filters);
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
   const activeFilters = [propertyId, ownerId, from, to].filter(Boolean).length;
-  const loading = summary.isLoading || forecast.isLoading || lostBusiness.isLoading || refs.isLoading;
-  const error = summary.error || forecast.error || lostBusiness.error || refs.error;
+  const loading = summary.isLoading || forecast.isLoading || lostBusiness.isLoading || accountProduction.isLoading || refs.isLoading;
+  const error = summary.error || forecast.error || lostBusiness.error || accountProduction.error || refs.error;
   const [printing, setPrinting] = useState(false);
   useEffect(() => {
     document.body.classList.toggle("printing-report", printing);
@@ -80,7 +82,7 @@ export default function Reports() {
       {loading ? (
         <LoadingPanel rows={8} />
       ) : error ? (
-        <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); lostBusiness.refetch(); }} />
+        <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); lostBusiness.refetch(); accountProduction.refetch(); }} />
       ) : (
         <div data-print-target className="space-y-4">
           <div className="hidden items-baseline justify-between border-b-2 border-[#111] pb-2 print:flex" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#111" }}>
@@ -91,6 +93,7 @@ export default function Reports() {
           <OpportunitiesByStage data={summary.data!.opportunitiesByStage} />
           <ActivitySummary data={summary.data!.activitySummary} />
           <RevenueForecast data={forecast.data!} />
+          <AccountProductionPanel data={accountProduction.data!} />
           <LostBusinessAnalysis data={lostBusiness.data!} />
         </div>
       )}
@@ -219,6 +222,34 @@ function RevenueForecast({ data }: { data: Forecast }) {
             <span><strong className="text-foreground">{money(totalGross)}</strong> gross forecast</span>
             <span><strong className="text-foreground">{money(totalWeighted)}</strong> weighted forecast</span>
           </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function AccountProductionPanel({ data }: { data: AccountProduction }) {
+  const max = Math.max(...data.accounts.map(item => item.thisYearCents), 1);
+  return (
+    <Panel icon={Trophy} title="Top accounts by production" description={`Achievement value logged this year (${data.thisYear}) vs last year (${data.lastYear}), ranked highest first.`}>
+      {data.accounts.length === 0 ? (
+        <EmptyState icon={Trophy} title="No production recorded" description="Achievements linked to a company will roll up here once logged." />
+      ) : (
+        <div className="space-y-2.5">
+          {data.accounts.map(item => (
+            <div key={item.companyId} className="grid items-center gap-3 sm:grid-cols-[1.4fr_1fr_110px_90px]">
+              <p className="truncate text-[13px] font-semibold text-[#44566c]">{item.companyName}</p>
+              <div className="h-6 overflow-hidden rounded-lg bg-[#edf3f8]">
+                <div className="flex h-full items-center rounded-lg bg-[#8a6a3f] px-3 text-[12px] font-semibold text-white transition-[width] duration-500" style={{ width: `${Math.max(8, (item.thisYearCents / max) * 100)}%` }}>
+                  {item.thisYearCents > 0 ? money(item.thisYearCents) : ""}
+                </div>
+              </div>
+              <p className="text-right text-[13px] tabular-nums text-muted-foreground">{money(item.lastYearCents)} last yr.</p>
+              <p className={`text-right text-[13px] font-semibold tabular-nums ${item.changePct === null ? "text-muted-foreground" : item.changePct >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
+                {item.changePct === null ? "New" : `${item.changePct >= 0 ? "+" : ""}${item.changePct}%`}
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </Panel>

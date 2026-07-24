@@ -64,16 +64,14 @@ export function Pagination({ page, pageSize, total, onPage }: { page: number; pa
   return <div className="flex items-center justify-between border-t border-[#eaeeea] px-4 py-3"><p className="text-[13px] text-muted-foreground">{total === 0 ? "No records" : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}</p><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page"><ArrowLeft className="h-3.5 w-3.5" /></Button><span className="min-w-16 text-center text-[13px] font-medium">{page} / {pages}</span><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-white" disabled={page >= pages} onClick={() => onPage(page + 1)} aria-label="Next page"><ArrowRight className="h-3.5 w-3.5" /></Button></div></div>;
 }
 
+// ⌘K is reserved for the global search palette (see GlobalSearch.tsx); this only wires up
+// programmatic focus of a page's own local filter box (e.g. from a "Filter" button).
 export function useSearchShortcut() {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const focus = () => ref.current?.focus();
-    const shortcut = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); focus(); }
-    };
     document.addEventListener("jmk:search", focus);
-    window.addEventListener("keydown", shortcut);
-    return () => { document.removeEventListener("jmk:search", focus); window.removeEventListener("keydown", shortcut); };
+    return () => document.removeEventListener("jmk:search", focus);
   }, []);
   return ref;
 }

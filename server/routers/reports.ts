@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ACTIVITY_TYPES, LEAD_STATUSES, LOST_REASONS, OPPORTUNITY_STAGES, OPPORTUNITY_TYPES, activities, leads, opportunities, properties } from "../../drizzle/schema";
+import { ACTIVITY_TYPES, LEAD_STATUSES, LOST_REASONS, OPPORTUNITY_STAGES, OPPORTUNITY_TYPES, achievements, activities, companies, leads, opportunities, properties } from "../../drizzle/schema";
 import { router } from "../_core/trpc";
 import { getAuthorizedPropertyIds, propertyScope, requireDb, scopedWhere } from "../db";
 import { activeProcedure } from "./common";
@@ -201,5 +201,48 @@ export const reportsRouter = router({
         .map(row => ({ competitorHotel: row.competitorHotel as string, count: Number(row.count), valueCents: Number(row.valueCents) }))
         .sort((a, b) => b.count - a.count),
     };
+  }),
+
+  // Rolls Achievements up by company — the "who's actually producing" report a DOSM pulls most:
+  // this year's production vs last year, per account, ranked highest first.
+  accountProduction: activeProcedure.input(reportFilters).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
+    const thisYear = new Date().getFullYear();
+    const lastYear = thisYear - 1;
+    const rows = await db.select({
+      companyId: achievements.companyId,
+      companyName: companies.name,
+      year: sql<number>`year(${achievements.month})`,
+      valueCents: sql<number>`coalesce(sum(${achievements.potentialValueCents}), 0)`,
+      roomNights: sql<number>`coalesce(sum(${achievements.roomNights}), 0)`,
+      count: sql<number>`count(*)`,
+    }).from(achievements)
+      .leftJoin(companies, eq(achievements.companyId, companies.id))
+      .where(scopedWhere(
+        isNull(achievements.archivedAt),
+        isNotNull(achievements.companyId),
+        propertyScope(achievements.propertyId, propertyIds),
+        input.propertyId ? eq(achievements.propertyId, input.propertyId) : undefined,
+        input.ownerId ? eq(achievements.ownerId, input.ownerId) : undefined,
+        inArray(sql`year(${achievements.month})`, [thisYear, lastYear]),
+      ))
+      .groupBy(achievements.companyId, companies.name, sql`year(${achievements.month})`);
+
+    const byCompany = new Map<number, { companyId: number; companyName: string; thisYearCents: number; lastYearCents: number; thisYearRoomNights: number; count: number }>();
+    for (const row of rows) {
+      if (!row.companyId) continue;
+      const entry = byCompany.get(row.companyId) ?? { companyId: row.companyId, companyName: row.companyName || "Unnamed account", thisYearCents: 0, lastYearCents: 0, thisYearRoomNights: 0, count: 0 };
+      if (Number(row.year) === thisYear) { entry.thisYearCents = Number(row.valueCents); entry.thisYearRoomNights = Number(row.roomNights); entry.count += Number(row.count); }
+      else { entry.lastYearCents = Number(row.valueCents); entry.count += Number(row.count); }
+      byCompany.set(row.companyId, entry);
+    }
+
+    const accounts = Array.from(byCompany.values())
+      .map(entry => ({ ...entry, changePct: entry.lastYearCents > 0 ? Math.round(((entry.thisYearCents - entry.lastYearCents) / entry.lastYearCents) * 100) : null }))
+      .sort((a, b) => b.thisYearCents - a.thisYearCents)
+      .slice(0, 15);
+
+    return { thisYear, lastYear, accounts };
   }),
 });

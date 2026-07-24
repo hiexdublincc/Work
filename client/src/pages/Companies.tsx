@@ -30,6 +30,7 @@ import { trpc } from "@/lib/trpc";
 import { AlertTriangle, Archive, Building2, CalendarClock, ContactRound, HeartPulse, Pencil, Target } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSearch } from "wouter";
 
 const statuses = ["Prospect", "Active", "Inactive"] as const;
 const companySortOptions = [
@@ -43,6 +44,7 @@ type CompanyForm = {
   name: string;
   ownerId: string;
   category: string;
+  tier: string;
   status: (typeof statuses)[number];
   email: string;
   phone: string;
@@ -65,6 +67,7 @@ const emptyForm: CompanyForm = {
   name: "",
   ownerId: "",
   category: "Corporate",
+  tier: "Standard",
   status: "Prospect",
   email: "",
   phone: "",
@@ -91,6 +94,7 @@ export default function Companies() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [category, setCategory] = useState("");
+  const [tier, setTier] = useState("");
   const [sort, setSort] = useState<CompanySort>("updated");
   const [editorOpen, setEditorOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -98,6 +102,7 @@ export default function Companies() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState<CompanyForm>(emptyForm);
   const searchRef = useSearchShortcut();
+  const routeSearch = useSearch();
   const utils = trpc.useUtils();
 
   const references = trpc.metadata.references.useQuery();
@@ -107,6 +112,7 @@ export default function Companies() {
     search,
     status: (status as (typeof statuses)[number]) || undefined,
     category: (category as any) || undefined,
+    tier: (tier as any) || undefined,
     sort,
   });
   const detail = trpc.companies.get.useQuery({ id: selectedId! }, { enabled: selectedId !== null });
@@ -144,18 +150,22 @@ export default function Companies() {
 
   const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
   const categoryOptions = (references.data?.taxonomy.accountCategories ?? []).map(value => ({ value, label: value }));
+  const tierOptions = (references.data?.taxonomy.accountTiers ?? []).map(value => ({ value, label: value }));
 
   useEffect(() => {
     setPage(1);
-  }, [search, status, category, sort]);
+  }, [search, status, category, tier, sort]);
   useEffect(() => {
     if (!references.data) return;
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(routeSearch);
     if (params.get("create") === "1") {
       openCreate();
       window.history.replaceState({}, "", window.location.pathname);
+    } else if (params.get("open")) {
+      setSelectedId(Number(params.get("open")));
+      window.history.replaceState({}, "", window.location.pathname);
     }
-  }, [references.data]);
+  }, [references.data, routeSearch]);
 
   function saved(message: string) {
     toast.success(message);
@@ -186,6 +196,7 @@ export default function Companies() {
       name: row.name,
       ownerId: String(row.ownerId),
       category: row.category,
+      tier: row.tier,
       status: row.status,
       email: row.email || "",
       phone: row.phone || "",
@@ -212,6 +223,7 @@ export default function Companies() {
       name: form.name,
       ownerId: Number(form.ownerId),
       category: form.category as any,
+      tier: form.tier as any,
       status: form.status,
       email: form.email || null,
       phone: form.phone || null,
@@ -244,7 +256,8 @@ export default function Companies() {
         description="A focused view of hotel accounts, production potential, relationships, health, and the next commercial move."
         action={<CreateButton label="New company" onClick={openCreate} />}
       />
-      <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[status, category].filter(Boolean).length} onClear={() => { setStatus(""); setCategory(""); }}>
+      <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[status, category, tier].filter(Boolean).length} onClear={() => { setStatus(""); setCategory(""); setTier(""); }}>
+        <FilterSelect value={tier} onChange={setTier} options={tierOptions} placeholder="All tiers" />
         <FilterSelect value={category} onChange={setCategory} options={categoryOptions} placeholder="All categories" />
         <FilterSelect value={status} onChange={setStatus} options={statuses.map(value => ({ value, label: value }))} placeholder="All statuses" />
         <FilterSelect value={sort} onChange={value => setSort(value as CompanySort)} options={companySortOptions.map(option => ({ ...option }))} placeholder="Sort companies" className="w-[170px]" />
@@ -258,15 +271,16 @@ export default function Companies() {
         <div className="surface"><EmptyState icon={Building2} title="No companies in this view" description="Create your first hotel account or broaden the current search and filters." action={<CreateButton label="New company" onClick={openCreate} />} /></div>
       ) : (
         <div className="surface overflow-hidden">
-          <RecordTable columns={["Company", "Owner", "Category", "Potential", "Next follow-up", "Health"]}>
+          <RecordTable columns={["Company", "Tier", "Owner", "Category", "Potential", "Next follow-up", "Health"]}>
             {rows.map(row => (
               <tr key={row.id} onClick={() => setSelectedId(row.id)} className="cursor-pointer border-b border-[#e8edf3] transition-colors last:border-0 hover:bg-[#f7fafc]">
                 <td className="px-4 py-3.5"><div className="flex items-center gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e6f7f9] text-[#00677f]"><Building2 className="h-4 w-4" /></div><div><p className="text-xs font-semibold">{row.name}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.segment || row.industry || row.destinationCity || "Account profile"}</p></div></div></td>
+                <td className="px-4 py-3.5"><TierBadge tier={row.tier} /></td>
                 <td className="px-4 py-3.5 text-xs">{row.ownerName || "—"}</td>
                 <td className="px-4 py-3.5 text-xs">{row.category}</td>
                 <td className="px-4 py-3.5"><p className="text-xs font-semibold">{money(row.potentialRevenueCents)}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.potentialRoomNights.toLocaleString()} room nights</p></td>
                 <td className="px-4 py-3.5 text-xs">{shortDate(row.nextFollowUpAt)}</td>
-                <td className="px-4 py-3.5"><StatusBadge value={row.accountHealth.state} /></td>
+                <td className="px-4 py-3.5"><StatusBadge value={row.accountHealth.state} /><p className="mt-1 text-[12px] text-muted-foreground">{lastActivityLabel(row.lastActivityAt)}</p></td>
               </tr>
             ))}
           </RecordTable>
@@ -287,6 +301,7 @@ export default function Companies() {
                 <TextField label="Company name" value={form.name} onChange={value => set("name", value)} required />
                 <SelectField label="Owner" value={form.ownerId} onChange={value => set("ownerId", value)} options={ownerOptions} required />
                 <SelectField label="Account category" value={form.category} onChange={value => set("category", value)} options={categoryOptions} required />
+                <SelectField label="Account tier" value={form.tier} onChange={value => set("tier", value)} options={tierOptions} required />
                 <SelectField label="Status" value={form.status} onChange={value => set("status", value as CompanyForm["status"])} options={statuses.map(value => ({ value, label: value }))} />
                 <TextField label="Next follow-up" type="datetime-local" value={form.nextFollowUpAt} onChange={value => set("nextFollowUpAt", value)} />
               </FieldGrid>
@@ -338,6 +353,7 @@ export default function Companies() {
               <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-xl bg-white text-[#00677f] shadow-sm"><HeartPulse className="h-4 w-4" /></div><div><p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Account health</p><div className="mt-1"><StatusBadge value={detail.data.accountHealth.state} /></div></div></div><p className="max-w-[17rem] text-right text-[13px] leading-5 text-muted-foreground">{detail.data.accountHealth.reasons.join(" · ")}</p></div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
+              <DetailPair label="Tier" value={<TierBadge tier={detail.data.company.tier} />} />
               <DetailPair label="Category" value={<StatusBadge value={detail.data.company.category} />} />
               <DetailPair label="Status" value={<StatusBadge value={detail.data.company.status} />} />
               <DetailPair label="Owner" value={detail.data.ownerName} />
@@ -371,4 +387,17 @@ export default function Companies() {
 
 function MiniStat({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
   return <div className="rounded-xl border border-[#dce5ee] p-3"><Icon className="h-4 w-4 text-[#00758f]" /><p className="mt-3 text-xl font-semibold">{value}</p><p className="mt-1 text-[12px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p></div>;
+}
+
+function TierBadge({ tier }: { tier: string }) {
+  const palette = tier === "Key Account" ? "bg-[#fdf3dd] text-[#8a6a1f]" : tier === "Growth Account" ? "bg-[#e6f7f9] text-[#00677f]" : "bg-slate-100 text-slate-600";
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold ${palette}`}>{tier}</span>;
+}
+
+function lastActivityLabel(value: Date | string | null | undefined) {
+  if (!value) return "No activity logged";
+  const days = Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000);
+  if (days <= 0) return "Active today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
 }

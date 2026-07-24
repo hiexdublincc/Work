@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, inArray, isNotNull, isNull, lt, lte, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lt, lte, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   achievements,
@@ -63,7 +63,7 @@ export const dashboardRouter = router({
       openLeadRows, pipelineRows, wonRows, overdueRows, funnelRows, recentOpportunities,
       upcomingTasks, todayAppointments, upcomingEngagements, recentActivities,
       recentAchievements, companyAlertRows, opportunityAlertRows,
-      openEnquiries, keyWins, businessPotential,
+      openEnquiries, keyWins, businessPotential, rfpActivityRows,
     ] = await Promise.all([
       db.select({ value: sql<number>`count(*)` }).from(leads)
         .where(scopedWhere(isNull(leads.archivedAt), leadScope, notInArray(leads.status, ["Converted", "Disqualified"]))),
@@ -175,6 +175,16 @@ export const dashboardRouter = router({
         .leftJoin(properties, eq(opportunities.propertyId, properties.id))
         .where(scopedWhere(isNull(opportunities.archivedAt), opportunityScope, inArray(opportunities.stage, openStages)))
         .orderBy(desc(opportunities.valueCents)).limit(5),
+      db.select({
+        id: activities.id, subtype: activities.subtype, title: activities.title, createdAt: activities.createdAt,
+        entityType: activities.entityType, entityId: activities.entityId, propertyName: properties.name,
+      }).from(activities)
+        .leftJoin(properties, eq(activities.propertyId, properties.id))
+        .where(scopedWhere(
+          isNull(activities.archivedAt), activityScope,
+          inArray(activities.subtype, ["RFP received", "RFP submitted", "Contract signed"]),
+        ))
+        .orderBy(asc(activities.createdAt)).limit(500),
     ]);
 
     const severityRank = { critical: 0, warning: 1, info: 2 } as const;
@@ -206,6 +216,30 @@ export const dashboardRouter = router({
       }
       if (opportunity.expectedCloseDate && opportunity.expectedCloseDate < todayStart) {
         alerts.push({ id: `close-${opportunity.id}`, kind: "Close date passed", severity: "info", title: opportunity.name, message: `Expected close date was ${opportunity.expectedCloseDate.toLocaleDateString("en-GB")}.`, propertyName: opportunity.propertyName, href: "/opportunities" });
+      }
+    }
+    const rfpGroups = new Map<string, typeof rfpActivityRows>();
+    for (const row of rfpActivityRows) {
+      if (!row.entityType || !row.entityId) continue;
+      const key = `${row.entityType}:${row.entityId}`;
+      const group = rfpGroups.get(key) ?? [];
+      group.push(row);
+      rfpGroups.set(key, group);
+    }
+    const rfpTurnaroundCutoffDays = 3;
+    for (const group of Array.from(rfpGroups.values())) {
+      for (const received of group) {
+        if (received.subtype !== "RFP received") continue;
+        const responded = group.some((other: (typeof group)[number]) => (other.subtype === "RFP submitted" || other.subtype === "Contract signed") && other.createdAt > received.createdAt);
+        if (responded) continue;
+        const daysSince = Math.floor((now.getTime() - received.createdAt.getTime()) / 86_400_000);
+        if (daysSince < rfpTurnaroundCutoffDays) continue;
+        alerts.push({
+          id: `rfp-${received.id}`, kind: "RFP awaiting response",
+          severity: daysSince >= 7 ? "critical" : "warning",
+          title: received.title, message: `RFP received ${daysSince} day${daysSince === 1 ? "" : "s"} ago with no submission logged yet.`,
+          propertyName: received.propertyName, href: "/activities",
+        });
       }
     }
     alerts.sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);
