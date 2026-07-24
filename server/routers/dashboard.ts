@@ -64,6 +64,7 @@ export const dashboardRouter = router({
       upcomingTasks, todayAppointments, upcomingEngagements, recentActivities,
       recentAchievements, companyAlertRows, opportunityAlertRows,
       openEnquiries, keyWins, businessPotential, rfpActivityRows,
+      leadsWeeklyRows, pipelineWeeklyRows, wonWeeklyRows, severelyOverdueRows,
     ] = await Promise.all([
       db.select({ value: sql<number>`count(*)` }).from(leads)
         .where(scopedWhere(isNull(leads.archivedAt), leadScope, notInArray(leads.status, ["Converted", "Disqualified"]))),
@@ -185,7 +186,42 @@ export const dashboardRouter = router({
           inArray(activities.subtype, ["RFP received", "RFP submitted", "Contract signed"]),
         ))
         .orderBy(asc(activities.createdAt)).limit(500),
+      db.select({
+        week: sql<number>`floor(datediff(now(), ${leads.createdAt}) / 7)`,
+        count: sql<number>`count(*)`,
+      }).from(leads)
+        .where(scopedWhere(isNull(leads.archivedAt), leadScope, sql`datediff(now(), ${leads.createdAt}) < 56`))
+        .groupBy(sql`floor(datediff(now(), ${leads.createdAt}) / 7)`),
+      db.select({
+        week: sql<number>`floor(datediff(now(), ${opportunities.createdAt}) / 7)`,
+        valueCents: sql<number>`coalesce(sum(${opportunities.valueCents}), 0)`,
+      }).from(opportunities)
+        .where(scopedWhere(isNull(opportunities.archivedAt), opportunityScope, sql`datediff(now(), ${opportunities.createdAt}) < 56`))
+        .groupBy(sql`floor(datediff(now(), ${opportunities.createdAt}) / 7)`),
+      db.select({
+        week: sql<number>`floor(datediff(now(), ${opportunities.closedAt}) / 7)`,
+        count: sql<number>`count(*)`,
+      }).from(opportunities)
+        .where(scopedWhere(isNull(opportunities.archivedAt), opportunityScope, eq(opportunities.stage, "Closed Won"), isNotNull(opportunities.closedAt), sql`datediff(now(), ${opportunities.closedAt}) < 56`))
+        .groupBy(sql`floor(datediff(now(), ${opportunities.closedAt}) / 7)`),
+      db.select({ value: sql<number>`count(*)` }).from(activities)
+        .where(scopedWhere(isNull(activities.archivedAt), activityScope, isNotNull(activities.dueAt), isNull(activities.completedAt), lt(activities.dueAt, new Date(now.getTime() - 7 * 86_400_000)))),
     ]);
+
+    // Builds an oldest-to-newest array of 8 weekly buckets (this week last) from {week, value} rows,
+    // where `week` is "weeks ago" (0 = current week). Missing buckets default to 0 — never fabricated.
+    const buildWeeklySeries = (rows: { week: number; [key: string]: number }[], valueKey: string) => {
+      const buckets = Array(8).fill(0);
+      for (const row of rows) {
+        const index = 7 - Math.min(7, Math.max(0, Number(row.week)));
+        buckets[index] += Number(row[valueKey] ?? 0);
+      }
+      return buckets;
+    };
+    const leadsWeekly = buildWeeklySeries(leadsWeeklyRows, "count");
+    const pipelineWeekly = buildWeeklySeries(pipelineWeeklyRows, "valueCents");
+    const wonWeekly = buildWeeklySeries(wonWeeklyRows, "count");
+    const severelyOverdueTasks = Number(severelyOverdueRows[0]?.value ?? 0);
 
     const severityRank = { critical: 0, warning: 1, info: 2 } as const;
     const accountHealthRows = companyAlertRows
@@ -252,6 +288,12 @@ export const dashboardRouter = router({
         wonDeals: Number(wonRows[0]?.value ?? 0),
         overdueTasks: Number(overdueRows[0]?.value ?? 0),
       },
+      kpiTrends: {
+        openLeads: leadsWeekly,
+        pipelineValueCents: pipelineWeekly,
+        wonDeals: wonWeekly,
+      },
+      severelyOverdueTasks,
       funnel: OPPORTUNITY_STAGES.map(stage => {
         const row = funnelRows.find(item => item.stage === stage);
         return { stage, count: Number(row?.count ?? 0), valueCents: Number(row?.valueCents ?? 0) };

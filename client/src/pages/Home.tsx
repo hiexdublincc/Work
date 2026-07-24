@@ -6,15 +6,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
-import { Activity, AlertTriangle, ArrowRight, Award, BellRing, Building2, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, HeartPulse, ListTodo, Sparkles, Target, TrendingUp, UsersRound } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Award, BellRing, Building2, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, HeartPulse, ListTodo, Minus, Sparkles, Target, TrendingDown, TrendingUp, UsersRound } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const kpiConfig = [
-  { key: "openLeads", label: "open leads", icon: Target, tone: "bg-[#e6f7f9] text-[#00677f]" },
-  { key: "pipelineValueCents", label: "pipeline value", icon: TrendingUp, tone: "bg-[#eef4fb] text-[#1f5c9a]" },
-  { key: "wonDeals", label: "won deals", icon: CheckCircle2, tone: "bg-[#eaf2fb] text-[#245b89]" },
-  { key: "overdueTasks", label: "overdue tasks", icon: ListTodo, tone: "bg-[#f8ece9] text-[#9a5145]" },
+  { key: "openLeads", label: "open leads", icon: Target, tone: "bg-[#e6f7f9] text-[#00677f]", trendKey: "openLeads", sparkColor: "#0090b4", unit: "new" },
+  { key: "pipelineValueCents", label: "pipeline value", icon: TrendingUp, tone: "bg-[#eef4fb] text-[#1f5c9a]", trendKey: "pipelineValueCents", sparkColor: "#1f5c9a", unit: "money" },
+  { key: "wonDeals", label: "won deals", icon: CheckCircle2, tone: "bg-[#eaf2fb] text-[#245b89]", trendKey: "wonDeals", sparkColor: "#1a8a5f", unit: "count" },
+  { key: "overdueTasks", label: "overdue tasks", icon: ListTodo, tone: "bg-[#f8ece9] text-[#9a5145]", trendKey: null, sparkColor: null, unit: null },
 ] as const;
 type Scope = "personal" | "property" | "group";
 
@@ -27,20 +28,89 @@ export default function Home() {
 
   if (overview.isLoading || references.isLoading) return <><PageHeader title="Your commercial overview" description="A live view of JMK Group’s hotel relationships and sales momentum." /><LoadingPanel rows={7} /></>;
   if (overview.error || !overview.data) return <ErrorPanel message={overview.error?.message} onRetry={() => overview.refetch()} />;
-  const { kpis, funnel, recentOpportunities, upcomingTasks, todayAppointments, upcomingEngagements, recentActivities, recentAchievements, openEnquiries, keyWins, businessPotential, calendarHighlights, accountsNeedingAttention, alerts, alertSummary } = overview.data;
+  const { kpis, kpiTrends, severelyOverdueTasks, funnel, recentOpportunities, upcomingTasks, todayAppointments, upcomingEngagements, recentActivities, recentAchievements, openEnquiries, keyWins, businessPotential, calendarHighlights, accountsNeedingAttention, alerts, alertSummary } = overview.data;
   const selectedPropertyName = propertyOptions.find(item => String(item.id) === propertyId)?.name;
   const maxFunnel = Math.max(...funnel.map(item => item.count), 1); const scopeLabel = scope === "personal" ? "your assigned records" : scope === "property" ? selectedPropertyName || "selected property" : "all JMK Group properties";
 
   return <div className="page-enter max-w-[1560px]">
-    <PageHeader eyebrow="Performance at a glance" title={scope === "personal" ? "Your commercial overview" : scope === "property" ? "Property commercial overview" : "Group commercial overview"} description={`A live, permission-aware view across ${scopeLabel}.`} action={<Button onClick={() => navigate("/opportunities")} className="h-10 rounded-xl px-4"><CircleDollarSign className="mr-2 h-4 w-4" />View pipeline</Button>} />
-    <div className="mb-4 flex flex-col justify-between gap-3 rounded-2xl border border-[#dce5ee] bg-white p-2.5 shadow-[0_8px_26px_rgba(0,36,96,0.04)] sm:flex-row sm:items-center"><Tabs value={scope} onValueChange={value => setScope(value as Scope)}><TabsList className="h-10 rounded-xl bg-[#edf3f8] p-1"><TabsTrigger value="personal" className="gap-2 rounded-lg px-4 text-[13px]"><UsersRound className="h-3.5 w-3.5" />Personal</TabsTrigger><TabsTrigger value="property" className="gap-2 rounded-lg px-4 text-[13px]"><Building2 className="h-3.5 w-3.5" />Property</TabsTrigger>{user?.role === "admin" && <TabsTrigger value="group" className="gap-2 rounded-lg px-4 text-[13px]"><Sparkles className="h-3.5 w-3.5" />Group</TabsTrigger>}</TabsList></Tabs>{scope === "property" && <Select value={propertyId} onValueChange={setPropertyId}><SelectTrigger className="h-10 w-full rounded-xl border-[#d9e3ed] bg-[#f7fafc] text-xs sm:w-[280px]"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent>{propertyOptions.map(item => <SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>)}</SelectContent></Select>}</div>
+    <div className="relative mb-5 overflow-hidden rounded-2xl bg-[#002460] px-5 py-6 text-white shadow-[0_24px_60px_rgba(0,36,96,0.24)] sm:px-7 sm:py-7">
+      <div className="pointer-events-none absolute inset-0 opacity-90 [background-image:radial-gradient(circle_at_12%_18%,rgba(108,204,216,.28),transparent_38%),radial-gradient(circle_at_92%_82%,rgba(0,144,180,.22),transparent_42%)]" />
+      <div className="relative flex flex-col gap-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8ee3eb]"><Sparkles className="h-3.5 w-3.5" />Performance at a glance</p>
+            <h2 className="mt-2 font-display text-3xl tracking-[-0.02em] sm:text-[2.1rem]">{scope === "personal" ? "Your commercial overview" : scope === "property" ? "Property commercial overview" : "Group commercial overview"}</h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-white/65">A live, permission-aware view across {scopeLabel}.</p>
+          </div>
+          <Button onClick={() => navigate("/opportunities")} className="h-10 shrink-0 rounded-xl bg-white px-4 text-[#002460] shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-white/90"><CircleDollarSign className="mr-2 h-4 w-4" />View pipeline</Button>
+        </div>
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <Tabs value={scope} onValueChange={value => setScope(value as Scope)}>
+            <TabsList className="h-10 rounded-xl bg-white/12 p-1 backdrop-blur">
+              <TabsTrigger value="personal" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><UsersRound className="h-3.5 w-3.5" />Personal</TabsTrigger>
+              <TabsTrigger value="property" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><Building2 className="h-3.5 w-3.5" />Property</TabsTrigger>
+              {user?.role === "admin" && <TabsTrigger value="group" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><Sparkles className="h-3.5 w-3.5" />Group</TabsTrigger>}
+            </TabsList>
+          </Tabs>
+          {scope === "property" && <Select value={propertyId} onValueChange={setPropertyId}><SelectTrigger className="h-10 w-full rounded-xl border-white/20 bg-white/12 text-xs text-white backdrop-blur sm:w-[280px]"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent>{propertyOptions.map(item => <SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>)}</SelectContent></Select>}
+        </div>
+      </div>
+    </div>
 
     <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#dce5ee] bg-[linear-gradient(110deg,#ffffff_0%,#f5fbfc_100%)] px-4 py-3.5 shadow-[0_8px_24px_rgba(0,36,96,0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <PropertyIdentity propertyName={scope === "property" ? selectedPropertyName : undefined} />
       {scope !== "property" && <PortfolioLogoStrip className="justify-start sm:justify-end" />}
     </div>
 
-    <section className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Dashboard key performance indicators">{kpiConfig.map(item => { const Icon = item.icon; const raw = kpis[item.key]; const value = item.key === "pipelineValueCents" ? money(raw) : new Intl.NumberFormat("en-GB").format(raw); return <Card key={item.key} className="surface surface-hover overflow-hidden border-0 py-0"><CardContent className="p-5"><div className="flex items-start justify-between"><div><p className="text-[13px] font-semibold lowercase tracking-[0.02em] text-muted-foreground">{item.label}</p><p className="metric-value mt-3">{value}</p></div><div className={`grid h-10 w-10 place-items-center rounded-xl ${item.tone}`}><Icon className="h-[18px] w-[18px]" /></div></div><div className="mt-5 flex items-center gap-2 border-t border-[#e8edf3] pt-3"><span className="truncate text-[12px] text-muted-foreground">Live total · {scopeLabel}</span><Sparkles className="ml-auto h-3 w-3 shrink-0 text-[#0090b4]" /></div></CardContent></Card>; })}</section>
+    <section className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Dashboard key performance indicators">
+      {kpiConfig.map(item => {
+        const Icon = item.icon;
+        const raw = kpis[item.key];
+        const value = item.key === "pipelineValueCents" ? money(raw) : new Intl.NumberFormat("en-GB").format(raw);
+        const series = item.trendKey ? kpiTrends[item.trendKey] : null;
+        const thisWeek = series ? series[series.length - 1] : 0;
+        const lastWeek = series ? series[series.length - 2] : 0;
+        return (
+          <Card key={item.key} className="surface surface-hover overflow-hidden border-0 py-0">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div><p className="text-[13px] font-semibold lowercase tracking-[0.02em] text-muted-foreground">{item.label}</p><p className="metric-value mt-3">{value}</p></div>
+                <div className={`grid h-10 w-10 place-items-center rounded-xl ${item.tone}`}><Icon className="h-[18px] w-[18px]" /></div>
+              </div>
+              {series ? (
+                <div className="mt-4 h-9">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={series.map((v, i) => ({ i, v }))} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+                      <defs><linearGradient id={`spark-${item.key}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={item.sparkColor!} stopOpacity={0.35} /><stop offset="100%" stopColor={item.sparkColor!} stopOpacity={0} /></linearGradient></defs>
+                      <Area type="monotone" dataKey="v" stroke={item.sparkColor!} strokeWidth={2} fill={`url(#spark-${item.key})`} isAnimationActive={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : <div className="mt-4 h-9" />}
+              <div className="mt-4 flex items-center gap-1.5 border-t border-[#e8edf3] pt-3 text-[12px]">
+                {item.key === "overdueTasks" ? (
+                  severelyOverdueTasks > 0
+                    ? <><AlertTriangle className="h-3 w-3 shrink-0 text-rose-600" /><span className="font-semibold text-rose-700">{severelyOverdueTasks} overdue 7+ days</span></>
+                    : <><CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600" /><span className="text-muted-foreground">All caught up</span></>
+                ) : item.unit === "count" ? (
+                  thisWeek >= lastWeek
+                    ? <><TrendingUp className="h-3 w-3 shrink-0 text-emerald-600" /><span className="font-semibold text-emerald-700">{thisWeek} won this week</span></>
+                    : <><TrendingDown className="h-3 w-3 shrink-0 text-muted-foreground" /><span className="text-muted-foreground">{thisWeek} won this week</span></>
+                ) : item.unit === "money" ? (
+                  <><TrendingUp className={`h-3 w-3 shrink-0 ${thisWeek > 0 ? "text-emerald-600" : "text-muted-foreground"}`} /><span className={thisWeek > 0 ? "font-semibold text-emerald-700" : "text-muted-foreground"}>{money(thisWeek)} added this week</span></>
+                ) : (
+                  thisWeek === lastWeek
+                    ? <><Minus className="h-3 w-3 shrink-0 text-muted-foreground" /><span className="text-muted-foreground">{thisWeek} new this week</span></>
+                    : thisWeek > lastWeek
+                    ? <><TrendingUp className="h-3 w-3 shrink-0 text-[#0090b4]" /><span className="font-semibold text-[#00677f]">{thisWeek} new this week</span></>
+                    : <><TrendingDown className="h-3 w-3 shrink-0 text-muted-foreground" /><span className="text-muted-foreground">{thisWeek} new this week</span></>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </section>
 
     <section className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_1fr]">
       <div className="surface overflow-hidden"><div className="flex flex-col gap-4 border-b border-[#e8edf3] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-[#f8ece9] text-[#9a5145]"><BellRing className="h-4 w-4" /></span><div><p className="eyebrow">Smart attention queue</p><h3 className="mt-1 font-display text-[1.35rem] tracking-[-0.02em]">Commercial alerts</h3></div></div><p className="mt-2 text-xs text-muted-foreground">Signals that need action now, calculated from live account, follow-up, contract, and pipeline data.</p></div><div className="flex shrink-0 gap-2 text-[12px] font-semibold"><span className="rounded-full bg-rose-50 px-2.5 py-1.5 text-rose-700">{alertSummary.critical} urgent</span><span className="rounded-full bg-amber-50 px-2.5 py-1.5 text-amber-700">{alertSummary.warning} watch</span></div></div>{alerts.length === 0 ? <EmptyState icon={CheckCircle2} title="No commercial alerts" description="Accounts, contracts, proposals, and next actions in this scope are currently on track." /> : <div className="divide-y divide-[#e8edf3]">{alerts.slice(0, 7).map(alert => <button key={alert.id} onClick={() => navigate(alert.href)} className="flex w-full items-start gap-3 px-5 py-3.5 text-left transition-colors hover:bg-[#f7fafc] sm:px-6"><span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${alert.severity === "critical" ? "bg-rose-50 text-rose-700" : alert.severity === "warning" ? "bg-amber-50 text-amber-700" : "bg-sky-50 text-sky-700"}`}><AlertTriangle className="h-3.5 w-3.5" /></span><span className="min-w-0 flex-1"><span className="flex flex-wrap items-center gap-2"><span className="truncate text-xs font-semibold">{alert.title}</span><span className="rounded-full bg-[#edf3f8] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#54657a]">{alert.kind}</span></span><span className="mt-1 block text-[12px] leading-4 text-muted-foreground">{alert.message}{alert.propertyName ? ` · ${alert.propertyName}` : ""}</span></span><ArrowRight className="mt-2 h-3.5 w-3.5 shrink-0 text-muted-foreground" /></button>)}</div>}</div>

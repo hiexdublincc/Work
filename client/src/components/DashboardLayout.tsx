@@ -146,8 +146,9 @@ function CRMLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Sidebar collapsible="icon" className="border-r border-[#d9e3ed] bg-[#eef3f8]">
-        <SidebarHeader className="px-4 pb-4 pt-5 group-data-[collapsible=icon]:px-1.5">
-          <button onClick={() => setLocation("/")} className="flex items-center justify-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <SidebarHeader className="relative px-4 pb-4 pt-5 group-data-[collapsible=icon]:px-1.5">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70 [background-image:radial-gradient(circle_at_20%_10%,rgba(108,204,216,.28),transparent_65%)]" />
+          <button onClick={() => setLocation("/")} className="relative flex items-center justify-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <GroupLogo className="h-10 w-40 rounded-xl border border-[#d7e1eb] bg-white px-2.5 py-1.5 shadow-[0_7px_18px_rgba(0,36,96,0.08)] group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:px-1" />
             <span className="sr-only">JMK Group dashboard</span>
           </button>
