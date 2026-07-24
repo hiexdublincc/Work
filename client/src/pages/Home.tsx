@@ -10,6 +10,7 @@ import { Activity, AlertTriangle, ArrowRight, Award, BellRing, Building2, Calend
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 
 const kpiConfig = [
   { key: "openLeads", label: "open leads", icon: Target, tone: "bg-[#e6f7f9] text-[#00677f]", trendKey: "openLeads", sparkColor: "#0090b4", unit: "new" },
@@ -25,31 +26,34 @@ export default function Home() {
   useEffect(() => { if (scope === "property" && !propertyId && propertyOptions[0]) setPropertyId(String(propertyOptions[0].id)); }, [scope, propertyId, propertyOptions]);
   const input = useMemo(() => ({ scope, propertyId: scope === "property" && propertyId ? Number(propertyId) : undefined }), [scope, propertyId]);
   const overview = trpc.dashboard.overview.useQuery(input, { enabled: scope !== "property" || !!propertyId });
+  const selectedPropertyName = propertyOptions.find(item => String(item.id) === propertyId)?.name;
+  useEffect(() => {
+    applyPropertyBrandTheme(scope === "property" ? getPropertyBrand(selectedPropertyName) ?? null : null);
+  }, [scope, selectedPropertyName]);
 
   if (overview.isLoading || references.isLoading) return <><PageHeader title="Your commercial overview" description="A live view of JMK Group’s hotel relationships and sales momentum." /><LoadingPanel rows={7} /></>;
   if (overview.error || !overview.data) return <ErrorPanel message={overview.error?.message} onRetry={() => overview.refetch()} />;
   const { kpis, kpiTrends, severelyOverdueTasks, funnel, recentOpportunities, upcomingTasks, todayAppointments, upcomingEngagements, recentActivities, recentAchievements, openEnquiries, keyWins, businessPotential, calendarHighlights, accountsNeedingAttention, alerts, alertSummary } = overview.data;
-  const selectedPropertyName = propertyOptions.find(item => String(item.id) === propertyId)?.name;
   const maxFunnel = Math.max(...funnel.map(item => item.count), 1); const scopeLabel = scope === "personal" ? "your assigned records" : scope === "property" ? selectedPropertyName || "selected property" : "all JMK Group properties";
 
   return <div className="page-enter max-w-[1560px]">
-    <div className="relative mb-5 overflow-hidden rounded-2xl bg-[#002460] px-5 py-6 text-white shadow-[0_24px_60px_rgba(0,36,96,0.24)] sm:px-7 sm:py-7">
-      <div className="pointer-events-none absolute inset-0 opacity-90 [background-image:radial-gradient(circle_at_12%_18%,rgba(108,204,216,.28),transparent_38%),radial-gradient(circle_at_92%_82%,rgba(0,144,180,.22),transparent_42%)]" />
+    <div className="relative mb-5 overflow-hidden rounded-2xl bg-[var(--brand-ink)] px-5 py-6 text-white shadow-[0_24px_60px_rgba(0,36,96,0.24)] transition-colors duration-500 sm:px-7 sm:py-7">
+      <div className="pointer-events-none absolute inset-0 opacity-90 transition-[background-image] duration-500" style={{ backgroundImage: "radial-gradient(circle at 12% 18%, color-mix(in oklab, var(--brand-accent) 32%, transparent), transparent 38%), radial-gradient(circle at 92% 82%, color-mix(in oklab, var(--brand-accent) 22%, transparent), transparent 42%)" }} />
       <div className="relative flex flex-col gap-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#8ee3eb]"><Sparkles className="h-3.5 w-3.5" />Performance at a glance</p>
-            <h2 className="mt-2 font-display text-3xl tracking-[-0.02em] sm:text-[2.1rem]">{scope === "personal" ? "Your commercial overview" : scope === "property" ? "Property commercial overview" : "Group commercial overview"}</h2>
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--brand-accent)] transition-colors duration-500"><Sparkles className="h-3.5 w-3.5" />Performance at a glance</p>
+            <h2 className="mt-2 font-display text-3xl tracking-[-0.02em] sm:text-[2.1rem]">{scope === "personal" ? "Your commercial overview" : scope === "property" ? (selectedPropertyName ? `${selectedPropertyName} overview` : "Property commercial overview") : "Group commercial overview"}</h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/65">A live, permission-aware view across {scopeLabel}.</p>
           </div>
-          <Button onClick={() => navigate("/opportunities")} className="h-10 shrink-0 rounded-xl bg-white px-4 text-[#002460] shadow-[0_10px_24px_rgba(0,0,0,0.18)] hover:bg-white/90"><CircleDollarSign className="mr-2 h-4 w-4" />View pipeline</Button>
+          <Button onClick={() => navigate("/opportunities")} className="h-10 shrink-0 rounded-xl bg-white px-4 text-[var(--brand-ink)] shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition-colors duration-500 hover:bg-white/90"><CircleDollarSign className="mr-2 h-4 w-4" />View pipeline</Button>
         </div>
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <Tabs value={scope} onValueChange={value => setScope(value as Scope)}>
             <TabsList className="h-10 rounded-xl bg-white/12 p-1 backdrop-blur">
-              <TabsTrigger value="personal" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><UsersRound className="h-3.5 w-3.5" />Personal</TabsTrigger>
-              <TabsTrigger value="property" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><Building2 className="h-3.5 w-3.5" />Property</TabsTrigger>
-              {user?.role === "admin" && <TabsTrigger value="group" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#002460]"><Sparkles className="h-3.5 w-3.5" />Group</TabsTrigger>}
+              <TabsTrigger value="personal" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 transition-colors duration-500 data-[state=active]:bg-white data-[state=active]:text-[var(--brand-ink)]"><UsersRound className="h-3.5 w-3.5" />Personal</TabsTrigger>
+              <TabsTrigger value="property" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 transition-colors duration-500 data-[state=active]:bg-white data-[state=active]:text-[var(--brand-ink)]"><Building2 className="h-3.5 w-3.5" />Property</TabsTrigger>
+              {user?.role === "admin" && <TabsTrigger value="group" className="gap-2 rounded-lg px-4 text-[13px] text-white/70 transition-colors duration-500 data-[state=active]:bg-white data-[state=active]:text-[var(--brand-ink)]"><Sparkles className="h-3.5 w-3.5" />Group</TabsTrigger>}
             </TabsList>
           </Tabs>
           {scope === "property" && <Select value={propertyId} onValueChange={setPropertyId}><SelectTrigger className="h-10 w-full rounded-xl border-white/20 bg-white/12 text-xs text-white backdrop-blur sm:w-[280px]"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent>{propertyOptions.map(item => <SelectItem key={item.id} value={String(item.id)}>{item.name}</SelectItem>)}</SelectContent></Select>}

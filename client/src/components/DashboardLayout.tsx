@@ -132,7 +132,7 @@ function CRMLayout({ children }: { children: ReactNode }) {
               isActive={isActive}
               onClick={() => setLocation(item.path)}
               tooltip={item.label}
-              className="h-10 rounded-xl px-3 text-[15px] font-medium data-[active=true]:bg-white data-[active=true]:text-[#002460] data-[active=true]:[box-shadow:inset_3px_0_0_#6cccd8,0_7px_20px_rgba(0,36,96,0.08)]"
+              className="h-10 rounded-xl px-3 text-[15px] font-medium transition-colors duration-500 data-[active=true]:bg-white data-[active=true]:text-[var(--brand-ink)] data-[active=true]:[box-shadow:inset_3px_0_0_var(--brand-accent),0_7px_20px_rgba(0,36,96,0.08)]"
             >
               <item.icon className="h-[17px] w-[17px]" />
               <span>{item.label}</span>
@@ -147,7 +147,7 @@ function CRMLayout({ children }: { children: ReactNode }) {
     <>
       <Sidebar collapsible="icon" className="border-r border-[#d9e3ed] bg-[#eef3f8]">
         <SidebarHeader className="relative px-4 pb-4 pt-5 group-data-[collapsible=icon]:px-1.5">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70 [background-image:radial-gradient(circle_at_20%_10%,rgba(108,204,216,.28),transparent_65%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 opacity-70 transition-[background-image] duration-500" style={{ backgroundImage: "radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--brand-accent) 28%, transparent), transparent 65%)" }} />
           <button onClick={() => setLocation("/")} className="relative flex items-center justify-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <GroupLogo className="h-10 w-40 rounded-xl border border-[#d7e1eb] bg-white px-2.5 py-1.5 shadow-[0_7px_18px_rgba(0,36,96,0.08)] group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:px-1" />
             <span className="sr-only">JMK Group dashboard</span>

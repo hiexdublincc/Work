@@ -49,6 +49,11 @@
   --jmk-navy: #002460;
   --jmk-cyan: #6cccd8;
   --jmk-cyan-strong: #0090b4;
+  /* Property-scoped brand accent — defaults to standard JMK colors; overridden in JS via
+     applyPropertyBrandTheme() when a single property is selected on the Dashboard. */
+  --brand-ink: #002460;
+  --brand-accent: #6cccd8;
+  --brand-soft: #e8f7f9;
   --background: #f5f7fa;
   --foreground: #10213f;
   --card: #ffffff;

@@ -96,3 +96,19 @@ export const PROPERTY_BRAND_ENTRIES = Object.entries(PROPERTY_BRAND_MAP).map(([p
   propertyName,
   brand,
 }));
+
+// Retints the app's --brand-ink/--brand-accent/--brand-soft CSS custom properties to a single
+// hotel's colors when you're viewing one specific property; pass null to fall back to standard
+// JMK navy/cyan (used whenever the scope spans more than one property).
+export function applyPropertyBrandTheme(brand: BrandIdentity | null) {
+  const root = document.documentElement;
+  if (brand) {
+    root.style.setProperty("--brand-ink", brand.ink);
+    root.style.setProperty("--brand-accent", brand.accent);
+    root.style.setProperty("--brand-soft", brand.softAccent);
+  } else {
+    root.style.removeProperty("--brand-ink");
+    root.style.removeProperty("--brand-accent");
+    root.style.removeProperty("--brand-soft");
+  }
+}
