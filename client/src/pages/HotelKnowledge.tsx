@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
 import { Archive, BookOpen, Building2, Download, FileText, ParkingCircle, Phone, Sparkles, Upload, Users } from "lucide-react";
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 
 type Form = {
   overview: string;
@@ -57,6 +58,11 @@ export default function HotelKnowledge() {
   useMemo(() => {
     if (!propertyId && properties.length) setPropertyId(String(properties[0].propertyId));
   }, [properties, propertyId]);
+
+  const active = properties.find(item => String(item.propertyId) === propertyId) ?? properties[0];
+  useEffect(() => {
+    applyPropertyBrandTheme(getPropertyBrand(active?.propertyName) ?? null);
+  }, [active?.propertyName]);
 
   function set<K extends keyof Form>(key: K, value: Form[K]) {
     setForm(current => ({ ...current, [key]: value }));
@@ -103,8 +109,6 @@ export default function HotelKnowledge() {
   if (list.error) return <div className="page-enter max-w-[1400px]"><PageHeader eyebrow="Shared knowledge base" title="Hotel knowledge" /><ErrorPanel message={list.error.message} onRetry={() => list.refetch()} /></div>;
   if (!properties.length) return <div className="page-enter max-w-[1400px]"><PageHeader eyebrow="Shared knowledge base" title="Hotel knowledge" /><div className="surface"><EmptyState icon={BookOpen} title="No properties in your scope" description="You do not have any assigned properties yet." /></div></div>;
 
-  const active = properties.find(item => String(item.propertyId) === propertyId) ?? properties[0];
-
   return (
     <div className="page-enter max-w-[1400px]">
       <PageHeader
@@ -119,7 +123,7 @@ export default function HotelKnowledge() {
           <button
             key={item.propertyId}
             onClick={() => setPropertyId(String(item.propertyId))}
-            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${String(item.propertyId) === propertyId ? "border-[#002460] bg-[#002460] text-white" : "border-[#dde4de] bg-white text-foreground hover:bg-[#f7fafc]"}`}
+            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors duration-500 ${String(item.propertyId) === propertyId ? "border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white" : "border-[#dde4de] bg-white text-foreground hover:bg-[#f7fafc]"}`}
           >
             <PropertyLogo propertyName={item.propertyName} />
             {item.propertyName}
