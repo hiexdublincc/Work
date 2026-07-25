@@ -9,8 +9,15 @@ import { Building2, CalendarClock, ChevronRight, CircleDollarSign, LayoutGrid, L
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearch } from "wouter";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 const stages = ["Prospecting", "Qualified", "Proposal", "Negotiation", "Closed Won", "Closed Lost"] as const;
+function celebrateWin() {
+  const colors = ["#002460", "#6cccd8", "#0090b4", "#ae8240"];
+  confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 }, colors, startVelocity: 45, ticks: 200 });
+  confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.7 }, colors, ticks: 200 });
+  confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.7 }, colors, ticks: 200 });
+}
 type OpportunityForm = { name: string; propertyId: string; ownerId: string; companyId: string; contactId: string; businessType: string; stage: typeof stages[number]; commercialStatus: string; valueCents: number; probability: number; startDate: string; endDate: string; roomNights: number; adrCents: number; source: string; expectedCloseDate: string; nextStep: string; nextActionAt: string; notes: string };
 const emptyForm: OpportunityForm = { name: "", propertyId: "", ownerId: "", companyId: "", contactId: "", businessType: "Corporate account", stage: "Prospecting", commercialStatus: "New lead", valueCents: 0, probability: 10, startDate: "", endDate: "", roomNights: 0, adrCents: 0, source: "", expectedCloseDate: "", nextStep: "", nextActionAt: "", notes: "" };
 
@@ -22,7 +29,16 @@ export default function Opportunities() {
   const pipeline = trpc.opportunities.pipeline.useQuery({ propertyId: propertyId ? Number(propertyId) : undefined });
   const detail = trpc.opportunities.get.useQuery({ id: selectedId! }, { enabled: selectedId !== null });
   const create = trpc.opportunities.create.useMutation({ onSuccess: () => saved("Opportunity created") }); const update = trpc.opportunities.update.useMutation({ onSuccess: () => saved("Opportunity updated") });
-  const moveStage = trpc.opportunities.setStage.useMutation({ onSuccess: () => { toast.success("Pipeline stage updated"); utils.opportunities.invalidate(); utils.dashboard.invalidate(); } });
+  const moveStage = trpc.opportunities.setStage.useMutation({ onSuccess: (_data, variables) => { toast.success("Pipeline stage updated"); utils.opportunities.invalidate(); utils.dashboard.invalidate(); if (variables.stage === "Closed Won") celebrateWin(); } });
+  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<typeof stages[number] | null>(null);
+  function dropOnStage(targetStage: typeof stages[number]) {
+    setDragOverStage(null);
+    if (draggingId == null) return;
+    const current = (pipeline.data ?? []).flatMap(column => column.items).find(item => item.id === draggingId);
+    if (current && current.stage !== targetStage) moveStage.mutate({ id: draggingId, stage: targetStage });
+    setDraggingId(null);
+  }
   const propertyOptions = references.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? []; const ownerOptions = references.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? []; const typeOptions = (references.data?.taxonomy.opportunityTypes ?? []).map(value => ({ value, label: value })); const commercialStatusOptions = (references.data?.taxonomy.commercialStatuses ?? []).map(value => ({ value, label: value }));
   const companyOptions = (references.data?.companies ?? []).map(item => ({ value: String(item.id), label: item.label })); const contactOptions = (references.data?.contacts ?? []).map(item => ({ value: String(item.id), label: item.label }));
   useEffect(() => setPage(1), [search, stage, businessType, propertyId]);
@@ -37,7 +53,36 @@ export default function Opportunities() {
     <PageHeader eyebrow="Commercial pipeline" title="Opportunities" description="Move hotel business through a disciplined six-stage pipeline with a clear owner, property, value, probability, and next action." action={<CreateButton label="New opportunity" onClick={openCreate} />} />
     <SearchFilters value={search} onChange={setSearch} searchRef={searchRef} activeFilters={[stage, businessType, propertyId].filter(Boolean).length} onClear={() => { setStageFilter(""); setBusinessType(""); setPropertyId(""); }}><FilterSelect value={propertyId} onChange={setPropertyId} options={propertyOptions} placeholder="All properties" className="w-[180px]" /><FilterSelect value={businessType} onChange={setBusinessType} options={typeOptions} placeholder="All business types" className="w-[180px]" /><FilterSelect value={stage} onChange={setStageFilter} options={stages.map(value => ({ value, label: value }))} placeholder="All stages" /></SearchFilters>
     <Tabs value={view} onValueChange={setView}><TabsList className="mb-4 h-9 rounded-xl border border-[#dfe5df] bg-white p-1"><TabsTrigger value="pipeline" className="gap-2 rounded-lg text-[13px]"><LayoutGrid className="h-3.5 w-3.5" />Pipeline</TabsTrigger><TabsTrigger value="list" className="gap-2 rounded-lg text-[13px]"><List className="h-3.5 w-3.5" />List</TabsTrigger></TabsList>
-      <TabsContent value="pipeline" className="mt-0">{pipeline.isLoading ? <LoadingPanel rows={5} /> : pipeline.error ? <ErrorPanel message={pipeline.error.message} onRetry={() => pipeline.refetch()} /> : <div className="overflow-x-auto pb-4"><div className="grid min-w-[1180px] grid-cols-6 gap-3">{(pipeline.data ?? []).map(column => <section key={column.stage} className="rounded-2xl border border-[#e2e7e2] bg-[#f4f6f3] p-2.5"><div className="mb-3 flex items-start justify-between px-1"><div><StatusBadge value={column.stage} /><p className="mt-2 text-[12px] text-muted-foreground">{column.count} {column.count === 1 ? "deal" : "deals"}</p></div><p className="text-right text-[13px] font-semibold text-[#2c493d]">{money(column.valueCents)}</p></div><div className="space-y-2">{column.items.map(item => <button key={item.id} onClick={() => setSelectedId(item.id)} className="w-full rounded-xl border border-[#e0e5e0] bg-white p-3 text-left shadow-[0_2px_10px_rgba(22,49,39,0.035)] transition-all hover:-translate-y-0.5 hover:border-[#a9bdb0] hover:shadow-[0_8px_20px_rgba(22,49,39,0.08)]"><div className="flex items-start justify-between gap-2"><p className="line-clamp-2 text-[13px] font-semibold leading-4 text-[#17372c]">{item.name}</p><ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8aa095]" /></div><p className="mt-1.5 truncate text-[11px] text-muted-foreground">{item.companyName || item.businessType}</p><p className="mt-3 font-display text-lg text-[#213f33]">{money(item.valueCents)}</p><div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground"><span>{item.probability}%</span><span>{item.propertyName}</span></div><div className="mt-3 h-1 overflow-hidden rounded-full bg-[#edf0ed]"><div className="h-full rounded-full bg-[#ae8240]" style={{ width: `${item.probability}%` }} /></div></button>)}{!column.items.length && <div className="rounded-xl border border-dashed border-[#d9dfd9] p-4 text-center text-[12px] text-muted-foreground">No opportunities</div>}</div></section>)}</div></div>}</TabsContent>
+      <TabsContent value="pipeline" className="mt-0">{pipeline.isLoading ? <LoadingPanel rows={5} /> : pipeline.error ? <ErrorPanel message={pipeline.error.message} onRetry={() => pipeline.refetch()} /> : <div className="overflow-x-auto pb-4"><div className="grid min-w-[1180px] grid-cols-6 gap-3">{(pipeline.data ?? []).map(column => (
+        <section
+          key={column.stage}
+          onDragOver={event => { event.preventDefault(); if (dragOverStage !== column.stage) setDragOverStage(column.stage); }}
+          onDragLeave={() => setDragOverStage(current => (current === column.stage ? null : current))}
+          onDrop={event => { event.preventDefault(); dropOnStage(column.stage); }}
+          className={`rounded-2xl border p-2.5 transition-colors ${dragOverStage === column.stage ? "border-[#ae8240] bg-[#f6efe2]" : "border-[#e2e7e2] bg-[#f4f6f3]"}`}
+        >
+          <div className="mb-3 flex items-start justify-between px-1"><div><StatusBadge value={column.stage} /><p className="mt-2 text-[12px] text-muted-foreground">{column.count} {column.count === 1 ? "deal" : "deals"}</p></div><p className="text-right text-[13px] font-semibold text-[#2c493d]">{money(column.valueCents)}</p></div>
+          <div className="space-y-2">
+            {column.items.map(item => (
+              <button
+                key={item.id}
+                draggable
+                onDragStart={event => { setDraggingId(item.id); event.dataTransfer.effectAllowed = "move"; }}
+                onDragEnd={() => { setDraggingId(null); setDragOverStage(null); }}
+                onClick={() => setSelectedId(item.id)}
+                className={`w-full cursor-grab rounded-xl border border-[#e0e5e0] bg-white p-3 text-left shadow-[0_2px_10px_rgba(22,49,39,0.035)] transition-all active:cursor-grabbing hover:-translate-y-0.5 hover:border-[#a9bdb0] hover:shadow-[0_8px_20px_rgba(22,49,39,0.08)] ${draggingId === item.id ? "opacity-40" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-2"><p className="line-clamp-2 text-[13px] font-semibold leading-4 text-[#17372c]">{item.name}</p><ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8aa095]" /></div>
+                <p className="mt-1.5 truncate text-[11px] text-muted-foreground">{item.companyName || item.businessType}</p>
+                <p className="mt-3 font-display text-lg text-[#213f33]">{money(item.valueCents)}</p>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground"><span>{item.probability}%</span><span>{item.propertyName}</span></div>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-[#edf0ed]"><div className="h-full rounded-full bg-[#ae8240]" style={{ width: `${item.probability}%` }} /></div>
+              </button>
+            ))}
+            {!column.items.length && <div className="rounded-xl border border-dashed border-[#d9dfd9] p-4 text-center text-[12px] text-muted-foreground">Drop here to move a deal</div>}
+          </div>
+        </section>
+      ))}</div></div>}</TabsContent>
       <TabsContent value="list" className="mt-0">{list.isLoading ? <LoadingPanel rows={7} /> : list.error ? <ErrorPanel message={list.error.message} onRetry={() => list.refetch()} /> : !rows.length ? <div className="surface"><EmptyState icon={Target} title="No opportunities in this view" description="Create an opportunity or broaden the current search and filters." action={<CreateButton label="New opportunity" onClick={openCreate} />} /></div> : <div className="surface overflow-hidden"><RecordTable columns={["Opportunity", "Stage", "Property", "Value", "Probability", "Next action"]}>{rows.map(row => <tr key={row.id} onClick={() => setSelectedId(row.id)} className="cursor-pointer border-b border-[#edf0ed] transition-colors last:border-0 hover:bg-[#f8faf7]"><td className="px-4 py-3.5"><p className="text-xs font-semibold">{row.name}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.companyName || row.businessType}</p></td><td className="px-4 py-3.5"><StatusBadge value={row.stage} /></td><td className="px-4 py-3.5 text-xs">{row.propertyName}</td><td className="px-4 py-3.5"><p className="text-xs font-semibold">{money(row.valueCents)}</p><p className="mt-1 text-[12px] text-muted-foreground">{row.roomNights} room nights</p></td><td className="px-4 py-3.5 text-xs font-medium">{row.probability}%</td><td className="px-4 py-3.5"><p className="max-w-[220px] truncate text-[13px] font-medium">{row.nextStep}</p><p className="mt-1 text-[11px] text-muted-foreground">{fullDateTime(row.nextActionAt)}</p></td></tr>)}</RecordTable><Pagination page={list.data?.page ?? page} pageSize={list.data?.pageSize ?? 20} total={list.data?.total ?? 0} onPage={setPage} /></div>}</TabsContent>
     </Tabs>
     <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="max-h-[94vh] max-w-4xl overflow-y-auto rounded-[1.5rem] p-6"><DialogHeader><DialogTitle className="font-display text-2xl">{editingId ? "Edit opportunity" : "Create opportunity"}</DialogTitle><DialogDescription>Start with the essentials. Open the optional sections only when the deal needs more commercial detail.</DialogDescription></DialogHeader><form onSubmit={submit} className="mt-3 space-y-5">

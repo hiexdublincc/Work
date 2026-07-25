@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { trpc } from "@/lib/trpc";
 import { CalendarClock, Check, CheckCircle2, Circle, Clock3, FileBarChart2, FileText, Pencil, Phone, Printer, UsersRound } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 import { toast } from "sonner";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../server/routers";
@@ -25,6 +26,12 @@ export default function Activities() {
     return () => document.body.classList.remove("printing-report");
   }, [reportOpen]);
   const searchRef = useSearchShortcut(); const utils = trpc.useUtils(); const references = trpc.metadata.references.useQuery();
+  useEffect(() => {
+    if (!reportOpen) { applyPropertyBrandTheme(null); return; }
+    const selectedName = references.data?.properties.find(item => String(item.id) === reportPropertyId)?.name;
+    applyPropertyBrandTheme(getPropertyBrand(selectedName) ?? null);
+    return () => applyPropertyBrandTheme(null);
+  }, [reportOpen, reportPropertyId, references.data]);
   const query = trpc.activities.list.useQuery({ page, pageSize: 25, search, type: type as typeof types[number] || undefined, subtype: subtype as any || undefined, state, propertyId: propertyId ? Number(propertyId) : undefined, sort: "due" });
   const create = trpc.activities.create.useMutation({ onSuccess: () => saved("Activity logged"), onError: error => toast.error(error.message) }); const update = trpc.activities.update.useMutation({ onSuccess: () => saved("Activity updated"), onError: error => toast.error(error.message) });
   const complete = trpc.activities.setCompleted.useMutation({ onSuccess: (_, input) => { toast.success(input.completed ? "Activity completed" : "Activity reopened"); utils.activities.invalidate(); utils.dashboard.invalidate(); } });
@@ -137,9 +144,9 @@ function ReportBody({ data }: { data: WeeklyReportData }) {
         <p className="text-xs text-[#555]">{data.propertyName}</p>
         <p className="text-base font-bold">{data.rangeLabel}</p>
       </div>
-      <h1 className="mt-7 border-b-2 border-[#111] pb-1.5 text-[15px] font-bold uppercase tracking-[0.07em]">Key Wins</h1>
+      <h1 className="mt-7 border-b-2 border-[var(--brand-ink)] pb-1.5 text-[15px] font-bold uppercase tracking-[0.07em]">Key Wins</h1>
       <div className="mt-2 text-[15px] leading-6"><Narrative text={data.keyWins} /></div>
-      <h1 className="mt-7 border-b-2 border-[#111] pb-1.5 text-[15px] font-bold uppercase tracking-[0.07em]">Key Activity</h1>
+      <h1 className="mt-7 border-b-2 border-[var(--brand-ink)] pb-1.5 text-[15px] font-bold uppercase tracking-[0.07em]">Key Activity</h1>
       <div className="mt-2 text-[15px] leading-6"><Narrative text={data.keyActivity} /></div>
     </div>
   );

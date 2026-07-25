@@ -37,10 +37,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
-import { Archive, Award, Building2, Link2, MapPin, Pencil, TrendingUp, Trophy } from "lucide-react";
+import { Archive, Award, Building2, Link2, MapPin, Medal, Pencil, TrendingUp, Trophy } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { AppRouter } from "../../../server/routers";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 
 type Row = inferRouterOutputs<AppRouter>["achievements"]["list"][number];
 type AchievementStatus = "Confirmed" | "Tentative" | "RFP accepted" | "Declined" | "Contracted" | "Proposal sent" | "On option";
@@ -112,6 +113,7 @@ export default function Achievements() {
     [ownerId, propertyId, search, status],
   );
   const query = trpc.achievements.list.useQuery(queryInput);
+  const leaderboard = trpc.achievements.leaderboard.useQuery({ propertyId: propertyId ? Number(propertyId) : undefined });
   const create = trpc.achievements.create.useMutation({
     onSuccess: () => saved("Achievement created"),
     onError: error => toast.error(error.message),
@@ -132,6 +134,11 @@ export default function Achievements() {
   });
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
+  useEffect(() => {
+    const selectedName = refs.data?.properties.find(item => String(item.id) === propertyId)?.name;
+    applyPropertyBrandTheme(getPropertyBrand(selectedName) ?? null);
+    return () => applyPropertyBrandTheme(null);
+  }, [propertyId, refs.data]);
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
   const scopedCompanies = refs.data?.companies ?? [];
   const scopedOpportunities = refs.data?.opportunities.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
@@ -238,6 +245,27 @@ export default function Achievements() {
         <SummaryCard icon={TrendingUp} label="Potential value" value={money(totalPotential)} />
         <SummaryCard icon={Award} label="Confirmed / contracted" value={String(confirmedCount)} />
       </section>
+
+      {leaderboard.data && leaderboard.data.length > 0 && (
+        <section className="surface mb-4 overflow-hidden">
+          <div className="flex items-center gap-3 border-b border-[#e8edf3] px-5 py-4 sm:px-6">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#fdf3dd] text-[#8a6a1f]"><Medal className="h-4 w-4" /></span>
+            <div><p className="eyebrow">This year's production</p><h3 className="font-display text-lg tracking-[-0.015em]">Team leaderboard</h3></div>
+          </div>
+          <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3 sm:p-6">
+            {leaderboard.data.slice(0, 6).map((entry, index) => (
+              <div key={entry.ownerId ?? entry.ownerName} className={`flex items-center gap-3 rounded-2xl border p-3.5 ${index === 0 ? "border-[#f0d8a0] bg-[#fdf8ee]" : "border-[#e8edf3] bg-white"}`}>
+                <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold ${index === 0 ? "bg-[#d9a441] text-white" : index === 1 ? "bg-[#c3c9d1] text-white" : index === 2 ? "bg-[#c98a52] text-white" : "bg-[#edf3f8] text-[#54657a]"}`}>{index + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{entry.ownerName}</p>
+                  <p className="mt-0.5 text-[12px] text-muted-foreground">{entry.count} logged · {entry.roomNights.toLocaleString()} room nights</p>
+                </div>
+                <p className="shrink-0 text-sm font-semibold tabular-nums">{money(entry.valueCents)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <SearchFilters
         value={search}

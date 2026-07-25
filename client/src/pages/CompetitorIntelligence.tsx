@@ -37,8 +37,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
 import { Archive, Building2, Globe2, Pencil, Radar, ThumbsDown, ThumbsUp } from "lucide-react";
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 import type { AppRouter } from "../../../server/routers";
 
 type Row = inferRouterOutputs<AppRouter>["competitorIntelligence"]["list"][number];
@@ -92,6 +93,11 @@ export default function CompetitorIntelligence() {
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
+  useEffect(() => {
+    const selectedName = refs.data?.properties.find(item => String(item.id) === propertyId)?.name;
+    applyPropertyBrandTheme(getPropertyBrand(selectedName) ?? null);
+    return () => applyPropertyBrandTheme(null);
+  }, [propertyId, refs.data]);
   const scopedCompanies = refs.data?.companies ?? [];
   const scopedOpportunities = refs.data?.opportunities.filter(item => !form.propertyId || item.propertyId === Number(form.propertyId)) ?? [];
   const companyOptions = [{ value: "none", label: "No linked company" }, ...scopedCompanies.map(item => ({ value: String(item.id), label: item.label }))];

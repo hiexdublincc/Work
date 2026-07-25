@@ -6,6 +6,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import { BarChart3, CalendarClock, PhoneCall, Printer, ShieldAlert, Trophy, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { AppRouter } from "../../../server/routers";
+import { applyPropertyBrandTheme, getPropertyBrand } from "@/lib/brand";
 
 type Summary = inferRouterOutputs<AppRouter>["reports"]["summary"];
 type Forecast = inferRouterOutputs<AppRouter>["reports"]["revenueForecast"];
@@ -34,6 +35,11 @@ export default function Reports() {
 
   const propertyOptions = refs.data?.properties.map(item => ({ value: String(item.id), label: item.name })) ?? [];
   const ownerOptions = refs.data?.assignees.map(item => ({ value: String(item.id), label: item.name || item.email || "JMK user" })) ?? [];
+  useEffect(() => {
+    const selectedName = refs.data?.properties.find(item => String(item.id) === propertyId)?.name;
+    applyPropertyBrandTheme(getPropertyBrand(selectedName) ?? null);
+    return () => applyPropertyBrandTheme(null);
+  }, [propertyId, refs.data]);
   const activeFilters = [propertyId, ownerId, from, to].filter(Boolean).length;
   const loading = summary.isLoading || forecast.isLoading || lostBusiness.isLoading || accountProduction.isLoading || refs.isLoading;
   const error = summary.error || forecast.error || lostBusiness.error || accountProduction.error || refs.error;
@@ -85,8 +91,8 @@ export default function Reports() {
         <ErrorPanel message={error.message} onRetry={() => { summary.refetch(); forecast.refetch(); lostBusiness.refetch(); accountProduction.refetch(); }} />
       ) : (
         <div data-print-target className="space-y-4">
-          <div className="hidden items-baseline justify-between border-b-2 border-[#111] pb-2 print:flex" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#111" }}>
-            <div><p className="text-lg font-bold">JMK Group — Commercial Report</p><p className="text-xs text-[#555]">{scopeLabel}</p></div>
+          <div className="hidden items-baseline justify-between border-b-2 border-[var(--brand-ink)] pb-2 print:flex" style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--brand-ink)" }}>
+            <div><p className="text-lg font-bold">{propertyOptions.find(item => item.value === propertyId)?.label || "JMK Group"} — Commercial Report</p><p className="text-xs text-[#555]">{scopeLabel}</p></div>
             <p className="text-xs text-[#555]">Generated {new Date().toLocaleDateString("en-GB")}</p>
           </div>
           <LeadsByStatus data={summary.data!.leadsByStatus} />

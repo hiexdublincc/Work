@@ -62,6 +62,7 @@ export default function HotelKnowledge() {
   const active = properties.find(item => String(item.propertyId) === propertyId) ?? properties[0];
   useEffect(() => {
     applyPropertyBrandTheme(getPropertyBrand(active?.propertyName) ?? null);
+    return () => applyPropertyBrandTheme(null);
   }, [active?.propertyName]);
 
   function set<K extends keyof Form>(key: K, value: Form[K]) {

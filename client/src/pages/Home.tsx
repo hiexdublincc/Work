@@ -29,6 +29,7 @@ export default function Home() {
   const selectedPropertyName = propertyOptions.find(item => String(item.id) === propertyId)?.name;
   useEffect(() => {
     applyPropertyBrandTheme(scope === "property" ? getPropertyBrand(selectedPropertyName) ?? null : null);
+    return () => applyPropertyBrandTheme(null);
   }, [scope, selectedPropertyName]);
 
   if (overview.isLoading || references.isLoading) return <><PageHeader title="Your commercial overview" description="A live view of JMK Group’s hotel relationships and sales momentum." /><LoadingPanel rows={7} /></>;

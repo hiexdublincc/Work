@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, isNull, like, lte, or } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, like, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   ACHIEVEMENT_STATUSES,
@@ -136,5 +136,34 @@ export const achievementsRouter = router({
     await assertAchievementAccess(ctx.user, input.id);
     await db.update(achievements).set({ archivedAt: new Date() }).where(eq(achievements.id, input.id));
     return { success: true };
+  }),
+
+  // Who's actually closing business this year, ranked by production value — a league table for
+  // the sales team, built from the same Achievements everyone is already logging.
+  leaderboard: activeProcedure.input(z.object({
+    propertyId: z.number().int().positive().optional(),
+  }).default({})).query(async ({ ctx, input }) => {
+    const db = await requireDb();
+    if (input.propertyId) await assertPropertyAccess(ctx.user, input.propertyId);
+    const propertyIds = await getAuthorizedPropertyIds(ctx.user);
+    const yearStart = new Date(new Date().getFullYear(), 0, 1);
+    const rows = await db.select({
+      ownerId: achievements.ownerId, ownerName: users.name,
+      valueCents: sql<number>`coalesce(sum(${achievements.potentialValueCents}), 0)`,
+      roomNights: sql<number>`coalesce(sum(${achievements.roomNights}), 0)`,
+      count: sql<number>`count(*)`,
+    }).from(achievements)
+      .leftJoin(users, eq(achievements.ownerId, users.id))
+      .where(scopedWhere(
+        isNull(achievements.archivedAt), propertyScope(achievements.propertyId, propertyIds),
+        input.propertyId ? eq(achievements.propertyId, input.propertyId) : undefined,
+        gte(achievements.month, yearStart),
+      ))
+      .groupBy(achievements.ownerId, users.name)
+      .orderBy(desc(sql`coalesce(sum(${achievements.potentialValueCents}), 0)`));
+    return rows.map(row => ({
+      ownerId: row.ownerId, ownerName: row.ownerName || "Unassigned",
+      valueCents: Number(row.valueCents), roomNights: Number(row.roomNights), count: Number(row.count),
+    }));
   }),
 });
