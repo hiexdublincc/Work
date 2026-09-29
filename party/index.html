@@ -169,6 +169,7 @@
 
   .hero{position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; isolation:isolate; padding:112px 16px 52px}
   .hero:before{content:""; position:absolute; left:0; right:0; top:0; height:200px; z-index:-2; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,.6), transparent)}
+  .hero:after{content:""; position:absolute; left:0; right:0; bottom:0; height:220px; z-index:-1; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,0) 0%, rgba(0,20,43,.45) 45%, rgba(0,20,43,.97) 100%)}
   .hero-bg{position:absolute; inset:-4%; z-index:-4; background:url('img/bg.jpg') center/cover no-repeat; animation:kenburns 30s ease-in-out infinite alternate}
   @keyframes kenburns{ from{transform:scale(1)} to{transform:scale(1.1) translate(-1.5%,-1%)} }
   .hero-overlay{position:absolute; inset:0; z-index:-3; background:
@@ -241,25 +242,24 @@
   .reveal.in{opacity:1; transform:none}
 
   .rsvp{color:#fff; background:radial-gradient(90% 55% at 50% 0%, var(--blue-glow) 0%, var(--navy) 55%, var(--navy) 100%)}
-  .rsvp:before{content:""; position:absolute; left:0; right:0; top:0; height:140px; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,.97), transparent)}
+  .rsvp:before{content:""; position:absolute; left:0; right:0; top:0; height:280px; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,.97) 0%, rgba(0,20,43,.8) 22%, rgba(0,20,43,.5) 48%, rgba(0,20,43,.2) 75%, rgba(0,20,43,0) 100%)}
   .rsvp .glow.g1{top:auto; bottom:-200px; right:-220px; opacity:.22}
   .rsvp .glow.g2{top:-240px; bottom:auto; left:-260px; opacity:.35}
   .rsvp:after{content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background-image:radial-gradient(rgba(255,255,255,.1) 1px, transparent 1.3px); background-size:26px 26px; -webkit-mask-image:radial-gradient(75% 65% at 50% 42%, #000 20%, transparent 100%); mask-image:radial-gradient(75% 65% at 50% 42%, #000 20%, transparent 100%)}
   .rsvp-deco{position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden}
   .rd-10{position:absolute; right:-3%; top:2%; font:700 clamp(280px,38vw,560px)/.8 var(--display); letter-spacing:-.04em; color:transparent; -webkit-text-stroke:1.5px rgba(255,255,255,.07); white-space:nowrap}
-  .rd-hotel{position:absolute; left:-1%; bottom:0; width:min(520px,62vw); aspect-ratio:514/517; background:url('img/hotel-contour.png') left bottom/contain no-repeat; opacity:.12}
+  .rd-hotel{position:absolute; left:-1%; bottom:0; width:min(480px,58vw); aspect-ratio:514/517; background:url('img/hotel-contour.png') left bottom/contain no-repeat; opacity:.09}
   .rsvp .container{z-index:1}
+  .rsvp-deco:after{content:""; position:absolute; left:0; right:0; bottom:0; height:240px; background:linear-gradient(180deg, rgba(0,20,43,0) 0%, rgba(0,20,43,.25) 30%, rgba(0,20,43,.65) 62%, #00142b 100%)}
   .rsvp .kicker{display:inline-flex; align-items:center; gap:12px}
   .rsvp .kicker:before, .rsvp .kicker:after{content:""; width:28px; height:1px; background:var(--orange)}
   .where{position:relative; overflow:hidden}
-  .where:after{content:""; position:absolute; right:-6px; bottom:0; width:42%; aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; opacity:.13; pointer-events:none}
   .where > *{position:relative; z-index:1}
   .timeline{position:relative; overflow:hidden}
   .timeline:after{content:"10"; position:absolute; right:-4px; bottom:-38px; font:700 130px/1 var(--display); color:transparent; -webkit-text-stroke:1px rgba(255,255,255,.08); pointer-events:none}
   .timeline > *{position:relative; z-index:1}
   .rsvp-card{position:relative; overflow:hidden}
   .rsvp-card:before{content:""; position:absolute; left:0; right:0; top:0; height:5px; background:linear-gradient(90deg,#003366,#FF6B35); z-index:2}
-  .rsvp-card:after{content:""; position:absolute; right:0; bottom:0; width:44%; aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; filter:invert(1) opacity(.06); pointer-events:none}
   .rsvp-card > *{position:relative; z-index:1}
   .rsvp-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:26px; align-items:start}
   .rsvp-col{min-width:0}
