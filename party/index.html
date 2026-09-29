@@ -343,7 +343,7 @@
   .ticket-scene:hover .t-sheen{opacity:1}
   /* ticket: typographic and photo-free. Deep blue main panel, light stub */
   .t-main{padding:28px 28px 26px; background:linear-gradient(160deg,#0b478a 0%,#003366 55%,#00234d 100%); color:#fff; overflow:hidden}
-  .t-main:after{content:"10"; position:absolute; right:-16px; bottom:-60px; z-index:0; font:700 190px/1 var(--display); color:transparent; -webkit-text-stroke:1.5px rgba(255,255,255,.08); pointer-events:none}
+  .t-main:after{content:""; position:absolute; right:-4px; bottom:0; z-index:0; width:min(290px,64%); aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; opacity:.24; pointer-events:none}
   .t-main > *{position:relative; z-index:1}
   .t-top{position:relative; left:auto; right:auto; bottom:auto; align-items:center; margin:0 0 28px}
   .t-logo{height:52px; filter:none}
@@ -703,7 +703,7 @@
   var coarse = window.matchMedia('(pointer: coarse)').matches;
   var params = new URLSearchParams(window.location.search);
   var tier = (params.get('tier') || 'general').toLowerCase();
-  var LOGO_SRC = 'img/logo-white.png', HOTEL_SRC = 'img/hotel.jpg';
+  var LOGO_SRC = 'img/logo-white.png', CONTOUR_SRC = 'img/hotel-contour.png';
 
   /* ---- Saved RSVP (so guests can come back for their ticket) ---- */
   var STORE = 'hiex10-rsvp';
@@ -1218,8 +1218,9 @@
         document.fonts.load('400 30px Inter'), document.fonts.load('600 30px Inter'), document.fonts.load('700 30px Inter')
       ]);
     } catch(e){}
-    var logo = null;
+    var logo = null, contour = null;
     try { logo = await loadImg(LOGO_SRC); } catch(e){}
+    try { contour = await loadImg(CONTOUR_SRC); } catch(e){}
 
     var W = 1080, H = 1720, c = document.createElement('canvas');
     c.width = W; c.height = H;
@@ -1253,9 +1254,10 @@
     var mainBg = ctx.createLinearGradient(x, y, x + w * 0.6, py);
     mainBg.addColorStop(0, '#0b478a'); mainBg.addColorStop(0.55, '#003366'); mainBg.addColorStop(1, '#00234d');
     ctx.fillStyle = mainBg; ctx.fillRect(x, y, w, py - y);
-    ctx.font = '700 640px ' + serif; ctx.textAlign = 'right';
-    ctx.strokeStyle = 'rgba(255,255,255,.09)'; ctx.lineWidth = 3;
-    ctx.strokeText('10', x + w + 30, py + 40);
+    if (contour){   // ghosted line drawing of the hotel, rising from the perforation
+      var ch = 700, cw = ch * contour.width / contour.height;
+      ctx.globalAlpha = 0.22; ctx.drawImage(contour, x + w - cw + 8, py - ch, cw, ch); ctx.globalAlpha = 1;
+    }
     // Stub panel
     ctx.fillStyle = '#f2f6fb'; ctx.fillRect(x, py, w, y + h - py);
     var bar = ctx.createLinearGradient(x, 0, x + w, 0);
