@@ -43,7 +43,7 @@
   /* Orange "10 Stories" shimmer (same treatment everywhere it appears) */
   .shim{color:var(--orange); background:linear-gradient(90deg, var(--orange) 0%, #ffc2a3 25%, var(--orange) 50%, var(--orange) 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:textSheen 5s linear 1s infinite}
   /* on light backgrounds (envelope card, ticket) use a deeper orange so the highlight never washes out */
-  .card-inside .shim, .t-title .shim{background:linear-gradient(90deg, #d4470f 0%, #ff6b35 30%, #d4470f 60%, #d4470f 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .card-inside .shim{background:linear-gradient(90deg, #d4470f 0%, #ff6b35 30%, #d4470f 60%, #d4470f 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
   .card-cover img{opacity:0; transition:opacity .5s ease}
   .envelope.open .card-cover img{opacity:1}
   @media (min-width:900px) and (min-height:720px){ .envelope-bob{zoom:1.25} }
@@ -341,6 +341,21 @@
     background:linear-gradient(115deg, transparent 25%, rgba(255,255,255,.9) 42%, rgba(160,200,255,.6) 48%, rgba(255,170,130,.6) 54%, transparent 70%);
     background-size:260% 260%; background-position:var(--sx,120%) var(--sy,50%)}
   .ticket-scene:hover .t-sheen{opacity:1}
+  /* ticket: typographic and photo-free. Deep blue main panel, light stub */
+  .t-main{padding:28px 28px 26px; background:linear-gradient(160deg,#0b478a 0%,#003366 55%,#00234d 100%); color:#fff; overflow:hidden}
+  .t-main:after{content:"10"; position:absolute; right:-16px; bottom:-60px; z-index:0; font:700 190px/1 var(--display); color:transparent; -webkit-text-stroke:1.5px rgba(255,255,255,.08); pointer-events:none}
+  .t-main > *{position:relative; z-index:1}
+  .t-top{position:relative; left:auto; right:auto; bottom:auto; align-items:center; margin:0 0 28px}
+  .t-logo{height:52px; filter:none}
+  .t-tag{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.5)}
+  .t-label{color:rgba(255,255,255,.62)}
+  .t-title{color:#fff; font-size:32px; margin:0 0 24px}
+  .t-name{color:#fff; font-size:34px}
+  .t-grid b{color:#fff}
+  .t-stub{background:#f2f6fb; color:var(--ink); border-left-color:rgba(0,51,102,.22)}
+  .t-qr{box-shadow:0 6px 18px rgba(0,51,102,.14)}
+  .t-ref{color:#c74604}
+  .t-admit{color:var(--muted)}
   .ticket.sweep .t-sheen{opacity:1; animation:sweep 1.8s ease-in-out 1s both}
   @keyframes sweep{ from{background-position:130% 50%} to{background-position:-30% 50%} }
 
@@ -375,9 +390,8 @@
     .where{padding:20px; gap:14px}
     .timeline{padding:22px 20px 18px}
     .ticket{grid-template-columns:1fr}
-    .t-main{padding:0 22px 22px}
-    .t-photo{margin:0 -22px 22px}
-    .t-stub{flex-direction:row; justify-content:space-between; padding:20px 22px; border-left:0; border-top:2px dashed rgba(255,255,255,.3)}
+    .t-main{padding:24px 22px 22px}
+    .t-stub{flex-direction:row; justify-content:space-between; padding:20px 22px; border-left:0; border-top:2px dashed rgba(0,51,102,.22)}
     .t-stub:before, .t-stub:after{top:-14px; bottom:auto}
     .t-stub:before{left:-13px}
     .t-stub:after{left:auto; right:-13px}
@@ -604,9 +618,7 @@
           <div class="ticket-scene" id="ticketScene">
             <div class="ticket" id="ticketNode">
               <div class="t-main">
-                <div class="t-photo">
-                  <div class="t-top"><img class="t-logo" src="img/logo-white.png" alt="Holiday Inn Express"><span class="t-tag">10th Anniversary</span></div>
-                </div>
+                <div class="t-top"><img class="t-logo" src="img/logo-white.png" alt="Holiday Inn Express"><span class="t-tag">10th Anniversary</span></div>
                 <p class="t-label">You're invited to</p>
                 <h3 class="t-title">10 Years, <em class="shim">10 Stories</em></h3>
                 <p class="t-label">Guest</p>
@@ -1206,11 +1218,10 @@
         document.fonts.load('400 30px Inter'), document.fonts.load('600 30px Inter'), document.fonts.load('700 30px Inter')
       ]);
     } catch(e){}
-    var logo = null, photo = null;
+    var logo = null;
     try { logo = await loadImg(LOGO_SRC); } catch(e){}
-    try { photo = await loadImg(HOTEL_SRC); } catch(e){}
 
-    var W = 1080, H = 1780, c = document.createElement('canvas');
+    var W = 1080, H = 1720, c = document.createElement('canvas');
     c.width = W; c.height = H;
     var ctx = c.getContext('2d');
     var serif = '"Playfair Display", Georgia, serif', sans = 'Inter, "Segoe UI", Arial, sans-serif';
@@ -1230,7 +1241,7 @@
     ctx.fillText('10TH ANNIVERSARY  \u00B7  DUBLIN', W / 2, 98); spaced(ctx, 0);
 
     // Card
-    var x = 80, y = 140, w = 920, h = 1500, r = 40, py = 1300, nr = 34;
+    var x = 80, y = 140, w = 920, h = 1440, r = 40, py = 1210, nr = 34;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 30;
     ticketPath(ctx, x, y, w, h, r, py, nr); ctx.fillStyle = '#fff'; ctx.fill();
@@ -1238,17 +1249,15 @@
 
     ctx.save();
     ticketPath(ctx, x, y, w, h, r, py, nr); ctx.clip();
-    ctx.fillStyle = '#f3f6fa'; ctx.fillRect(x, py, w, y + h - py);
-    // Hotel photo header
-    var ph = 300;
-    if (photo){
-      var s = Math.max(w / photo.width, ph / photo.height);
-      var dw = photo.width * s, dh = photo.height * s;
-      ctx.drawImage(photo, x + (w - dw) / 2, y + (ph - dh) * 0.35, dw, dh);
-    } else { ctx.fillStyle = '#0a4a8a'; ctx.fillRect(x, y, w, ph); }
-    var sh = ctx.createLinearGradient(0, y, 0, y + ph);
-    sh.addColorStop(0.3, 'rgba(0,51,102,.05)'); sh.addColorStop(1, 'rgba(0,20,43,.85)');
-    ctx.fillStyle = sh; ctx.fillRect(x, y, w, ph);
+    // Main panel: deep blue with an outlined "10"
+    var mainBg = ctx.createLinearGradient(x, y, x + w * 0.6, py);
+    mainBg.addColorStop(0, '#0b478a'); mainBg.addColorStop(0.55, '#003366'); mainBg.addColorStop(1, '#00234d');
+    ctx.fillStyle = mainBg; ctx.fillRect(x, y, w, py - y);
+    ctx.font = '700 640px ' + serif; ctx.textAlign = 'right';
+    ctx.strokeStyle = 'rgba(255,255,255,.09)'; ctx.lineWidth = 3;
+    ctx.strokeText('10', x + w + 30, py + 40);
+    // Stub panel
+    ctx.fillStyle = '#f2f6fb'; ctx.fillRect(x, py, w, y + h - py);
     var bar = ctx.createLinearGradient(x, 0, x + w, 0);
     bar.addColorStop(0, '#003366'); bar.addColorStop(1, '#FF6B35');
     ctx.fillStyle = bar; ctx.fillRect(x, y, w, 14);
@@ -1257,49 +1266,48 @@
     var L = x + 70, R = x + w - 70;
     ctx.textAlign = 'left';
     if (logo){
-      var lh = 120, lw = lh * logo.width / logo.height;
-      ctx.save(); ctx.shadowColor = 'rgba(0,10,30,.55)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3;
-      ctx.drawImage(logo, L, y + ph - lh - 22, lw, lh); ctx.restore();
+      var lh = 110, lw = lh * logo.width / logo.height;
+      ctx.drawImage(logo, L, y + 56, lw, lh);
     }
 
     // Pill tag
     ctx.font = '700 21px ' + sans; spaced(ctx, 4);
     var tag = '10TH ANNIVERSARY', tw = ctx.measureText(tag).width + 44;
-    roundRect(ctx, R - tw, y + ph - 26 - 50, tw, 50, 25);
-    ctx.fillStyle = 'rgba(0,20,43,.4)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2.5; ctx.stroke();
-    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.fillText(tag, R - tw / 2 + 2, y + ph - 26 - 17);
+    roundRect(ctx, R - tw, y + 86, tw, 50, 25);
+    ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.fillText(tag, R - tw / 2 + 2, y + 86 + 33);
     ctx.textAlign = 'left';
 
-    function label(t, lx, ly){ ctx.font = '700 21px ' + sans; spaced(ctx, 4); ctx.fillStyle = '#5f6b7a'; ctx.fillText(t, lx, ly); spaced(ctx, 0); }
+    function label(t, lx, ly, col){ ctx.font = '700 21px ' + sans; spaced(ctx, 4); ctx.fillStyle = col || 'rgba(255,255,255,.62)'; ctx.fillText(t, lx, ly); spaced(ctx, 0); }
 
-    label("YOU'RE INVITED TO", L, 510);
-    ctx.font = '700 100px ' + serif; ctx.fillStyle = '#003366'; ctx.fillText('10 Years,', L, 615);
-    ctx.font = 'italic 700 100px ' + serif; ctx.fillStyle = '#FF6B35'; ctx.fillText('10 Stories', L, 722);
+    label("YOU'RE INVITED TO", L, 410);
+    ctx.font = '700 100px ' + serif; ctx.fillStyle = '#ffffff'; ctx.fillText('10 Years,', L, 515);
+    ctx.font = 'italic 700 100px ' + serif; ctx.fillStyle = '#FF8A55'; ctx.fillText('10 Stories', L, 622);
 
-    label('GUEST', L, 820);
+    label('GUEST', L, 730);
     var size = 78;
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = '#ffffff';
     do { ctx.font = '700 ' + size + 'px ' + serif; size -= 2; } while (ctx.measureText(rec.name).width > R - L && size > 36);
-    ctx.fillText(rec.name, L, 905);
+    ctx.fillText(rec.name, L, 815);
 
     var C2 = L + 420;
-    label('DATE', L, 982); label('TIME', C2, 982);
-    label('VENUE', L, 1080); label('DRESS CODE', C2, 1080);
-    label('GUESTS', L, 1178); label('GUEST TYPE', C2, 1178);
-    ctx.font = '600 34px ' + sans; ctx.fillStyle = '#1a1a1a';
-    ctx.fillText('Wed 21 Oct 2026', L, 1026); ctx.fillText('5:00 \u2013 10:00 pm', C2, 1026);
-    ctx.fillText('Hotel', L, 1124); ctx.fillText('Smart casual', C2, 1124);
-    ctx.fillText(guestsText(rec), L, 1222); ctx.fillText(rec.tier || 'Guest', C2, 1222);
+    label('DATE', L, 892); label('TIME', C2, 892);
+    label('VENUE', L, 990); label('DRESS CODE', C2, 990);
+    label('GUESTS', L, 1088); label('GUEST TYPE', C2, 1088);
+    ctx.font = '600 34px ' + sans; ctx.fillStyle = '#ffffff';
+    ctx.fillText('Wed 21 Oct 2026', L, 936); ctx.fillText('5:00 \u2013 10:00 pm', C2, 936);
+    ctx.fillText('Hotel', L, 1034); ctx.fillText('Smart casual', C2, 1034);
+    ctx.fillText(guestsText(rec), L, 1132); ctx.fillText(rec.tier || 'Guest', C2, 1132);
 
     // Perforation
     ctx.save();
-    ctx.setLineDash([16, 14]); ctx.strokeStyle = '#cfd9e6'; ctx.lineWidth = 3;
+    ctx.setLineDash([16, 14]); ctx.strokeStyle = 'rgba(0,51,102,.28)'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(x + nr + 20, py); ctx.lineTo(x + w - nr - 20, py); ctx.stroke();
     ctx.restore();
 
     // Stub: QR + reference
-    var qs = 240, qy = py + (y + h - py - qs) / 2;
+    var qs = 230, qy = py + (y + h - py - qs) / 2;
     if (typeof QRCode !== 'undefined'){
       var tmp = document.createElement('div');
       try {
@@ -1313,19 +1321,19 @@
       } catch(e){}
     }
     ctx.textAlign = 'right';
-    label('REFERENCE', R, qy + 50);
+    label('REFERENCE', R, qy + 46, '#5f6b7a');
     ctx.textAlign = 'right';
-    ctx.font = '700 76px ' + serif; ctx.fillStyle = '#FF6B35'; ctx.fillText(rec.ref, R, qy + 138);
+    ctx.font = '700 76px ' + serif; ctx.fillStyle = '#c74604'; ctx.fillText(rec.ref, R, qy + 132);
     ctx.font = '700 24px ' + sans; ctx.fillStyle = '#003366'; spaced(ctx, 4);
-    ctx.fillText(((rec.party || 1) === 1 ? 'ADMIT ONE' : 'ADMITS ' + rec.party), R, qy + 192);
+    ctx.fillText(((rec.party || 1) === 1 ? 'ADMIT ONE' : 'ADMITS ' + rec.party), R, qy + 184);
     ctx.font = '500 22px ' + sans; ctx.fillStyle = '#5f6b7a';
-    ctx.fillText('SHOW ON ARRIVAL', R, qy + 228); spaced(ctx, 0);
+    ctx.fillText('SHOW ON ARRIVAL', R, qy + 220); spaced(ctx, 0);
 
     // Footer
     ctx.textAlign = 'center'; ctx.font = '500 26px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.72)';
-    ctx.font = '700 30px ' + sans; ctx.fillStyle = '#ff8f63'; spaced(ctx, 2); ctx.fillText('#10Years10Stories', W / 2, 1692); spaced(ctx, 0);
+    ctx.font = '700 30px ' + sans; ctx.fillStyle = '#ff8f63'; spaced(ctx, 2); ctx.fillText('#10Years10Stories', W / 2, 1640); spaced(ctx, 0);
     ctx.font = '500 26px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.72)';
-    ctx.fillText("Holiday Inn Express Dublin City Centre \u00B7 28-32 Upper O'Connell St", W / 2, 1738);
+    ctx.fillText("Holiday Inn Express Dublin City Centre \u00B7 28-32 Upper O'Connell St", W / 2, 1686);
 
     return new Promise(function(res, rej){
       c.toBlob(function(b){ b ? res(b) : rej(new Error('toBlob failed')); }, 'image/png');
