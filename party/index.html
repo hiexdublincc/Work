@@ -42,6 +42,19 @@
 
   /* Orange "10 Stories" shimmer (same treatment everywhere it appears) */
   .shim{color:var(--orange); background:linear-gradient(90deg, var(--orange) 0%, #ffc2a3 25%, var(--orange) 50%, var(--orange) 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:textSheen 5s linear 1s infinite}
+  /* on light backgrounds (envelope card, ticket) use a deeper orange so the highlight never washes out */
+  .card-inside .shim, .t-title .shim{background:linear-gradient(90deg, #d4470f 0%, #ff6b35 30%, #d4470f 60%, #d4470f 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .card-cover img{opacity:0; transition:opacity .5s ease}
+  .envelope.open .card-cover img{opacity:1}
+  @media (min-width:900px) and (min-height:720px){ .envelope-bob{zoom:1.25} }
+  .intro > .skip{position:absolute; left:50%; bottom:22px; transform:translateX(-50%); z-index:2; background:none; border:0; padding:8px 14px; color:rgba(255,255,255,.72); font:500 13px var(--body); letter-spacing:.08em; text-decoration:underline; text-underline-offset:3px; cursor:pointer; transition:opacity .4s}
+  .intro > .skip:hover{color:#fff}
+  .intro.opening > .skip{opacity:0; pointer-events:none}
+  .hello{font-family:var(--display); font-style:italic; font-size:clamp(22px,3.4vw,30px); color:#fff; margin:0 0 8px}
+  .hello:empty{display:none}
+  .fine{margin:12px 0 0; text-align:center; font-size:12.5px; line-height:1.5; color:#5f6b7a}
+  .hash{margin:16px 0 0; font-size:14px; color:rgba(255,255,255,.88)}
+  .hash b{color:var(--orange-2)}
 
   /* ---------- Envelope intro with a breakable blue wax seal ---------- */
   .intro{
@@ -150,7 +163,7 @@
   @keyframes kenburns{ from{transform:scale(1)} to{transform:scale(1.1) translate(-1.5%,-1%)} }
   .hero-overlay{position:absolute; inset:0; z-index:-3; background:
     radial-gradient(70% 50% at 50% 45%, rgba(0,51,102,.35), transparent 70%),
-    linear-gradient(180deg, rgba(0,20,43,.66) 0%, rgba(0,51,102,.86) 45%, rgba(0,20,43,.97) 100%)}
+    linear-gradient(180deg, rgba(0,20,43,.72) 0%, rgba(0,51,102,.9) 45%, rgba(0,20,43,.97) 100%)}
   #bokeh{position:absolute; inset:0; width:100%; height:100%; z-index:-2; pointer-events:none}
   .hero-glow{position:absolute; width:640px; height:640px; left:50%; top:42%; margin:-320px 0 0 -320px; z-index:-2; pointer-events:none; background:radial-gradient(circle, rgba(255,107,53,.26), transparent 62%); transition:transform .8s var(--ease)}
   .big10{position:absolute; z-index:-1; width:min(860px,125vw); left:50%; top:2%; transform:translateX(-50%); pointer-events:none; opacity:.6}
@@ -218,6 +231,7 @@
   .reveal.in{opacity:1; transform:none}
 
   .rsvp{color:#fff; background:radial-gradient(90% 55% at 50% 0%, var(--blue-glow) 0%, var(--navy) 55%, var(--navy) 100%)}
+  .rsvp:before{content:""; position:absolute; left:0; right:0; top:0; height:140px; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,.97), transparent)}
   .rsvp .glow.g1{top:auto; bottom:-200px; right:-220px; opacity:.22}
   .rsvp .glow.g2{top:-240px; bottom:auto; left:-260px; opacity:.35}
   .rsvp-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:26px; align-items:start}
@@ -226,6 +240,8 @@
   .section-head h2{font-family:var(--display); font-weight:700; font-size:clamp(32px,4.6vw,46px); line-height:1.08; color:#fff; margin:0 0 14px}
   .deadline{display:inline-flex; align-items:center; gap:10px; margin:0; padding:9px 16px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); font-size:14px; color:rgba(255,255,255,.9)}
   .deadline b{color:var(--orange-2)}
+  .deadline{justify-content:center; text-align:center; max-width:100%}
+  #dlLeft{white-space:nowrap}
   .deadline svg.i{width:16px; height:16px; color:var(--orange-2); flex:none}
 
   .info-col{display:grid; gap:18px; min-width:0}
@@ -300,7 +316,7 @@
   .ticket-scene.pop .ticket{animation:ticketIn 1.1s var(--ease) .2s backwards}
   @keyframes ticketIn{ from{opacity:0; transform:translateY(50px) rotateX(28deg) scale(.94)} }
   .t-main{position:relative; padding:0 28px 26px}
-  .t-main:before{content:""; position:absolute; inset:0 0 auto; height:6px; z-index:3; background:linear-gradient(90deg, var(--navy), var(--orange))}
+  .ticket:before{content:""; position:absolute; inset:0 0 auto; height:6px; z-index:3; background:linear-gradient(90deg, var(--navy), var(--orange))}
   .t-photo{position:relative; height:168px; margin:0 -28px 22px; background:#0a4a8a url('img/hotel.jpg') center 35%/cover no-repeat}
   .t-photo:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,51,102,.05) 30%, rgba(0,20,43,.82) 100%)}
   .t-top{position:absolute; left:22px; right:22px; bottom:14px; z-index:2; display:flex; justify-content:space-between; align-items:flex-end; gap:10px}
@@ -463,6 +479,7 @@
   </div>
   <div class="fo"><h2 class="intro-title">10 Years,<em class="shim">10 Stories</em></h2></div>
   <div class="fo"><p class="intro-hint"><span class="tap-dot"></span>Tap the seal to break it</p></div>
+  <button type="button" class="skip" id="skip">Skip intro</button>
 </div>
 
 <!-- ================= Hero ================= -->
@@ -493,6 +510,7 @@
       <span class="line"><span class="w">10 Years,</span></span>
       <span class="line"><span class="w"><em class="shim">10 Stories</em></span></span>
     </h1>
+    <p class="hello r" style="--d:.6s" id="introHello"></p>
     <p class="tagline r" style="--d:.7s" id="introTagline"></p>
     <p class="note r" style="--d:.8s" id="introNote"></p>
 
@@ -512,15 +530,6 @@
 
     <div class="cta-row r" style="--d:1.15s" id="heroCta">
       <a href="#rsvp" class="btn btn-primary shine"><span id="heroRsvpLabel">RSVP now</span><svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <div class="cal" data-cal>
-        <button type="button" class="btn btn-glass cal-toggle" aria-haspopup="true" aria-expanded="false">
-          <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Add to calendar
-        </button>
-        <div class="cal-menu" role="menu">
-          <button type="button" role="menuitem" data-ics><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Apple / Outlook (.ics)</button>
-          <a role="menuitem" data-gcal target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Google Calendar</a>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -564,6 +573,7 @@
             <div class="field"><input type="text" id="gdiet" placeholder=" " autocomplete="off"><label for="gdiet">Dietary or access needs (optional)</label></div>
             <button type="button" class="btn btn-primary btn-block shine" id="btnConfirm">Confirm my spot <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             <p class="form-msg" id="formMsg" role="alert"></p>
+            <p class="fine">We'll only use your details for this event and won't share them.</p>
           </div>
 
           <div id="stepRegret" class="step hidden">
@@ -635,6 +645,7 @@
               </div>
             </div>
           </div>
+          <p class="hash">Share your evening &middot; <b>#10Years10Stories</b></p>
           <p class="save-msg" id="saveMsg" role="status"></p>
           <button type="button" class="start-over" id="startOver">Not you? Start a new RSVP</button>
         </div>
@@ -705,6 +716,15 @@
   };
   $('introTagline').textContent = tagline[tier] || tagline.general;
   $('introNote').textContent = copy[tier] || copy.general;
+
+  /* ---- Personal links: ?name=Aoife%20Murphy&email=aoife@acme.ie greets and pre-fills ---- */
+  var guestName = (params.get('name') || '').trim().slice(0, 60);
+  if (guestName){
+    $('introHello').textContent = guestName.split(' ')[0] + ', you\'re invited.';
+    $('gname').value = guestName;
+  }
+  var guestEmail = (params.get('email') || '').trim().slice(0, 100);
+  if (guestEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) $('gemail').value = guestEmail;
   var tierLabel = {corporate:'Corporate Partner', leadership:'JMK Leadership', civic:'Civic & Press Guest', staff:'Team Member', general:'Guest'}[tier] || 'Guest';
 
   /* ---- RSVP deadline nudge: "N days left" while the deadline is close ---- */
@@ -741,6 +761,23 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
+  /* ---- Phase: before / tonight / after the party ---- */
+  (function(){
+    var now = new Date(), end = new Date('2026-10-21T22:00:00+01:00');
+    if (now >= EVENT.start && now < end){
+      $('introTagline').textContent = "It's tonight. Doors are open.";
+      document.querySelector('.countdown').classList.add('hidden');
+    } else if (now >= end){
+      $('introTagline').textContent = 'Thank you for ten unforgettable years.';
+      $('introNote').textContent = 'It was a joy to celebrate with you. Here is to the next ten.';
+      document.querySelector('.countdown').classList.add('hidden');
+      document.querySelector('.chips').classList.add('hidden');
+      $('heroCta').classList.add('hidden');
+      $('rsvp').classList.add('hidden');
+      $('stickyCta').classList.add('hidden');
+    }
+  })();
+
   /* ---- Timeline dots ---- */
   var tl = $('tlDots');
   for (var y = 2016; y <= 2026; y++){
@@ -776,6 +813,7 @@
     setTimeout(function(){ intro.classList.add('hidden'); }, 4900);
   }
   envelope.addEventListener('click', openInvite);
+  $('skip').addEventListener('click', function(){ intro.classList.add('hidden'); revealPage(); });
   seal.focus({preventScroll:true});
 
   /* ---- Floating bokeh in the hero ---- */
@@ -1285,7 +1323,9 @@
 
     // Footer
     ctx.textAlign = 'center'; ctx.font = '500 26px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.72)';
-    ctx.fillText("Holiday Inn Express Dublin City Centre \u00B7 28-32 Upper O'Connell St", W / 2, 1732);
+    ctx.font = '700 30px ' + sans; ctx.fillStyle = '#ff8f63'; spaced(ctx, 2); ctx.fillText('#10Years10Stories', W / 2, 1692); spaced(ctx, 0);
+    ctx.font = '500 26px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.72)';
+    ctx.fillText("Holiday Inn Express Dublin City Centre \u00B7 28-32 Upper O'Connell St", W / 2, 1738);
 
     return new Promise(function(res, rej){
       c.toBlob(function(b){ b ? res(b) : rej(new Error('toBlob failed')); }, 'image/png');
