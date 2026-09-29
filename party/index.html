@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>10 Years, 10 Stories - HIEX Dublin</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#003366">
+<meta name="description" content="You're invited: 10 Years, 10 Stories - Holiday Inn Express Dublin City Centre, Wed 21 October, 5-10pm.">
+<meta property="og:title" content="10 Years, 10 Stories - HIEX Dublin">
+<meta property="og:description" content="You're invited to celebrate ten years of Holiday Inn Express Dublin City Centre. Wed 21 October, 5-10pm.">
+<meta property="og:url" content="https://www.dublinmeet.ie/holidayinnexpress/party/">
+<meta property="og:image" content="https://www.dublinmeet.ie/holidayinnexpress/party/img/bg.jpg">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --navy:#003366; --navy-ink:#00142b; --blue:#0052a3; --blue-glow:#0a4a8a;
+    --orange:#FF6B35; --orange-2:#ff8f63;
+    --ink:#1a1a1a; --muted:#5f6b7a; --light:#f8f9fa; --line:#e3e9f2; --input:#f0f4f8;
+    --radius:20px; --ease:cubic-bezier(.22,1,.36,1);
+    --display:'Playfair Display', Georgia, serif;
+    --body:'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; -webkit-text-size-adjust:100%}
+  body{margin:0; font-family:var(--body); color:var(--ink); background:var(--navy-ink); -webkit-font-smoothing:antialiased; overflow-x:hidden}
+  body.locked{overflow:hidden; height:100svh}
+  img{max-width:100%}
+  .hidden{display:none !important}
+  svg.i{width:20px; height:20px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:none} }
+  @keyframes ping{ 0%{box-shadow:0 0 0 0 rgba(255,107,53,.6)} 100%{box-shadow:0 0 0 14px rgba(255,107,53,0)} }
+  @keyframes drift{ to{transform:translate(40px,30px) scale(1.12)} }
+  @keyframes textSheen{ from{background-position:100% 0} to{background-position:-100% 0} }
+
+  /* Orange "10 Stories" shimmer (same treatment everywhere it appears) */
+  .shim{color:var(--orange); background:linear-gradient(90deg, var(--orange) 0%, #ffc2a3 25%, var(--orange) 50%, var(--orange) 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:textSheen 5s linear 1s infinite}
+
+  /* ---------- Intro: blue wax seal, iris reveal ---------- */
+  .intro{
+    position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px 16px; color:#fff; overflow:hidden; text-align:center;
+    background:radial-gradient(120% 90% at 50% 0%, var(--blue-glow) 0%, var(--navy) 45%, var(--navy-ink) 100%);
+    clip-path:circle(150% at var(--cx,50%) var(--cy,78%));
+    transition:clip-path 1.5s cubic-bezier(.65,0,.35,1);
+  }
+  .intro.closing{clip-path:circle(0% at var(--cx,50%) var(--cy,78%)); pointer-events:none}
+  .intro > *:not(.glow):not(.intro-ten){position:relative; z-index:1}
+  .glow{position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none}
+  .glow.g1{width:420px; height:420px; background:var(--orange); top:-160px; right:-140px; opacity:.32; animation:drift 14s ease-in-out infinite alternate}
+  .glow.g2{width:520px; height:520px; background:#0a6ad1; bottom:-220px; left:-180px; opacity:.45; animation:drift 18s ease-in-out infinite alternate-reverse}
+  .intro-ten{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%); z-index:0; pointer-events:none; white-space:nowrap;
+    font:700 clamp(240px,56vmin,580px)/.8 var(--display); letter-spacing:-.04em; color:transparent; -webkit-text-stroke:1.5px rgba(155,203,235,.26); animation:fadeUp 1.4s var(--ease) both}
+  .fo{transition:opacity .5s ease, transform .5s ease}
+  .intro.opening .fo{opacity:0; transform:translateY(10px)}
+  .intro-eyebrow{font-size:12px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:0 0 22px; animation:fadeUp .8s var(--ease) .1s both}
+  .intro-title{font-family:var(--display); font-weight:700; font-size:clamp(46px,8.4vw,92px); line-height:1.02; margin:0 0 16px; animation:fadeUp .9s var(--ease) .25s both; text-shadow:0 4px 24px rgba(0,10,40,.4)}
+  .intro-title em{display:block; font-style:italic; text-shadow:none}
+  .intro-sub{margin:0 0 34px; font-size:clamp(14px,1.6vw,17px); color:rgba(255,255,255,.82); letter-spacing:.02em; animation:fadeUp .9s var(--ease) .4s both}
+  .seal{position:relative; width:132px; height:132px; padding:0; border:0; border-radius:50%; background:none; cursor:pointer; -webkit-tap-highlight-color:transparent; filter:drop-shadow(0 12px 20px rgba(0,10,40,.6)); animation:fadeUp .9s var(--ease) .5s both, breathe 3.2s ease-in-out 1.4s infinite; transition:transform .55s var(--ease), opacity .45s ease}
+  .seal svg{display:block; width:100%; height:100%}
+  .seal:before{content:""; position:absolute; inset:16px; border-radius:50%; border:2px solid rgba(155,203,235,.8); animation:sealRing 2.2s ease-out infinite}
+  .seal:focus-visible{outline:3px solid var(--orange-2); outline-offset:6px}
+  @keyframes breathe{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.045)} }
+  @keyframes sealRing{ from{transform:scale(.9); opacity:1} to{transform:scale(1.55); opacity:0} }
+  .intro.opening .seal{transform:scale(1.3); opacity:0; animation:none}
+  .intro-hint{display:flex; align-items:center; justify-content:center; gap:10px; margin:18px 0 0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.8); animation:fadeUp .9s var(--ease) .6s both}
+  .tap-dot{width:8px; height:8px; border-radius:50%; background:var(--orange); animation:ping 1.8s ease-out infinite}
+
+  /* ---------- Hero ---------- */
+  .topbar{position:absolute; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,40px)}
+  .brand{display:inline-flex; background:#fff; border-radius:12px; padding:6px 10px; box-shadow:0 10px 30px rgba(0,0,0,.3); transition:transform .3s var(--ease)}
+  .brand:hover{transform:translateY(-2px)}
+  .brand img{height:40px; display:block}
+  .badge{display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:999px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); color:#fff; font-size:11.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase}
+  .badge i{width:7px; height:7px; border-radius:50%; background:var(--orange); animation:ping 2s infinite}
+
+  .hero{position:relative; min-height:100svh; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; isolation:isolate; padding:120px 16px 100px}
+  .hero-bg{position:absolute; inset:-4%; z-index:-4; background:url('img/bg.jpg') center/cover no-repeat; animation:kenburns 30s ease-in-out infinite alternate}
+  @keyframes kenburns{ from{transform:scale(1)} to{transform:scale(1.12) translate(-2%,-1%)} }
+  .hero-overlay{position:absolute; inset:0; z-index:-3; background:
+    radial-gradient(70% 50% at 50% 45%, rgba(0,51,102,.35), transparent 70%),
+    linear-gradient(180deg, rgba(0,20,43,.6) 0%, rgba(0,51,102,.84) 45%, rgba(0,20,43,.97) 100%)}
+  #bokeh{position:absolute; inset:0; width:100%; height:100%; z-index:-2; pointer-events:none}
+  .hero-glow{position:absolute; width:640px; height:640px; left:50%; top:42%; margin:-320px 0 0 -320px; z-index:-2; pointer-events:none; background:radial-gradient(circle, rgba(255,107,53,.26), transparent 62%); transition:transform .8s var(--ease)}
+  .big10{position:absolute; z-index:-1; width:min(860px,125vw); left:50%; top:4%; transform:translateX(-50%); pointer-events:none; opacity:.6}
+  @media (max-width:540px){ .big10{top:12%} }
+  .big10 text{font-family:var(--display); font-weight:700; font-size:330px; fill:rgba(255,255,255,0); stroke:url(#g10); stroke-width:1.4; stroke-dasharray:1500; stroke-dashoffset:1500}
+  body.opened .big10 text{animation:draw10 3.2s var(--ease) .2s forwards}
+  @keyframes draw10{ 70%{fill:rgba(255,255,255,0)} to{stroke-dashoffset:0; fill:rgba(255,255,255,.035)} }
+
+  .hero-inner{position:relative; max-width:780px; text-align:center; will-change:opacity, transform}
+  .r{opacity:0; transform:translateY(18px)}
+  body.opened .r{animation:fadeUp 1s var(--ease) var(--d,0s) forwards}
+  .eyebrow{display:inline-flex; align-items:center; gap:14px; margin:0 0 24px; font-size:12px; font-weight:500; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.82)}
+  .eyebrow:before, .eyebrow:after{content:""; width:28px; height:1px; background:var(--orange)}
+  .headline{font-family:var(--display); font-weight:700; font-size:clamp(60px,14vw,132px); line-height:.95; letter-spacing:-.02em; margin:0 0 28px}
+  .headline .line{display:block; overflow:hidden; padding:0 .08em .1em}
+  .headline .w{display:inline-block; transform:translateY(115%)}
+  body.opened .headline .w{animation:rise 1.2s var(--ease) .15s forwards}
+  body.opened .headline .line + .line .w{animation-delay:.32s}
+  @keyframes rise{ to{transform:none} }
+  .headline em{font-style:italic; animation-delay:2s}
+  .tagline{font-size:clamp(17px,2.4vw,21px); font-weight:600; color:var(--orange-2); margin:0 0 12px}
+  .note{font-size:clamp(15px,2vw,17px); line-height:1.75; font-weight:300; color:rgba(255,255,255,.86); max-width:580px; margin:0 auto 28px}
+
+  .chips{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:0 0 30px}
+  .chip{display:flex; flex-direction:column; gap:3px; min-width:120px; padding:11px 18px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); text-align:center}
+  .chip small{font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.62)}
+  .chip b{font-size:15px; font-weight:600}
+
+  .countdown{display:flex; justify-content:center; gap:clamp(8px,2vw,14px); margin:0 0 36px}
+  .cd{width:clamp(70px,19vw,94px); padding:15px 0 12px; border-radius:18px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px -10px rgba(0,0,0,.4)}
+  .cd b{display:block; overflow:hidden; font-family:var(--display); font-weight:700; font-size:clamp(30px,6.5vw,42px); line-height:1.05; font-variant-numeric:tabular-nums}
+  .cd b span{display:inline-block}
+  .cd b span.tick{animation:tick .55s var(--ease)}
+  @keyframes tick{ from{transform:translateY(-70%); opacity:0} to{transform:none; opacity:1} }
+  .cd:last-child b{color:var(--orange)}
+  .cd small{display:block; margin-top:6px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.6)}
+
+  .btn{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:16px 26px; border-radius:999px; border:0; cursor:pointer; overflow:hidden; text-decoration:none; font:600 15px/1.1 var(--body); -webkit-tap-highlight-color:transparent; transition:transform .3s var(--ease), box-shadow .3s, background .3s, color .3s}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{opacity:.7; cursor:progress}
+  .btn:focus-visible, .choice:focus-visible, .back:focus-visible{outline:3px solid var(--orange-2); outline-offset:3px}
+  .btn-primary{background:var(--orange); color:#fff; box-shadow:0 12px 30px -8px rgba(255,107,53,.75)}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 18px 38px -8px rgba(255,107,53,.85)}
+  .btn-primary:hover .arrow{transform:translateX(4px)}
+  .arrow{transition:transform .3s var(--ease)}
+  .shine:after{content:""; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent); transform:skewX(-20deg); animation:shine 3.4s ease-in-out 2.2s infinite}
+  @keyframes shine{ 0%{left:-60%} 40%,100%{left:130%} }
+  .btn-glass{background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.3); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+  .btn-glass:hover{background:rgba(255,255,255,.2); transform:translateY(-2px)}
+  .btn-block{width:100%; padding:18px}
+  .cta-row{display:flex; flex-wrap:wrap; gap:12px; justify-content:center}
+
+  .cal{position:relative; display:inline-block}
+  .cal-menu{position:absolute; top:calc(100% + 10px); left:50%; z-index:20; min-width:230px; padding:6px; border-radius:16px; background:#fff; box-shadow:0 24px 60px rgba(0,0,0,.35); opacity:0; visibility:hidden; transform:translate(-50%,-6px); transition:opacity .2s, transform .25s var(--ease), visibility .2s}
+  .cal.open .cal-menu{opacity:1; visibility:visible; transform:translate(-50%,0)}
+  .cal-menu a, .cal-menu button{display:flex; align-items:center; gap:10px; width:100%; padding:13px 14px; border:0; border-radius:10px; background:none; color:var(--ink); font:500 14.5px var(--body); text-align:left; text-decoration:none; cursor:pointer}
+  .cal-menu a:hover, .cal-menu button:hover{background:var(--input)}
+  .cal-menu svg{color:var(--orange)}
+
+  .scroll-cue{position:absolute; bottom:26px; left:50%; width:26px; height:42px; margin-left:-13px; border:2px solid rgba(255,255,255,.4); border-radius:14px; opacity:0; transition:opacity 1s 1.8s}
+  body.opened .scroll-cue{opacity:1}
+  .scroll-cue:after{content:""; position:absolute; top:8px; left:50%; width:4px; height:8px; margin-left:-2px; border-radius:2px; background:#fff; animation:wheel 1.8s ease-in-out infinite}
+  @keyframes wheel{ 0%{transform:translateY(0); opacity:1} 80%{transform:translateY(12px); opacity:0} 100%{opacity:0} }
+
+  /* ---------- Sections ---------- */
+  .section{position:relative; padding:clamp(76px,10vw,124px) 16px; overflow:hidden}
+  .container{max-width:1080px; margin:0 auto; position:relative}
+  .narrow{max-width:640px}
+  .light{background:var(--light)}
+  .section-head{text-align:center; max-width:660px; margin:0 auto 48px}
+  .kicker{display:inline-block; margin:0 0 14px; font-size:12px; font-weight:700; letter-spacing:.26em; text-transform:uppercase; color:var(--orange)}
+  .section h2{font-family:var(--display); font-weight:700; font-size:clamp(34px,5.5vw,54px); line-height:1.08; color:var(--navy); margin:0 0 16px}
+  .section h2 em{color:var(--orange)}
+  .lead{margin:0; font-size:17px; line-height:1.75; color:var(--muted)}
+  .reveal{opacity:0; transform:translateY(30px); transition:opacity 1s var(--ease) var(--d,0s), transform 1s var(--ease) var(--d,0s)}
+  .reveal.in{opacity:1; transform:none}
+
+  .cards{display:grid; grid-template-columns:repeat(4,1fr); gap:20px}
+  .card{position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:28px 22px; box-shadow:0 1px 2px rgba(0,51,102,.04), 0 14px 34px -14px rgba(0,51,102,.14); transition:transform .45s var(--ease), box-shadow .45s var(--ease), opacity 1s var(--ease) var(--d,0s)}
+  .card:before{content:""; position:absolute; inset:0 0 auto; height:4px; background:linear-gradient(90deg, var(--navy), var(--orange)); transform:scaleX(0); transform-origin:left; transition:transform .6s var(--ease)}
+  .card.in:hover{transform:translateY(-6px); box-shadow:0 2px 4px rgba(0,51,102,.05), 0 26px 50px -18px rgba(0,51,102,.28)}
+  .card:hover:before{transform:scaleX(1)}
+  .card-icon{width:54px; height:54px; margin-bottom:22px; border-radius:15px; display:grid; place-items:center; color:var(--orange); background:linear-gradient(135deg, rgba(255,107,53,.16), rgba(255,107,53,.04)); transition:transform .5s var(--ease)}
+  .card-icon svg.i{width:24px; height:24px}
+  .card:hover .card-icon{transform:rotate(-8deg) scale(1.08)}
+  .card-label{margin:0 0 6px; font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
+  .card-value{margin:0 0 6px; font-family:var(--display); font-weight:700; font-size:24px; line-height:1.2; color:var(--navy)}
+  .card-sub{margin:0; font-size:14.5px; line-height:1.55; color:var(--muted)}
+  .card-link{display:inline-flex; align-items:center; gap:6px; margin-top:14px; color:#c94a17; font-weight:600; font-size:14px; text-decoration:none}
+  .card-link svg.i{width:16px; height:16px}
+  .card-link:hover .arrow{transform:translateX(4px)}
+
+  .timeline{margin-top:28px; padding:34px clamp(22px,4vw,48px) 30px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 14px 34px -14px rgba(0,51,102,.14)}
+  .tl-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px 16px; margin-bottom:34px}
+  .tl-head h3{margin:0; font-family:var(--display); font-size:24px; color:var(--navy)}
+  .tl-head span{font-size:14px; font-weight:600; color:var(--muted)}
+  .tl{position:relative; padding:0 9px}
+  .tl-track{position:absolute; left:9px; right:9px; top:8px; height:3px; border-radius:3px; background:var(--line); overflow:hidden}
+  .tl-fill{height:100%; background:linear-gradient(90deg, var(--navy), var(--blue) 60%, var(--orange)); transform:scaleX(0); transform-origin:left; transition:transform 2s var(--ease) .2s}
+  .timeline.in .tl-fill{transform:scaleX(1)}
+  .tl-dots{position:relative; display:flex; justify-content:space-between; list-style:none; margin:0; padding:0}
+  .tl-dots li{width:0; display:flex; flex-direction:column; align-items:center; gap:12px}
+  .tl-dots i{display:block; flex:none; width:19px; height:19px; border-radius:50%; background:#fff; border:3px solid var(--line); transform:scale(.4); transition:transform .5s var(--ease), border-color .5s; transition-delay:calc(var(--n) * .17s + .2s)}
+  .timeline.in .tl-dots i{transform:scale(1); border-color:var(--navy)}
+  .timeline.in .tl-dots li:last-child i{border-color:var(--orange); background:var(--orange); animation:ping 1.8s ease-out 2.2s infinite}
+  .tl-dots span{font-size:12px; font-weight:600; color:var(--muted); white-space:nowrap}
+  .tl-dots li:last-child span{color:#c94a17}
+  .tl-caption{margin:28px 0 0; text-align:center; font-size:15px; line-height:1.6; color:var(--muted)}
+
+  /* ---------- RSVP ---------- */
+  .rsvp{color:#fff; background:radial-gradient(90% 55% at 50% 0%, var(--blue-glow) 0%, var(--navy) 55%, var(--navy) 100%)}
+  .rsvp .glow.g1{top:auto; bottom:-200px; right:-220px; opacity:.22}
+  .rsvp .glow.g2{top:-240px; bottom:auto; left:-260px; opacity:.35}
+  .rsvp .section-head h2{color:#fff}
+  .deadline{display:inline-flex; align-items:center; gap:10px; margin:6px 0 0; padding:10px 16px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); font-size:14px; color:rgba(255,255,255,.88)}
+  .deadline b{color:var(--orange-2)}
+  .deadline svg.i{width:16px; height:16px; color:var(--orange-2)}
+  .rsvp-card{background:#fff; color:var(--ink); border-radius:26px; padding:clamp(22px,5vw,40px); box-shadow:0 40px 90px -24px rgba(0,0,0,.55)}
+  .step{animation:fadeUp .55s var(--ease)}
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .choice{display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:24px 22px; border-radius:20px; border:1.5px solid var(--line); background:var(--light); color:var(--ink); font:inherit; text-align:left; cursor:pointer; transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .3s}
+  .choice:hover{transform:translateY(-4px); border-color:var(--orange); box-shadow:0 16px 34px -16px rgba(255,107,53,.55)}
+  .choice:active{transform:scale(.98)}
+  .choice-yes{position:relative; overflow:hidden; color:#fff; border-color:transparent; background:linear-gradient(135deg, #e85a25, #ff7a45); box-shadow:0 16px 36px -14px rgba(255,107,53,.8)}
+  .choice-ic{width:46px; height:46px; border-radius:14px; display:grid; place-items:center; background:rgba(255,255,255,.22)}
+  .choice-no .choice-ic{background:#fff; color:var(--navy); border:1px solid var(--line)}
+  .choice strong{display:block; font-size:18px; font-weight:700}
+  .choice small{display:block; margin-top:4px; font-size:13.5px; opacity:.9}
+  .step-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px}
+  .step-head h3{margin:0; font-family:var(--display); font-size:24px; color:var(--navy)}
+  .back{display:inline-flex; align-items:center; gap:6px; padding:6px 2px; border:0; background:none; color:var(--muted); font:600 14px var(--body); cursor:pointer}
+  .back:hover{color:var(--navy)}
+  .back svg.i{width:16px; height:16px; transform:scaleX(-1)}
+  .regret-text{margin:0 0 20px; font-size:15.5px; line-height:1.65; color:var(--muted)}
+  .field{position:relative; margin-bottom:14px}
+  .field input{width:100%; height:60px; padding:24px 16px 8px; border-radius:14px; border:1.5px solid var(--line); background:var(--input); color:var(--ink); font:500 16px var(--body); outline:none; transition:border-color .2s, background .2s, box-shadow .2s}
+  .field label{position:absolute; left:17px; top:20px; max-width:calc(100% - 34px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15.5px; color:#6b7686; pointer-events:none; transition:all .22s var(--ease)}
+  .field input:focus{border-color:var(--navy); background:#fff; box-shadow:0 0 0 4px rgba(0,51,102,.08)}
+  .field input:focus + label, .field input:not(:placeholder-shown) + label{top:9px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--navy)}
+  .field input[type=number]{-moz-appearance:textfield}
+  .form-msg{min-height:1.2em; margin:12px 0 0; text-align:center; font-size:13.5px; font-weight:600; color:#dc2626}
+  .regret-done{text-align:center; padding:10px 0}
+  .regret-done p{margin:0; font-size:16px; line-height:1.7; color:var(--muted)}
+  .regret-done .choice-ic{margin:0 auto 16px; background:var(--input); color:var(--navy)}
+
+  /* ---------- Done + ticket ---------- */
+  .done{text-align:center}
+  .check{display:block; width:78px; height:78px; margin:0 auto 18px}
+  .check circle{fill:none; stroke:var(--orange); stroke-width:4; stroke-dasharray:227; stroke-dashoffset:227; animation:dash .8s var(--ease) forwards}
+  .check path{fill:none; stroke:#fff; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:50; stroke-dashoffset:50; animation:dash .5s var(--ease) .6s forwards}
+  @keyframes dash{ to{stroke-dashoffset:0} }
+  .done-lead{margin:0 auto 34px; max-width:460px; font-size:16.5px; line-height:1.7; color:rgba(255,255,255,.85)}
+
+  .ticket-scene{perspective:1200px; max-width:640px; margin:0 auto; text-align:left}
+  .ticket{position:relative; display:grid; grid-template-columns:1fr 196px; overflow:hidden; background:#fff; color:var(--ink); border-radius:22px; box-shadow:0 44px 90px -26px rgba(0,0,0,.65); transform-style:preserve-3d; transition:transform .25s ease-out}
+  .ticket-scene.pop .ticket{animation:ticketIn 1.1s var(--ease) .2s backwards}
+  @keyframes ticketIn{ from{opacity:0; transform:translateY(50px) rotateX(28deg) scale(.94)} }
+  .t-main{position:relative; padding:0 28px 26px}
+  .t-main:before{content:""; position:absolute; inset:0 0 auto; height:6px; z-index:3; background:linear-gradient(90deg, var(--navy), var(--orange))}
+  .t-photo{position:relative; height:168px; margin:0 -28px 22px; background:#0a4a8a url('img/hotel.jpg') center 35%/cover no-repeat}
+  .t-photo:after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,51,102,.05) 30%, rgba(0,20,43,.82) 100%)}
+  .t-top{position:absolute; left:22px; right:22px; bottom:14px; z-index:2; display:flex; justify-content:space-between; align-items:flex-end; gap:10px}
+  .t-logo{height:44px; display:block; border-radius:6px}
+  .t-tag{padding:6px 10px; border-radius:999px; border:1.5px solid rgba(255,255,255,.6); color:#fff; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; white-space:nowrap; background:rgba(0,20,43,.35)}
+  .t-label{margin:0 0 4px; font-size:10.5px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
+  .t-title{margin:0 0 20px; font-family:var(--display); font-size:28px; line-height:1.1; color:var(--navy)}
+  .t-title em{color:var(--orange)}
+  .t-name{margin:0 0 20px; font-family:var(--display); font-weight:700; font-size:30px; line-height:1.15; color:var(--ink); overflow-wrap:anywhere}
+  .t-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px}
+  .t-grid b{display:block; font-size:14px; color:var(--ink)}
+  .t-stub{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:26px 18px; color:#fff; background:linear-gradient(160deg, var(--navy), var(--blue-glow)); border-left:2px dashed rgba(255,255,255,.3)}
+  .t-stub:before, .t-stub:after{content:""; position:absolute; left:-14px; width:26px; height:26px; border-radius:50%; background:var(--navy)}
+  .t-stub:before{top:-13px}
+  .t-stub:after{bottom:-13px}
+  .t-qr{padding:10px; border-radius:12px; background:#fff; line-height:0}
+  .t-qr img, .t-qr canvas{display:block; width:116px !important; height:116px !important}
+  .t-stub-text{text-align:center}
+  .t-ref{margin:0 0 4px; font-family:var(--display); font-weight:700; font-size:22px; letter-spacing:.04em; color:var(--orange-2)}
+  .t-admit{margin:0; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.78)}
+  .t-sheen{position:absolute; inset:0; pointer-events:none; opacity:0; mix-blend-mode:soft-light; transition:opacity .4s;
+    background:linear-gradient(115deg, transparent 25%, rgba(255,255,255,.9) 42%, rgba(160,200,255,.6) 48%, rgba(255,170,130,.6) 54%, transparent 70%);
+    background-size:260% 260%; background-position:var(--sx,120%) var(--sy,50%)}
+  .ticket-scene:hover .t-sheen{opacity:1}
+  .ticket.sweep .t-sheen{opacity:1; animation:sweep 1.8s ease-in-out 1s both}
+  @keyframes sweep{ from{background-position:130% 50%} to{background-position:-30% 50%} }
+
+  .done-actions{display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:30px}
+  .done-actions .btn-primary{min-width:230px}
+  .save-msg{min-height:1.2em; margin:14px 0 0; font-size:13.5px; color:rgba(255,255,255,.75)}
+  .start-over{margin-top:16px; border:0; background:none; color:rgba(255,255,255,.7); font:14px var(--body); text-decoration:underline; text-underline-offset:3px; cursor:pointer}
+  .start-over:hover{color:#fff}
+
+  .sticky-cta{position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); z-index:50; display:none; transform:translateY(160%); transition:transform .5s var(--ease)}
+  .sticky-cta.show{transform:none}
+  .sticky-cta .btn{width:100%}
+
+  .footer{padding:48px 16px calc(48px + env(safe-area-inset-bottom, 0px)); text-align:center; background:var(--navy-ink); color:rgba(255,255,255,.7); font-size:14px; line-height:1.75}
+  .footer .brand{margin-bottom:18px}
+  .footer .brand img{height:34px}
+  .footer p{margin:0}
+
+  @media (max-width:1000px){ .cards{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:820px){ .sticky-cta{display:block} }
+  @media (max-width:560px){ .cards{grid-template-columns:1fr} }
+  @media (max-width:540px){
+    .eyebrow{letter-spacing:.16em; font-size:11px}
+    .eyebrow:before, .eyebrow:after{display:none}
+    .badge{font-size:10.5px; padding:8px 12px}
+    .brand img{height:34px}
+    .choices{grid-template-columns:1fr}
+    .choice{flex-direction:row; align-items:center; padding:20px}
+    .ticket{grid-template-columns:1fr}
+    .t-main{padding:0 22px 22px}
+    .t-photo{margin:0 -22px 22px}
+    .t-stub{flex-direction:row; justify-content:space-between; padding:20px 22px; border-left:0; border-top:2px dashed rgba(255,255,255,.3)}
+    .t-stub:before, .t-stub:after{top:-14px; bottom:auto}
+    .t-stub:before{left:-13px}
+    .t-stub:after{left:auto; right:-13px}
+    .t-stub-text{text-align:right}
+    .t-qr img, .t-qr canvas{width:96px !important; height:96px !important}
+    .done-actions .btn{width:100%}
+    .seal{width:116px; height:116px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *, *:before, *:after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
+  }
+</style>
+<noscript><style>.intro{display:none}.r,.reveal{opacity:1 !important; transform:none !important}.headline .w{transform:none}body.locked{overflow:auto; height:auto}</style></noscript>
+</head>
+
+<body class="locked">
+
+<!-- ================= Intro: blue wax seal ================= -->
+<div class="intro" id="intro">
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="intro-ten" aria-hidden="true">10</div>
+  <div class="fo"><p class="intro-eyebrow">You're invited</p></div>
+  <div class="fo"><h2 class="intro-title">10 Years,<em class="shim">10 Stories</em></h2></div>
+  <div class="fo"><p class="intro-sub">An evening celebrating a decade in the heart of Dublin</p></div>
+  <button type="button" class="seal" id="seal" aria-label="Break the seal to open your invitation">
+    <svg viewBox="0 0 140 140" aria-hidden="true">
+      <defs>
+        <filter id="waxEdge" x="-15%" y="-15%" width="130%" height="130%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="11" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+        </filter>
+        <radialGradient id="waxBody" cx="34%" cy="28%" r="85%">
+          <stop offset="0" stop-color="#6fa8ec"/><stop offset="0.35" stop-color="#1f6fd0"/><stop offset="0.75" stop-color="#0b4497"/><stop offset="1" stop-color="#062a66"/>
+        </radialGradient>
+        <radialGradient id="waxDish" cx="60%" cy="70%" r="80%">
+          <stop offset="0" stop-color="#0a3c86"/><stop offset="0.6" stop-color="#1257b3"/><stop offset="1" stop-color="#3b84dc"/>
+        </radialGradient>
+        <radialGradient id="waxGloss" cx="30%" cy="22%" r="45%">
+          <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <g filter="url(#waxEdge)">
+        <circle cx="70" cy="70" r="55" fill="url(#waxBody)"/>
+        <circle cx="118" cy="98" r="11" fill="#0b4497"/>
+        <circle cx="24" cy="106" r="9" fill="#0b4497"/>
+        <circle cx="112" cy="30" r="8" fill="#1257b3"/>
+      </g>
+      <circle cx="70" cy="70" r="41" fill="url(#waxDish)"/>
+      <circle cx="70" cy="70" r="41" fill="none" stroke="#062a66" stroke-opacity="0.55" stroke-width="2"/>
+      <circle cx="70" cy="71.5" r="39" fill="none" stroke="#9BCBEB" stroke-opacity="0.45" stroke-width="1.5"/>
+      <circle cx="70" cy="70" r="33" fill="none" stroke="#9BCBEB" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="1.5 4.5" stroke-linecap="round"/>
+      <text x="71.5" y="83" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#04234f" fill-opacity="0.8">10</text>
+      <text x="70" y="81.5" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#d6e9fb">10</text>
+      <ellipse cx="50" cy="38" rx="30" ry="18" fill="url(#waxGloss)"/>
+    </svg>
+  </button>
+  <div class="fo"><p class="intro-hint"><span class="tap-dot"></span>Break the seal to open</p></div>
+</div>
+
+<!-- ================= Hero ================= -->
+<header class="topbar">
+  <a class="brand" href="../" title="Holiday Inn Express Dublin City Centre"><img src="img/logo.png" alt="Holiday Inn Express by IHG"></a>
+  <span class="badge"><i></i>10th Anniversary</span>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <canvas id="bokeh" aria-hidden="true"></canvas>
+  <div class="hero-glow" id="heroGlow"></div>
+  <svg class="big10" id="big10" viewBox="0 0 600 360" aria-hidden="true">
+    <defs>
+      <linearGradient id="g10" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffffff" stop-opacity=".5"/>
+        <stop offset=".6" stop-color="#FF6B35" stop-opacity=".6"/>
+        <stop offset="1" stop-color="#FF6B35" stop-opacity=".15"/>
+      </linearGradient>
+    </defs>
+    <text x="50%" y="300" text-anchor="middle">10</text>
+  </svg>
+
+  <div class="hero-inner" id="heroInner">
+    <p class="eyebrow r" style="--d:.05s">Est. 2016 &middot; O'Connell Street &middot; Dublin 1</p>
+    <h1 class="headline">
+      <span class="line"><span class="w">10 Years,</span></span>
+      <span class="line"><span class="w"><em class="shim">10 Stories</em></span></span>
+    </h1>
+    <p class="tagline r" style="--d:.7s" id="introTagline"></p>
+    <p class="note r" style="--d:.8s" id="introNote"></p>
+
+    <div class="chips r" style="--d:.9s">
+      <div class="chip"><small>Date</small><b>Wed 21 Oct</b></div>
+      <div class="chip"><small>Time</small><b>5 &ndash; 10pm</b></div>
+      <div class="chip"><small>Dress code</small><b>Smart casual</b></div>
+    </div>
+
+    <div class="countdown r" style="--d:1s" role="timer" aria-label="Countdown to the party">
+      <div class="cd"><b><span id="cd-d">00</span></b><small>Days</small></div>
+      <div class="cd"><b><span id="cd-h">00</span></b><small>Hours</small></div>
+      <div class="cd"><b><span id="cd-m">00</span></b><small>Mins</small></div>
+      <div class="cd"><b><span id="cd-s">00</span></b><small>Secs</small></div>
+    </div>
+
+    <div class="cta-row r" style="--d:1.15s" id="heroCta">
+      <a href="#rsvp" class="btn btn-primary shine"><span id="heroRsvpLabel">RSVP now</span><svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <div class="cal" data-cal>
+        <button type="button" class="btn btn-glass cal-toggle" aria-haspopup="true" aria-expanded="false">
+          <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Add to calendar
+        </button>
+        <div class="cal-menu" role="menu">
+          <button type="button" role="menuitem" data-ics><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Apple / Outlook (.ics)</button>
+          <a role="menuitem" data-gcal target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Google Calendar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a class="scroll-cue" href="#details" aria-label="Scroll to details"></a>
+</section>
+
+<!-- ================= Details ================= -->
+<section class="section light" id="details">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="kicker">The evening</p>
+      <h2>An evening in the heart of <em>Dublin</em></h2>
+      <p class="lead">Join us at the hotel to raise a glass to a decade on O'Connell Street, and the people who made it what it is.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card reveal" style="--d:0s">
+        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div>
+        <p class="card-label">Date</p>
+        <p class="card-value">Wednesday 21 October</p>
+        <p class="card-sub">Kindly RSVP by 10.10</p>
+      </div>
+      <div class="card reveal" style="--d:.1s">
+        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <p class="card-label">Time</p>
+        <p class="card-value">5:00 &ndash; 10:00 pm</p>
+        <p class="card-sub">Doors open at 5pm</p>
+      </div>
+      <div class="card reveal" style="--d:.2s">
+        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><path d="M8 3L3 6l2 4 3-1v12h8V9l3 1 2-4-5-3a4 4 0 0 1-8 0z"/></svg></div>
+        <p class="card-label">Dress code</p>
+        <p class="card-value">Smart casual</p>
+        <p class="card-sub">Polished, but comfortable</p>
+      </div>
+      <div class="card reveal" style="--d:.3s">
+        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+        <p class="card-label">Where</p>
+        <p class="card-value">Hotel</p>
+        <p class="card-sub">Holiday Inn Express Dublin City Centre, 28-32 Upper O'Connell Street, Dublin 1</p>
+        <a class="card-link" href="https://www.google.com/maps/search/?api=1&amp;query=Holiday+Inn+Express+Dublin+City+Centre+28-32+Upper+O%27Connell+Street" target="_blank" rel="noopener">Get directions <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+
+    <div class="timeline reveal" id="timeline">
+      <div class="tl-head"><h3>A decade on O'Connell Street</h3><span>2016 &ndash; 2026</span></div>
+      <div class="tl">
+        <div class="tl-track"><div class="tl-fill"></div></div>
+        <ol class="tl-dots" id="tlDots"></ol>
+      </div>
+      <p class="tl-caption">Every dot is a year of guests, teams and stories. The last one's a party.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RSVP ================= -->
+<section class="section rsvp" id="rsvp">
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="container narrow">
+    <div class="section-head reveal">
+      <p class="kicker">RSVP</p>
+      <h2 id="panelHeading">Will you join us?</h2>
+      <p class="deadline" id="deadline"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Kindly RSVP by <b>10.10</b> &ndash; ten years deserves a fitting deadline</span></p>
+    </div>
+
+    <div class="rsvp-card reveal" id="rsvpPanel">
+      <div id="stepInitial" class="step">
+        <div class="choices">
+          <button type="button" class="choice choice-yes" id="btnYes">
+            <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+            <span><strong>I'll be there</strong><small>Save my spot</small></span>
+          </button>
+          <button type="button" class="choice choice-no" id="btnNo">
+            <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg></span>
+            <span><strong>Can't make it</strong><small>Send my regrets</small></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="stepForm" class="step hidden">
+        <div class="step-head">
+          <h3>Your details</h3>
+          <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
+        </div>
+        <div class="field"><input type="text" id="gname" placeholder=" " autocomplete="name"><label for="gname">Your name</label></div>
+        <div class="field"><input type="email" id="gemail" placeholder=" " autocomplete="email" inputmode="email"><label for="gemail">Your email</label></div>
+        <div class="field"><input type="number" id="gparty" placeholder=" " min="1" max="20" value="1" inputmode="numeric"><label for="gparty">How many attending including you?</label></div>
+        <div class="field hidden" id="othersField"><input type="text" id="gothers" placeholder=" " autocomplete="off"><label for="gothers">Names of the others (optional)</label></div>
+        <div class="field"><input type="text" id="gdiet" placeholder=" " autocomplete="off"><label for="gdiet">Dietary or access needs (optional)</label></div>
+        <button type="button" class="btn btn-primary btn-block shine" id="btnConfirm">Confirm my spot <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <p class="form-msg" id="formMsg" role="alert"></p>
+      </div>
+
+      <div id="stepRegret" class="step hidden">
+        <div class="step-head">
+          <h3>Send your regrets</h3>
+          <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
+        </div>
+        <p class="regret-text">Sorry you can't make it this time. Let us know below and we'll keep you in mind for what's next.</p>
+        <div class="field"><input type="text" id="rname" placeholder=" " autocomplete="name"><label for="rname">Your name</label></div>
+        <div class="field"><input type="email" id="remail" placeholder=" " autocomplete="email" inputmode="email"><label for="remail">Email (optional)</label></div>
+        <button type="button" class="btn btn-primary btn-block" id="btnSendRegret">Send my regrets</button>
+        <p class="form-msg" id="regretMsg" role="alert"></p>
+      </div>
+
+      <div id="stepRegretDone" class="step hidden regret-done">
+        <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <p>Thanks for letting us know. We'll miss you, and we'll keep you in mind for what's next.</p>
+      </div>
+
+      <!-- Honeypot: hidden from people, bots fill it in and Web3Forms drops the submission -->
+      <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
+    </div>
+
+    <div class="done hidden" id="doneWrap">
+      <svg class="check" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36"/><path d="M24 41l11 11 21-23"/></svg>
+      <p class="done-lead" id="doneLead"></p>
+
+      <div class="ticket-scene" id="ticketScene">
+        <div class="ticket" id="ticketNode">
+          <div class="t-main">
+            <div class="t-photo">
+              <div class="t-top"><img class="t-logo" src="img/logo.png" alt="Holiday Inn Express"><span class="t-tag">10th Anniversary</span></div>
+            </div>
+            <p class="t-label">You're invited to</p>
+            <h3 class="t-title">10 Years, <em class="shim">10 Stories</em></h3>
+            <p class="t-label">Guest</p>
+            <p class="t-name" id="ticketName">Guest Name</p>
+            <div class="t-grid">
+              <div><p class="t-label">Date</p><b>Wed 21 Oct 2026</b></div>
+              <div><p class="t-label">Time</p><b>5:00 &ndash; 10:00 pm</b></div>
+              <div><p class="t-label">Venue</p><b>Hotel</b></div>
+              <div><p class="t-label">Dress code</p><b>Smart casual</b></div>
+              <div><p class="t-label">Guests</p><b id="ticketGuests">1 guest</b></div>
+              <div><p class="t-label">Guest type</p><b id="ticketTier">Guest</b></div>
+            </div>
+          </div>
+          <div class="t-stub">
+            <div class="t-qr" id="qrcode"></div>
+            <div class="t-stub-text">
+              <p class="t-ref" id="refCode">HIEX-0000</p>
+              <p class="t-admit" id="admitLabel">Admit one<br>Show on arrival</p>
+            </div>
+          </div>
+          <div class="t-sheen"></div>
+        </div>
+      </div>
+
+      <div class="done-actions">
+        <button type="button" class="btn btn-primary shine" id="btnDownload">
+          <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span id="saveLabel">Download my ticket</span>
+        </button>
+        <div class="cal" data-cal>
+          <button type="button" class="btn btn-glass cal-toggle" aria-haspopup="true" aria-expanded="false">
+            <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Add to calendar
+          </button>
+          <div class="cal-menu" role="menu">
+            <button type="button" role="menuitem" data-ics><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Apple / Outlook (.ics)</button>
+            <a role="menuitem" data-gcal target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Google Calendar</a>
+          </div>
+        </div>
+      </div>
+      <p class="save-msg" id="saveMsg" role="status"></p>
+      <button type="button" class="start-over" id="startOver">Not you? Start a new RSVP</button>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <a class="brand" href="../" title="Holiday Inn Express Dublin City Centre"><img src="img/logo.png" alt="Holiday Inn Express by IHG"></a>
+  <p>Holiday Inn Express Dublin City Centre &middot; 28-32 Upper O'Connell Street, Dublin 1</p>
+</footer>
+
+<div class="sticky-cta" id="stickyCta"><a href="#rsvp" class="btn btn-primary shine">RSVP now <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var coarse = window.matchMedia('(pointer: coarse)').matches;
+  var params = new URLSearchParams(window.location.search);
+  var tier = (params.get('tier') || 'general').toLowerCase();
+  var LOGO_SRC = 'img/logo.png', HOTEL_SRC = 'img/hotel.jpg';
+
+  /* ---- Saved RSVP (so guests can come back for their ticket) ---- */
+  var STORE = 'hiex10-rsvp';
+  function loadRsvp(){ try { return JSON.parse(localStorage.getItem(STORE)); } catch(e){ return null; } }
+  function saveRsvp(v){ try { localStorage.setItem(STORE, JSON.stringify(v)); } catch(e){} }
+  function clearRsvp(){ try { localStorage.removeItem(STORE); } catch(e){} }
+
+  /* ---- Tier copy ---- */
+  var tagline = {
+    corporate: "Ten years of partnership, worth raising a glass to.",
+    leadership: "You were there for year one.",
+    civic: "A decade woven into Dublin's story.",
+    staff: "This one's yours.",
+    general: "Ten years, one address, thousands of stories."
+  };
+  var copy = {
+    corporate: "As one of our valued corporate partners, come mark ten years of Holiday Inn Express Dublin City Centre - ten years shaped by partnerships like ours.",
+    leadership: "You've been part of this hotel's story from the very start. Join us as we mark ten years on O'Connell Street, and so many of them yours.",
+    civic: "Holiday Inn Express Dublin City Centre invites you to celebrate ten years serving the city, as valued partners in Dublin's tourism and business community.",
+    staff: "Ten years, and it's all because of you. Join us to celebrate a decade of Holiday Inn Express Dublin City Centre - your hotel, your story.",
+    general: "We're celebrating ten years of Holiday Inn Express Dublin City Centre - come raise a glass to a decade on O'Connell Street, and the people who made it what it is."
+  };
+  $('introTagline').textContent = tagline[tier] || tagline.general;
+  $('introNote').textContent = copy[tier] || copy.general;
+  var tierLabel = {corporate:'Corporate Partner', leadership:'JMK Leadership', civic:'Civic & Press Guest', staff:'Team Member', general:'Guest'}[tier] || 'Guest';
+
+  /* ---- Event ---- */
+  var EVENT = {
+    start: new Date('2026-10-21T17:00:00+01:00'),
+    utcStart: '20261021T160000Z', utcEnd: '20261021T210000Z',
+    title: '10 Years, 10 Stories - Holiday Inn Express Dublin',
+    location: "Holiday Inn Express Dublin City Centre, 28-32 Upper O'Connell Street, Dublin 1",
+    details: 'Celebrating ten years of Holiday Inn Express Dublin City Centre. Smart casual. Doors open at 5pm.\nhttps://www.dublinmeet.ie/holidayinnexpress/party/'
+  };
+
+  /* ---- Countdown ---- */
+  var cd = { d:$('cd-d'), h:$('cd-h'), m:$('cd-m'), s:$('cd-s') };
+  function setNum(el, v){
+    if (el.textContent === v) return;
+    el.textContent = v;
+    if (!reduce){ el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
+  }
+  function pad(n){ return String(n).padStart(2, '0'); }
+  function updateCountdown(){
+    var diff = Math.max(0, EVENT.start - new Date());
+    setNum(cd.d, pad(Math.floor(diff / 864e5)));
+    setNum(cd.h, pad(Math.floor(diff / 36e5) % 24));
+    setNum(cd.m, pad(Math.floor(diff / 6e4) % 60));
+    setNum(cd.s, pad(Math.floor(diff / 1e3) % 60));
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  /* ---- Timeline dots ---- */
+  var tl = $('tlDots');
+  for (var y = 2016; y <= 2026; y++){
+    var li = document.createElement('li');
+    li.innerHTML = '<i style="--n:' + (y - 2016) + '"></i><span>\u2019' + String(y).slice(2) + '</span>';
+    tl.appendChild(li);
+  }
+
+  /* ---- Intro: break the seal, iris closes onto it, page revealed ---- */
+  var intro = $('intro'), seal = $('seal');
+  var pageRevealed = false;
+  function revealPage(){
+    if (pageRevealed) return;
+    pageRevealed = true;
+    document.body.classList.remove('locked');
+    document.body.classList.add('opened');
+    startBokeh();
+  }
+  function openInvite(){
+    if (!intro || intro.classList.contains('opening')) return;
+    if (reduce){ intro.classList.add('hidden'); revealPage(); return; }
+    var r = seal.getBoundingClientRect();
+    intro.style.setProperty('--cx', (r.left + r.width / 2) + 'px');
+    intro.style.setProperty('--cy', (r.top + r.height / 2) + 'px');
+    intro.classList.add('opening');
+    setTimeout(function(){ intro.classList.add('closing'); revealPage(); }, 550);
+    setTimeout(function(){ intro.classList.add('hidden'); }, 2300);
+  }
+  seal.addEventListener('click', openInvite);
+  seal.focus({preventScroll:true});
+
+  /* ---- Floating bokeh in the hero ---- */
+  function startBokeh(){
+    if (reduce) return;
+    var c = $('bokeh'), ctx = c.getContext('2d');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0, parts = [], raf = null, visible = true;
+    var colors = ['255,107,53', '255,255,255', '140,190,255'];
+    function size(){
+      W = c.clientWidth; H = c.clientHeight;
+      c.width = W * dpr; c.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    size();
+    window.addEventListener('resize', size);
+    var n = W < 600 ? 30 : 55;
+    for (var i = 0; i < n; i++){
+      var big = i < 7;
+      parts.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: big ? 30 + Math.random() * 60 : 0.6 + Math.random() * 2.4,
+        big: big,
+        vy: -(0.12 + Math.random() * (big ? 0.15 : 0.45)),
+        vx: (Math.random() - 0.5) * 0.25,
+        a: big ? 0.05 + Math.random() * 0.06 : 0.2 + Math.random() * 0.55,
+        t: Math.random() * 6.28,
+        c: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+    function frame(){
+      if (!visible){ raf = null; return; }
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < parts.length; i++){
+        var p = parts[i];
+        p.x += p.vx; p.y += p.vy; p.t += 0.02;
+        if (p.y < -p.r - 10){ p.y = H + p.r + 10; p.x = Math.random() * W; }
+        var a = p.a * (0.6 + 0.4 * Math.sin(p.t));
+        if (p.big){
+          var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+          g.addColorStop(0, 'rgba(' + p.c + ',' + a + ')');
+          g.addColorStop(1, 'rgba(' + p.c + ',0)');
+          ctx.fillStyle = g;
+        } else {
+          ctx.fillStyle = 'rgba(' + p.c + ',' + a + ')';
+        }
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    new IntersectionObserver(function(entries){
+      visible = entries[0].isIntersecting;
+      if (visible && !raf) raf = requestAnimationFrame(frame);
+    }).observe(c);
+  }
+
+  /* ---- Hero parallax: glow follows pointer, big "10" and copy drift on scroll ---- */
+  if (!reduce){
+    var glow = $('heroGlow'), big10 = $('big10'), heroInner = $('heroInner');
+    if (!coarse){
+      window.addEventListener('pointermove', function(e){
+        var dx = e.clientX / window.innerWidth - 0.5, dy = e.clientY / window.innerHeight - 0.5;
+        glow.style.transform = 'translate(' + (dx * 80) + 'px,' + (dy * 60) + 'px)';
+      }, {passive:true});
+    }
+    var ticking = false;
+    window.addEventListener('scroll', function(){
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var sy = window.scrollY, vh = window.innerHeight;
+        if (sy < vh * 1.2){
+          big10.style.transform = 'translate(-50%,' + (sy * 0.3) + 'px)';
+          heroInner.style.opacity = Math.max(0, 1 - sy / (vh * 0.75));
+          heroInner.style.transform = 'translateY(' + (sy * 0.12) + 'px)';
+        }
+        ticking = false;
+      });
+    }, {passive:true});
+  }
+
+  /* ---- Scroll reveals ---- */
+  var revealIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); revealIO.unobserve(e.target); }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ revealIO.observe(el); });
+
+  /* ---- Sticky mobile RSVP button ---- */
+  var sticky = $('stickyCta'), heroCtaVisible = true, rsvpVisible = false, rsvpDone = false;
+  function updateSticky(){ sticky.classList.toggle('show', !heroCtaVisible && !rsvpVisible && !rsvpDone); }
+  new IntersectionObserver(function(e){ heroCtaVisible = e[0].isIntersecting; updateSticky(); }).observe($('heroCta'));
+  new IntersectionObserver(function(e){ rsvpVisible = e[0].isIntersecting; updateSticky(); }, {threshold:0.05}).observe($('rsvp'));
+
+  /* ---- Downloads ---- */
+  function downloadBlob(blob, filename){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+  }
+
+  /* ---- Add to calendar ---- */
+  function icsEscape(s){ return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+  function downloadIcs(){
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    var ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HIEX Dublin//10 Years 10 Stories//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:hiex-10-years-20261021@dublinmeet.ie',
+      'DTSTAMP:' + stamp,
+      'DTSTART:' + EVENT.utcStart,
+      'DTEND:' + EVENT.utcEnd,
+      'SUMMARY:' + icsEscape(EVENT.title),
+      'LOCATION:' + icsEscape(EVENT.location),
+      'DESCRIPTION:' + icsEscape(EVENT.details),
+      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(EVENT.title), 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+    downloadBlob(new Blob([ics], {type:'text/calendar;charset=utf-8'}), 'HIEX-10-Years-10-Stories.ics');
+  }
+  var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent(EVENT.title) +
+    '&dates=' + EVENT.utcStart + '/' + EVENT.utcEnd +
+    '&location=' + encodeURIComponent(EVENT.location) +
+    '&details=' + encodeURIComponent(EVENT.details);
+
+  var cals = document.querySelectorAll('[data-cal]');
+  function closeCals(except){
+    cals.forEach(function(c){
+      if (c === except) return;
+      c.classList.remove('open');
+      c.querySelector('.cal-toggle').setAttribute('aria-expanded', 'false');
+    });
+  }
+  cals.forEach(function(c){
+    var toggle = c.querySelector('.cal-toggle');
+    toggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      closeCals(c);
+      var open = c.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    c.querySelector('[data-ics]').addEventListener('click', function(){ downloadIcs(); closeCals(); });
+    var g = c.querySelector('[data-gcal]');
+    g.href = gcalUrl;
+    g.addEventListener('click', function(){ closeCals(); });
+  });
+  document.addEventListener('click', function(){ closeCals(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeCals(); });
+
+  /* ---- Web3Forms (same access key / inbox as the meeting rooms enquiry form) ---- */
+  var WEB3FORMS_KEY = 'f3f785ab-a3ab-45ee-bf4c-73277c0d3304';
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function sendRsvp(fields){
+    var payload = {
+      access_key: WEB3FORMS_KEY,
+      from_name: '10 Years, 10 Stories RSVP',
+      botcheck: $('botcheck').checked
+    };
+    for (var k in fields) payload[k] = fields[k];
+    return fetch('https://api.web3forms.com/submit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(payload)
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){ if (!data.success) throw new Error(data.message || 'failed'); });
+  }
+
+  function busy(btn, on, label){
+    btn.disabled = on;
+    if (on){ btn.dataset.html = btn.innerHTML; btn.textContent = label; }
+    else if (btn.dataset.html){ btn.innerHTML = btn.dataset.html; }
+  }
+
+  /* ---- RSVP steps ---- */
+  var rsvpPanel = $('rsvpPanel'), doneWrap = $('doneWrap'), panelHeading = $('panelHeading'), deadline = $('deadline');
+  var steps = [$('stepInitial'), $('stepForm'), $('stepRegret'), $('stepRegretDone')];
+  function showStep(step, heading){
+    steps.forEach(function(s){ s.classList.toggle('hidden', s !== step); });
+    if (heading) panelHeading.textContent = heading;
+  }
+
+  $('btnYes').addEventListener('click', function(){
+    showStep($('stepForm'), 'Lovely - a few details');
+    if (!coarse) $('gname').focus();
+  });
+  $('btnNo').addEventListener('click', function(){
+    showStep($('stepRegret'), "We'll miss you");
+    if (!coarse) $('rname').focus();
+  });
+  document.querySelectorAll('[data-back]').forEach(function(b){
+    b.addEventListener('click', function(){
+      $('formMsg').textContent = ''; $('regretMsg').textContent = '';
+      showStep($('stepInitial'), 'Will you join us?');
+    });
+  });
+  ['gname', 'gemail', 'gparty', 'gothers', 'gdiet'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnConfirm').click(); });
+  });
+  ['rname', 'remail'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnSendRegret').click(); });
+  });
+
+  /* Party size: names field only appears for more than one guest */
+  function partySize(){
+    var n = parseInt($('gparty').value, 10);
+    return isNaN(n) ? 1 : Math.max(1, Math.min(20, n));
+  }
+  $('gparty').addEventListener('input', function(){
+    var n = parseInt(this.value, 10);
+    $('othersField').classList.toggle('hidden', !(n > 1));
+  });
+
+  $('btnSendRegret').addEventListener('click', function(){
+    var btn = this;
+    var msg = $('regretMsg');
+    var name = $('rname').value.trim();
+    var email = $('remail').value.trim();
+    msg.textContent = '';
+    if (!name){ msg.textContent = 'Please add your name so we know who to miss.'; $('rname').focus(); return; }
+    if (email && !EMAIL_RE.test(email)){ msg.textContent = 'That email doesn\'t look quite right.'; $('remail').focus(); return; }
+
+    busy(btn, true, 'Sending...');
+    var fields = {
+      subject: 'Party RSVP - NO - ' + name,
+      name: name,
+      attending: 'No',
+      guest_type: tierLabel,
+      message: name + ' can\'t make it to 10 Years, 10 Stories on Wed 21 October.\n\nName: ' + name +
+        '\nEmail: ' + (email || 'n/a') + '\nGuest type: ' + tierLabel
+    };
+    if (email){ fields.email = email; fields.replyto = email; }
+    sendRsvp(fields).then(function(){
+      busy(btn, false);
+      showStep($('stepRegretDone'), 'Thanks for letting us know');
+    }).catch(function(){
+      busy(btn, false);
+      msg.textContent = 'Something went wrong sending that - please try again.';
+    });
+  });
+
+  $('btnConfirm').addEventListener('click', function(){
+    var btn = this;
+    var msg = $('formMsg');
+    var name = $('gname').value.trim();
+    var email = $('gemail').value.trim();
+    var party = partySize();
+    var others = party > 1 ? $('gothers').value.trim() : '';
+    var diet = $('gdiet').value.trim();
+    msg.textContent = '';
+    if (!name){ msg.textContent = 'Please add your name.'; $('gname').focus(); return; }
+    if (!EMAIL_RE.test(email)){ msg.textContent = 'Please add a valid email so we can reach you.'; $('gemail').focus(); return; }
+
+    var refCode = 'HIEX-' + Math.floor(1000 + Math.random() * 9000);
+
+    busy(btn, true, 'Confirming...');
+    sendRsvp({
+      subject: 'Party RSVP - YES - ' + name + (party > 1 ? ' (+' + (party - 1) + ')' : ''),
+      name: name,
+      email: email,
+      replyto: email,
+      attending: 'Yes',
+      party_size: String(party),
+      others: others || 'n/a',
+      dietary_access: diet || 'n/a',
+      guest_type: tierLabel,
+      reference: refCode,
+      message: name + ' will be at 10 Years, 10 Stories on Wed 21 October.\n\nName: ' + name +
+        '\nEmail: ' + email + '\nParty size (including guest): ' + party +
+        (others ? '\nOthers: ' + others : '') + (diet ? '\nDietary / access: ' + diet : '') +
+        '\nGuest type: ' + tierLabel + '\nTicket reference: ' + refCode
+    }).then(function(){
+      busy(btn, false);
+      var rec = { name:name, email:email, ref:refCode, tier:tierLabel, party:party, others:others };
+      saveRsvp(rec);
+      showTicket(rec, true);
+    }).catch(function(){
+      busy(btn, false);
+      msg.textContent = 'Something went wrong confirming your spot - please try again.';
+    });
+  });
+
+  /* ---- Ticket ---- */
+  var ticketPng = null;   // Promise<Blob>, rendered as soon as the ticket shows so saving is instant
+  function guestsText(rec){ var p = rec.party || 1; return p === 1 ? '1 guest' : p + ' guests'; }
+  function qrText(rec){ return rec.ref + ' | ' + rec.name + ' | ' + guestsText(rec) + ' | 10 Years 10 Stories | HIEX Dublin'; }
+
+  function showTicket(rec, fresh){
+    $('ticketName').textContent = rec.name;
+    $('refCode').textContent = rec.ref;
+    $('ticketTier').textContent = rec.tier || 'Guest';
+    $('ticketGuests').textContent = guestsText(rec);
+    $('admitLabel').innerHTML = ((rec.party || 1) === 1 ? 'Admit one' : 'Admits ' + rec.party) + '<br>Show on arrival';
+    $('doneLead').textContent = fresh
+      ? 'We\'ve got your RSVP, ' + rec.name.split(' ')[0] + '. Save your ticket below and show it on arrival.'
+      : 'Here\'s your ticket, ' + rec.name.split(' ')[0] + '. See you on the 21st.';
+
+    var qr = $('qrcode');
+    qr.innerHTML = '';
+    try {
+      new QRCode(qr, { text:qrText(rec), width:232, height:232, colorDark:'#003366', colorLight:'#ffffff' });
+    } catch(e){ /* QR is a nice-to-have; ticket still works without it */ }
+
+    rsvpPanel.classList.add('hidden');
+    deadline.classList.add('hidden');
+    doneWrap.classList.remove('hidden');
+    panelHeading.textContent = fresh ? "You're on the list" : 'Welcome back';
+    $('heroRsvpLabel').textContent = 'View my ticket';
+    rsvpDone = true; updateSticky();
+    $('saveMsg').textContent = '';
+
+    var scene = $('ticketScene'), ticket = $('ticketNode');
+    scene.classList.remove('pop'); ticket.classList.remove('sweep');
+    void scene.offsetWidth;
+    scene.classList.add('pop'); ticket.classList.add('sweep');
+
+    ticketPng = renderTicketPng(rec);
+    ticketPng.catch(function(){});
+
+    if (fresh){
+      $('rsvp').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+      setTimeout(confetti, 350);
+    }
+  }
+
+  $('startOver').addEventListener('click', function(){
+    clearRsvp();
+    ['gname', 'gemail', 'gothers', 'gdiet', 'rname', 'remail'].forEach(function(id){ $(id).value = ''; });
+    $('gparty').value = '1';
+    $('othersField').classList.add('hidden');
+    doneWrap.classList.add('hidden');
+    rsvpPanel.classList.remove('hidden');
+    deadline.classList.remove('hidden');
+    $('heroRsvpLabel').textContent = 'RSVP now';
+    rsvpDone = false; updateSticky();
+    ticketPng = null;
+    showStep($('stepInitial'), 'Will you join us?');
+  });
+
+  /* 3D tilt + holographic sheen that follows the pointer */
+  (function(){
+    var scene = $('ticketScene'), ticket = $('ticketNode');
+    if (reduce || coarse) return;
+    scene.addEventListener('pointermove', function(e){
+      var r = ticket.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      ticket.style.transform = 'rotateY(' + ((px - 0.5) * 12) + 'deg) rotateX(' + ((0.5 - py) * 10) + 'deg)';
+      ticket.style.setProperty('--sx', (100 - px * 100) + '%');
+      ticket.style.setProperty('--sy', (100 - py * 100) + '%');
+    });
+    scene.addEventListener('pointerleave', function(){ ticket.style.transform = ''; });
+  })();
+
+  /* Draw the ticket straight onto a canvas (crisp at any size, no screenshot library) */
+  function loadImg(src){
+    return new Promise(function(res, rej){ var im = new Image(); im.onload = function(){ res(im); }; im.onerror = rej; im.src = src; });
+  }
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function ticketPath(ctx, x, y, w, h, r, py, nr){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, py, r);
+    ctx.lineTo(x + w, py - nr);
+    ctx.arc(x + w, py, nr, -Math.PI / 2, Math.PI / 2, true);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, py, r);
+    ctx.lineTo(x, py + nr);
+    ctx.arc(x, py, nr, Math.PI / 2, -Math.PI / 2, true);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function spaced(ctx, px){ if ('letterSpacing' in ctx) ctx.letterSpacing = px + 'px'; }
+
+  async function renderTicketPng(rec){
+    try {
+      await Promise.all([
+        document.fonts.load('700 100px "Playfair Display"'),
+        document.fonts.load('italic 700 100px "Playfair Display"'),
+        document.fonts.load('400 30px Inter'), document.fonts.load('600 30px Inter'), document.fonts.load('700 30px Inter')
+      ]);
+    } catch(e){}
+    var logo = null, photo = null;
+    try { logo = await loadImg(LOGO_SRC); } catch(e){}
+    try { photo = await loadImg(HOTEL_SRC); } catch(e){}
+
+    var W = 1080, H = 1780, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var ctx = c.getContext('2d');
+    var serif = '"Playfair Display", Georgia, serif', sans = 'Inter, "Segoe UI", Arial, sans-serif';
+
+    // Background
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#00142b'); bg.addColorStop(0.5, '#003366'); bg.addColorStop(1, '#0a4a8a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    var gl = ctx.createRadialGradient(W * 0.9, 80, 0, W * 0.9, 80, 650);
+    gl.addColorStop(0, 'rgba(255,107,53,.38)'); gl.addColorStop(1, 'rgba(255,107,53,0)');
+    ctx.fillStyle = gl; ctx.fillRect(0, 0, W, H);
+    ctx.font = '700 820px ' + serif; ctx.textAlign = 'center';
+    ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 3;
+    ctx.strokeText('10', W / 2, 1120);
+
+    ctx.font = '600 24px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.8)'; spaced(ctx, 6);
+    ctx.fillText('10TH ANNIVERSARY  \u00B7  DUBLIN', W / 2, 98); spaced(ctx, 0);
+
+    // Card
+    var x = 80, y = 140, w = 920, h = 1500, r = 40, py = 1300, nr = 34;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 30;
+    ticketPath(ctx, x, y, w, h, r, py, nr); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ticketPath(ctx, x, y, w, h, r, py, nr); ctx.clip();
+    ctx.fillStyle = '#f3f6fa'; ctx.fillRect(x, py, w, y + h - py);
+    // Hotel photo header
+    var ph = 300;
+    if (photo){
+      var s = Math.max(w / photo.width, ph / photo.height);
+      var dw = photo.width * s, dh = photo.height * s;
+      ctx.drawImage(photo, x + (w - dw) / 2, y + (ph - dh) * 0.35, dw, dh);
+    } else { ctx.fillStyle = '#0a4a8a'; ctx.fillRect(x, y, w, ph); }
+    var sh = ctx.createLinearGradient(0, y, 0, y + ph);
+    sh.addColorStop(0.3, 'rgba(0,51,102,.05)'); sh.addColorStop(1, 'rgba(0,20,43,.85)');
+    ctx.fillStyle = sh; ctx.fillRect(x, y, w, ph);
+    var bar = ctx.createLinearGradient(x, 0, x + w, 0);
+    bar.addColorStop(0, '#003366'); bar.addColorStop(1, '#FF6B35');
+    ctx.fillStyle = bar; ctx.fillRect(x, y, w, 14);
+    ctx.restore();
+
+    var L = x + 70, R = x + w - 70;
+    ctx.textAlign = 'left';
+    if (logo){
+      var lh = 104, lw = lh * logo.width / logo.height;
+      ctx.save(); roundRect(ctx, L, y + ph - lh - 26, lw, lh, 12); ctx.clip();
+      ctx.drawImage(logo, L, y + ph - lh - 26, lw, lh); ctx.restore();
+    }
+
+    // Pill tag
+    ctx.font = '700 21px ' + sans; spaced(ctx, 4);
+    var tag = '10TH ANNIVERSARY', tw = ctx.measureText(tag).width + 44;
+    roundRect(ctx, R - tw, y + ph - 26 - 50, tw, 50, 25);
+    ctx.fillStyle = 'rgba(0,20,43,.4)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.fillText(tag, R - tw / 2 + 2, y + ph - 26 - 17);
+    ctx.textAlign = 'left';
+
+    function label(t, lx, ly){ ctx.font = '700 21px ' + sans; spaced(ctx, 4); ctx.fillStyle = '#5f6b7a'; ctx.fillText(t, lx, ly); spaced(ctx, 0); }
+
+    label("YOU'RE INVITED TO", L, 510);
+    ctx.font = '700 100px ' + serif; ctx.fillStyle = '#003366'; ctx.fillText('10 Years,', L, 615);
+    ctx.font = 'italic 700 100px ' + serif; ctx.fillStyle = '#FF6B35'; ctx.fillText('10 Stories', L, 722);
+
+    label('GUEST', L, 820);
+    var size = 78;
+    ctx.fillStyle = '#1a1a1a';
+    do { ctx.font = '700 ' + size + 'px ' + serif; size -= 2; } while (ctx.measureText(rec.name).width > R - L && size > 36);
+    ctx.fillText(rec.name, L, 905);
+
+    var C2 = L + 420;
+    label('DATE', L, 982); label('TIME', C2, 982);
+    label('VENUE', L, 1080); label('DRESS CODE', C2, 1080);
+    label('GUESTS', L, 1178); label('GUEST TYPE', C2, 1178);
+    ctx.font = '600 34px ' + sans; ctx.fillStyle = '#1a1a1a';
+    ctx.fillText('Wed 21 Oct 2026', L, 1026); ctx.fillText('5:00 \u2013 10:00 pm', C2, 1026);
+    ctx.fillText('Hotel', L, 1124); ctx.fillText('Smart casual', C2, 1124);
+    ctx.fillText(guestsText(rec), L, 1222); ctx.fillText(rec.tier || 'Guest', C2, 1222);
+
+    // Perforation
+    ctx.save();
+    ctx.setLineDash([16, 14]); ctx.strokeStyle = '#cfd9e6'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x + nr + 20, py); ctx.lineTo(x + w - nr - 20, py); ctx.stroke();
+    ctx.restore();
+
+    // Stub: QR + reference
+    var qs = 240, qy = py + (y + h - py - qs) / 2;
+    if (typeof QRCode !== 'undefined'){
+      var tmp = document.createElement('div');
+      try {
+        new QRCode(tmp, { text:qrText(rec), width:560, height:560, colorDark:'#003366', colorLight:'#ffffff' });
+        var qc = tmp.querySelector('canvas');
+        if (qc){
+          roundRect(ctx, L - 16, qy - 16, qs + 32, qs + 32, 20); ctx.fillStyle = '#fff'; ctx.fill();
+          ctx.strokeStyle = '#e3e9f2'; ctx.lineWidth = 2; ctx.stroke();
+          ctx.drawImage(qc, L, qy, qs, qs);
+        }
+      } catch(e){}
+    }
+    ctx.textAlign = 'right';
+    label('REFERENCE', R, qy + 50);
+    ctx.textAlign = 'right';
+    ctx.font = '700 76px ' + serif; ctx.fillStyle = '#FF6B35'; ctx.fillText(rec.ref, R, qy + 138);
+    ctx.font = '700 24px ' + sans; ctx.fillStyle = '#003366'; spaced(ctx, 4);
+    ctx.fillText(((rec.party || 1) === 1 ? 'ADMIT ONE' : 'ADMITS ' + rec.party), R, qy + 192);
+    ctx.font = '500 22px ' + sans; ctx.fillStyle = '#5f6b7a';
+    ctx.fillText('SHOW ON ARRIVAL', R, qy + 228); spaced(ctx, 0);
+
+    // Footer
+    ctx.textAlign = 'center'; ctx.font = '500 26px ' + sans; ctx.fillStyle = 'rgba(255,255,255,.72)';
+    ctx.fillText("Holiday Inn Express Dublin City Centre \u00B7 28-32 Upper O'Connell St", W / 2, 1732);
+
+    return new Promise(function(res, rej){
+      c.toBlob(function(b){ b ? res(b) : rej(new Error('toBlob failed')); }, 'image/png');
+    });
+  }
+
+  /* Save: share sheet on phones (-> Save Image to Photos), straight download on desktop */
+  var FILE_NAME = 'HIEX-10-Years-Ticket.png';
+  var canShareFiles = false;
+  try {
+    canShareFiles = coarse && !!navigator.canShare &&
+      navigator.canShare({ files:[new File([new Blob(['x'], {type:'image/png'})], 'x.png', {type:'image/png'})] });
+  } catch(e){}
+  $('saveLabel').textContent = canShareFiles ? 'Save ticket to phone' : 'Download my ticket';
+
+  $('btnDownload').addEventListener('click', async function(){
+    var btn = this, msg = $('saveMsg');
+    msg.textContent = '';
+    var saved = loadRsvp();
+    if (!ticketPng && saved) ticketPng = renderTicketPng(saved);
+    if (!ticketPng) return;
+    busy(btn, true, 'Preparing your ticket...');
+    try {
+      var blob = await ticketPng;
+      if (canShareFiles){
+        try {
+          await navigator.share({ files:[new File([blob], FILE_NAME, {type:'image/png'})], title:'My ticket - 10 Years, 10 Stories' });
+          msg.textContent = 'Tip: choose "Save Image" to keep it in your photos.';
+        } catch(err){
+          if (!err || err.name !== 'AbortError'){ downloadBlob(blob, FILE_NAME); msg.textContent = 'Ticket saved to your downloads.'; }
+        }
+      } else {
+        downloadBlob(blob, FILE_NAME);
+        msg.textContent = 'Ticket downloaded - check your Downloads folder.';
+      }
+    } catch(e){
+      msg.textContent = 'Couldn\'t create the image - a screenshot of the ticket works just as well.';
+    } finally {
+      busy(btn, false);
+    }
+  });
+
+  /* ---- Confetti cannons ---- */
+  function confetti(){
+    if (reduce) return;
+    var c = document.createElement('canvas');
+    c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:200;pointer-events:none';
+    document.body.appendChild(c);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), W = window.innerWidth, H = window.innerHeight;
+    c.width = W * dpr; c.height = H * dpr;
+    var ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+    var colors = ['#FF6B35', '#ff9a6b', '#003366', '#0052a3', '#4ea3ff', '#ffffff', '#ffd2bd'];
+    var ps = [];
+    for (var i = 0; i < 170; i++){
+      var left = i % 2 === 0;
+      ps.push({
+        x: left ? -10 : W + 10, y: H * 0.75,
+        vx: (left ? 1 : -1) * (4 + Math.random() * 9), vy: -(11 + Math.random() * 13),
+        w: 7 + Math.random() * 6, h: 10 + Math.random() * 8,
+        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.35,
+        tilt: Math.random() * 6.28, vt: 0.08 + Math.random() * 0.12,
+        round: Math.random() < 0.25,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+    var start = performance.now();
+    (function frame(now){
+      var t = now - start;
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = t > 3000 ? Math.max(0, 1 - (t - 3000) / 1200) : 1;
+      ps.forEach(function(p){
+        p.vy += 0.32; p.vx *= 0.985; p.vy *= 0.985;
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.tilt += p.vt;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.round){ ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, 6.2832); ctx.fill(); }
+        else ctx.fillRect(-p.w / 2, -p.h / 2 * Math.abs(Math.cos(p.tilt)), p.w, p.h * Math.abs(Math.cos(p.tilt)));
+        ctx.restore();
+      });
+      if (t < 4200) requestAnimationFrame(frame); else c.remove();
+    })(start);
+  }
+
+  /* ---- Returning guest: skip the intro, show their ticket ---- */
+  var saved = loadRsvp();
+  if (saved && saved.name && saved.ref){
+    intro.classList.add('hidden');
+    revealPage();
+    showTicket(saved, false);
+  }
+})();
+</script>
+</body>
+</html>
