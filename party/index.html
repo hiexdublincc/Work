@@ -42,38 +42,77 @@
   /* Orange "10 Stories" shimmer (same treatment everywhere it appears) */
   .shim{color:var(--orange); background:linear-gradient(90deg, var(--orange) 0%, #ffc2a3 25%, var(--orange) 50%, var(--orange) 100%); background-size:200% 100%; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:textSheen 5s linear 1s infinite}
 
-  /* ---------- Intro: blue wax seal, iris reveal ---------- */
+  /* ---------- Envelope intro with a breakable blue wax seal ---------- */
   .intro{
     position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:24px 16px; color:#fff; overflow:hidden; text-align:center;
+    padding:24px 16px; color:#fff; overflow:hidden;
     background:radial-gradient(120% 90% at 50% 0%, var(--blue-glow) 0%, var(--navy) 45%, var(--navy-ink) 100%);
-    clip-path:circle(150% at var(--cx,50%) var(--cy,78%));
-    transition:clip-path 1.5s cubic-bezier(.65,0,.35,1);
+    transition:opacity .9s var(--ease), visibility .9s, filter .9s;
   }
-  .intro.closing{clip-path:circle(0% at var(--cx,50%) var(--cy,78%)); pointer-events:none}
-  .intro > *:not(.glow):not(.intro-ten){position:relative; z-index:1}
+  .intro.closing{opacity:0; visibility:hidden; filter:blur(10px)}
   .glow{position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none}
   .glow.g1{width:420px; height:420px; background:var(--orange); top:-160px; right:-140px; opacity:.32; animation:drift 14s ease-in-out infinite alternate}
   .glow.g2{width:520px; height:520px; background:#0a6ad1; bottom:-220px; left:-180px; opacity:.45; animation:drift 18s ease-in-out infinite alternate-reverse}
-  .intro-ten{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%); z-index:0; pointer-events:none; white-space:nowrap;
-    font:700 clamp(240px,56vmin,580px)/.8 var(--display); letter-spacing:-.04em; color:transparent; -webkit-text-stroke:1.5px rgba(155,203,235,.26); animation:fadeUp 1.4s var(--ease) both}
   .fo{transition:opacity .5s ease, transform .5s ease}
   .intro.opening .fo{opacity:0; transform:translateY(10px)}
-  .intro-eyebrow{font-size:12px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:0 0 22px; animation:fadeUp .8s var(--ease) .1s both}
-  .intro-title{font-family:var(--display); font-weight:700; font-size:clamp(46px,8.4vw,92px); line-height:1.02; margin:0 0 16px; animation:fadeUp .9s var(--ease) .25s both; text-shadow:0 4px 24px rgba(0,10,40,.4)}
-  .intro-title em{display:block; font-style:italic; text-shadow:none}
-  .intro-sub{margin:0 0 34px; font-size:clamp(14px,1.6vw,17px); color:rgba(255,255,255,.82); letter-spacing:.02em; animation:fadeUp .9s var(--ease) .4s both}
-  .seal{position:relative; width:132px; height:132px; padding:0; border:0; border-radius:50%; background:none; cursor:pointer; -webkit-tap-highlight-color:transparent; filter:drop-shadow(0 12px 20px rgba(0,10,40,.6)); animation:fadeUp .9s var(--ease) .5s both, breathe 3.2s ease-in-out 1.4s infinite; transition:transform .55s var(--ease), opacity .45s ease}
-  .seal svg{display:block; width:100%; height:100%}
-  .seal:before{content:""; position:absolute; inset:16px; border-radius:50%; border:2px solid rgba(155,203,235,.8); animation:sealRing 2.2s ease-out infinite}
-  .seal:focus-visible{outline:3px solid var(--orange-2); outline-offset:6px}
-  @keyframes breathe{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.045)} }
+  .intro-eyebrow{font-size:12px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.75); margin:0 0 40px; animation:fadeUp .8s var(--ease) .1s both}
+  .envelope-scene{perspective:1400px; margin-bottom:40px; transition:transform .9s var(--ease), opacity .7s ease}
+  .envelope-scene.zoom{transform:scale(2.2); opacity:0}
+  .envelope-bob{animation:fadeUp .9s var(--ease) .2s both}
+  .intro:not(.opening) .envelope-bob{animation:fadeUp .9s var(--ease) .2s both, bob 4s ease-in-out 1.2s infinite}
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .envelope{position:relative; width:290px; height:188px; transform:rotate(-2deg); cursor:pointer}
+  .envelope:after{content:""; position:absolute; left:8%; right:8%; bottom:-22px; height:22px; background:radial-gradient(ellipse at center, rgba(0,0,0,.4), transparent 70%); z-index:-1}
+  .env-back{position:absolute; inset:0; background:linear-gradient(160deg,#e9eef4,#d4dce5); border-radius:8px; box-shadow:0 24px 50px rgba(0,10,30,.5)}
+  .env-pocket{position:absolute; inset:0; background:linear-gradient(160deg,#fafbfc,#e4e9ef); clip-path:polygon(0 100%, 0 30%, 50% 58%, 100% 30%, 100% 100%); border-radius:0 0 8px 8px; z-index:2}
+  .env-card{position:absolute; left:10%; right:10%; bottom:10px; height:76%; perspective:1000px; z-index:1; transition:transform .9s var(--ease) .25s}
+  .card-face{position:absolute; inset:0; border-radius:6px; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; text-align:center; box-shadow:0 10px 26px rgba(0,10,30,.3)}
+  .card-cover{background:#fff; transform-origin:left center; z-index:2; transition:transform 1s var(--ease)}
+  .card-cover img{width:62%}
+  .card-inside{background:linear-gradient(165deg,#fff,#eef2f7); z-index:1}
+  .card-inside b{display:block; font-family:var(--display); color:var(--navy); font-size:19px; line-height:1.2}
+  .card-inside b em{display:block; font-style:italic}
+  .env-flap{position:absolute; top:0; left:0; right:0; height:101px; z-index:3; background:linear-gradient(200deg,#fff,#e3e8ee); clip-path:polygon(0 0, 100% 0, 50% 100%); transform-origin:top center; transition:transform .8s var(--ease), z-index 0s .4s}
+  .envelope.open .env-flap{transform:rotateX(-178deg); z-index:0}
+  .envelope.open .env-card{transform:translateY(-86px) scale(1.5); z-index:5; transition-delay:.3s}
+  .envelope.bookopen .card-cover{transform:rotateY(-165deg)}
+
+  /* the seal: two halves that crack apart and fall away */
+  .wax{position:absolute; left:50%; top:101px; width:88px; height:88px; margin:-44px 0 0 -44px; z-index:4; padding:0; border:0; border-radius:50%; background:none; cursor:pointer; -webkit-tap-highlight-color:transparent; filter:drop-shadow(0 6px 10px rgba(0,10,40,.5))}
+  .wax:focus-visible{outline:3px solid var(--orange-2); outline-offset:6px}
+  .wax:before{content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(60,140,235,.7); animation:sealRing 2s ease-out infinite}
   @keyframes sealRing{ from{transform:scale(.9); opacity:1} to{transform:scale(1.55); opacity:0} }
-  .intro.opening .seal{transform:scale(1.3); opacity:0; animation:none}
-  .intro-hint{display:flex; align-items:center; justify-content:center; gap:10px; margin:18px 0 0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.8); animation:fadeUp .9s var(--ease) .6s both}
+  .envelope.cracking .wax:before, .envelope.broken .wax:before{display:none}
+  .half{position:absolute; inset:0; display:block; will-change:transform, opacity; transition:transform .3s ease-out}
+  .half svg{display:block; width:100%; height:100%}
+  .hl{clip-path:polygon(0 0, 52% 0, 46% 18%, 54% 34%, 45% 52%, 53% 70%, 47% 86%, 50% 100%, 0 100%)}
+  .hr{clip-path:polygon(52% 0, 100% 0, 100% 100%, 50% 100%, 47% 86%, 53% 70%, 45% 52%, 54% 34%, 46% 18%)}
+  .crack{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:0}
+  .crack path{fill:none; stroke:#eaf4ff; stroke-width:2; stroke-linejoin:round; stroke-dasharray:100; stroke-dashoffset:100}
+  .envelope.cracking .crack{opacity:1}
+  .envelope.cracking .crack path{animation:drawCrack .32s ease-out forwards}
+  @keyframes drawCrack{ to{stroke-dashoffset:0} }
+  .envelope.cracking{animation:shake .38s linear}
+  @keyframes shake{
+    0%,100%{transform:rotate(-2deg)} 15%{transform:rotate(-2deg) translate(-3px,1px)} 30%{transform:rotate(-1deg) translate(3px,-1px)}
+    45%{transform:rotate(-3deg) translate(-2px,1px)} 60%{transform:rotate(-1.5deg) translate(2px,0)} 80%{transform:rotate(-2deg) translate(-1px,0)}
+  }
+  .envelope.cracking .hl{transform:translate(-2px,0) rotate(-2deg)}
+  .envelope.cracking .hr{transform:translate(2px,1px) rotate(2deg)}
+  .envelope.broken .hl{transform:translate(-54px,88px) rotate(-32deg); opacity:0; transition:transform .95s cubic-bezier(.45,0,.95,.55), opacity .7s .25s ease-in}
+  .envelope.broken .hr{transform:translate(50px,104px) rotate(28deg); opacity:0; transition:transform .95s cubic-bezier(.45,0,.95,.55), opacity .7s .25s ease-in}
+  .envelope.broken .crack{opacity:0}
+  .crumb{position:absolute; left:50%; top:50%; width:7px; height:7px; margin:-3px 0 0 -3px; border-radius:40% 60% 50% 50%; background:#1f6fd0; opacity:0; pointer-events:none}
+  .crumb:nth-child(odd){background:#0b4497; width:5px; height:5px}
+  .envelope.broken .crumb{animation:crumb .95s cubic-bezier(.2,.6,.4,1) forwards}
+  @keyframes crumb{ 0%{opacity:1; transform:translate(0,0) rotate(0)} 100%{opacity:0; transform:translate(var(--dx),var(--dy)) rotate(var(--r))} }
+
+  .intro-title{font-family:var(--display); font-weight:700; font-size:clamp(38px,8vw,64px); line-height:1.02; text-align:center; margin:0 0 20px; animation:fadeUp .9s var(--ease) .35s both}
+  .intro-title em{display:block; font-style:italic}
+  .intro-hint{display:flex; align-items:center; gap:10px; margin:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.8); animation:fadeUp .9s var(--ease) .5s both}
   .tap-dot{width:8px; height:8px; border-radius:50%; background:var(--orange); animation:ping 1.8s ease-out infinite}
 
-  /* ---------- Hero ---------- */
+  /* ---------- Hero (compact) ---------- */
   .topbar{position:absolute; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px clamp(16px,4vw,40px)}
   .brand{display:inline-flex; background:#fff; border-radius:12px; padding:6px 10px; box-shadow:0 10px 30px rgba(0,0,0,.3); transition:transform .3s var(--ease)}
   .brand:hover{transform:translateY(-2px)}
@@ -81,16 +120,16 @@
   .badge{display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:999px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); color:#fff; font-size:11.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase}
   .badge i{width:7px; height:7px; border-radius:50%; background:var(--orange); animation:ping 2s infinite}
 
-  .hero{position:relative; min-height:100svh; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; isolation:isolate; padding:120px 16px 100px}
+  .hero{position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#fff; isolation:isolate; padding:112px 16px 52px}
   .hero-bg{position:absolute; inset:-4%; z-index:-4; background:url('img/bg.jpg') center/cover no-repeat; animation:kenburns 30s ease-in-out infinite alternate}
-  @keyframes kenburns{ from{transform:scale(1)} to{transform:scale(1.12) translate(-2%,-1%)} }
+  @keyframes kenburns{ from{transform:scale(1)} to{transform:scale(1.1) translate(-1.5%,-1%)} }
   .hero-overlay{position:absolute; inset:0; z-index:-3; background:
     radial-gradient(70% 50% at 50% 45%, rgba(0,51,102,.35), transparent 70%),
-    linear-gradient(180deg, rgba(0,20,43,.6) 0%, rgba(0,51,102,.84) 45%, rgba(0,20,43,.97) 100%)}
+    linear-gradient(180deg, rgba(0,20,43,.66) 0%, rgba(0,51,102,.86) 45%, rgba(0,20,43,.97) 100%)}
   #bokeh{position:absolute; inset:0; width:100%; height:100%; z-index:-2; pointer-events:none}
   .hero-glow{position:absolute; width:640px; height:640px; left:50%; top:42%; margin:-320px 0 0 -320px; z-index:-2; pointer-events:none; background:radial-gradient(circle, rgba(255,107,53,.26), transparent 62%); transition:transform .8s var(--ease)}
-  .big10{position:absolute; z-index:-1; width:min(860px,125vw); left:50%; top:4%; transform:translateX(-50%); pointer-events:none; opacity:.6}
-  @media (max-width:540px){ .big10{top:12%} }
+  .big10{position:absolute; z-index:-1; width:min(860px,125vw); left:50%; top:2%; transform:translateX(-50%); pointer-events:none; opacity:.6}
+  @media (max-width:540px){ .big10{top:8%} }
   .big10 text{font-family:var(--display); font-weight:700; font-size:330px; fill:rgba(255,255,255,0); stroke:url(#g10); stroke-width:1.4; stroke-dasharray:1500; stroke-dashoffset:1500}
   body.opened .big10 text{animation:draw10 3.2s var(--ease) .2s forwards}
   @keyframes draw10{ 70%{fill:rgba(255,255,255,0)} to{stroke-dashoffset:0; fill:rgba(255,255,255,.035)} }
@@ -98,31 +137,31 @@
   .hero-inner{position:relative; max-width:780px; text-align:center; will-change:opacity, transform}
   .r{opacity:0; transform:translateY(18px)}
   body.opened .r{animation:fadeUp 1s var(--ease) var(--d,0s) forwards}
-  .eyebrow{display:inline-flex; align-items:center; gap:14px; margin:0 0 24px; font-size:12px; font-weight:500; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.82)}
+  .eyebrow{display:inline-flex; align-items:center; gap:14px; margin:0 0 18px; font-size:12px; font-weight:500; letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.82)}
   .eyebrow:before, .eyebrow:after{content:""; width:28px; height:1px; background:var(--orange)}
-  .headline{font-family:var(--display); font-weight:700; font-size:clamp(60px,14vw,132px); line-height:.95; letter-spacing:-.02em; margin:0 0 28px}
+  .headline{font-family:var(--display); font-weight:700; font-size:clamp(56px,12vw,116px); line-height:.95; letter-spacing:-.02em; margin:0 0 20px}
   .headline .line{display:block; overflow:hidden; padding:0 .08em .1em}
   .headline .w{display:inline-block; transform:translateY(115%)}
   body.opened .headline .w{animation:rise 1.2s var(--ease) .15s forwards}
   body.opened .headline .line + .line .w{animation-delay:.32s}
   @keyframes rise{ to{transform:none} }
   .headline em{font-style:italic; animation-delay:2s}
-  .tagline{font-size:clamp(17px,2.4vw,21px); font-weight:600; color:var(--orange-2); margin:0 0 12px}
-  .note{font-size:clamp(15px,2vw,17px); line-height:1.75; font-weight:300; color:rgba(255,255,255,.86); max-width:580px; margin:0 auto 28px}
+  .tagline{font-size:clamp(17px,2.4vw,21px); font-weight:600; color:var(--orange-2); margin:0 0 10px}
+  .note{font-size:clamp(15px,2vw,16.5px); line-height:1.7; font-weight:300; color:rgba(255,255,255,.88); max-width:560px; margin:0 auto 22px}
 
-  .chips{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:0 0 30px}
-  .chip{display:flex; flex-direction:column; gap:3px; min-width:120px; padding:11px 18px; border-radius:14px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); text-align:center}
-  .chip small{font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.62)}
+  .chips{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:0 0 22px}
+  .chip{display:flex; flex-direction:column; gap:3px; min-width:112px; padding:10px 16px; border-radius:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); text-align:center}
+  .chip small{font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.66)}
   .chip b{font-size:15px; font-weight:600}
 
-  .countdown{display:flex; justify-content:center; gap:clamp(8px,2vw,14px); margin:0 0 36px}
-  .cd{width:clamp(70px,19vw,94px); padding:15px 0 12px; border-radius:18px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px -10px rgba(0,0,0,.4)}
-  .cd b{display:block; overflow:hidden; font-family:var(--display); font-weight:700; font-size:clamp(30px,6.5vw,42px); line-height:1.05; font-variant-numeric:tabular-nums}
+  .countdown{display:flex; justify-content:center; gap:clamp(8px,2vw,14px); margin:0 0 26px}
+  .cd{width:clamp(66px,18vw,88px); padding:12px 0 10px; border-radius:18px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 10px 30px -10px rgba(0,0,0,.4)}
+  .cd b{display:block; overflow:hidden; font-family:var(--display); font-weight:700; font-size:clamp(28px,6vw,38px); line-height:1.05; font-variant-numeric:tabular-nums}
   .cd b span{display:inline-block}
   .cd b span.tick{animation:tick .55s var(--ease)}
   @keyframes tick{ from{transform:translateY(-70%); opacity:0} to{transform:none; opacity:1} }
   .cd:last-child b{color:var(--orange)}
-  .cd small{display:block; margin-top:6px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.6)}
+  .cd small{display:block; margin-top:5px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.66)}
 
   .btn{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:16px 26px; border-radius:999px; border:0; cursor:pointer; overflow:hidden; text-decoration:none; font:600 15px/1.1 var(--body); -webkit-tap-highlight-color:transparent; transition:transform .3s var(--ease), box-shadow .3s, background .3s, color .3s}
   .btn:active{transform:scale(.97)}
@@ -146,68 +185,57 @@
   .cal-menu a:hover, .cal-menu button:hover{background:var(--input)}
   .cal-menu svg{color:var(--orange)}
 
-  .scroll-cue{position:absolute; bottom:26px; left:50%; width:26px; height:42px; margin-left:-13px; border:2px solid rgba(255,255,255,.4); border-radius:14px; opacity:0; transition:opacity 1s 1.8s}
-  body.opened .scroll-cue{opacity:1}
-  .scroll-cue:after{content:""; position:absolute; top:8px; left:50%; width:4px; height:8px; margin-left:-2px; border-radius:2px; background:#fff; animation:wheel 1.8s ease-in-out infinite}
-  @keyframes wheel{ 0%{transform:translateY(0); opacity:1} 80%{transform:translateY(12px); opacity:0} 100%{opacity:0} }
-
-  /* ---------- Sections ---------- */
-  .section{position:relative; padding:clamp(76px,10vw,124px) 16px; overflow:hidden}
-  .container{max-width:1080px; margin:0 auto; position:relative}
-  .narrow{max-width:640px}
-  .light{background:var(--light)}
-  .section-head{text-align:center; max-width:660px; margin:0 auto 48px}
-  .kicker{display:inline-block; margin:0 0 14px; font-size:12px; font-weight:700; letter-spacing:.26em; text-transform:uppercase; color:var(--orange)}
-  .section h2{font-family:var(--display); font-weight:700; font-size:clamp(34px,5.5vw,54px); line-height:1.08; color:var(--navy); margin:0 0 16px}
-  .section h2 em{color:var(--orange)}
-  .lead{margin:0; font-size:17px; line-height:1.75; color:var(--muted)}
+  /* ---------- One combined RSVP section ---------- */
+  .section{position:relative; padding:clamp(44px,6vw,72px) 16px clamp(56px,7vw,84px); overflow:hidden}
+  .container{max-width:1060px; margin:0 auto; position:relative}
+  .kicker{display:inline-block; margin:0 0 10px; font-size:12px; font-weight:700; letter-spacing:.26em; text-transform:uppercase; color:var(--orange-2)}
   .reveal{opacity:0; transform:translateY(30px); transition:opacity 1s var(--ease) var(--d,0s), transform 1s var(--ease) var(--d,0s)}
   .reveal.in{opacity:1; transform:none}
 
-  .cards{display:grid; grid-template-columns:repeat(4,1fr); gap:20px}
-  .card{position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:28px 22px; box-shadow:0 1px 2px rgba(0,51,102,.04), 0 14px 34px -14px rgba(0,51,102,.14); transition:transform .45s var(--ease), box-shadow .45s var(--ease), opacity 1s var(--ease) var(--d,0s)}
-  .card:before{content:""; position:absolute; inset:0 0 auto; height:4px; background:linear-gradient(90deg, var(--navy), var(--orange)); transform:scaleX(0); transform-origin:left; transition:transform .6s var(--ease)}
-  .card.in:hover{transform:translateY(-6px); box-shadow:0 2px 4px rgba(0,51,102,.05), 0 26px 50px -18px rgba(0,51,102,.28)}
-  .card:hover:before{transform:scaleX(1)}
-  .card-icon{width:54px; height:54px; margin-bottom:22px; border-radius:15px; display:grid; place-items:center; color:var(--orange); background:linear-gradient(135deg, rgba(255,107,53,.16), rgba(255,107,53,.04)); transition:transform .5s var(--ease)}
-  .card-icon svg.i{width:24px; height:24px}
-  .card:hover .card-icon{transform:rotate(-8deg) scale(1.08)}
-  .card-label{margin:0 0 6px; font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted)}
-  .card-value{margin:0 0 6px; font-family:var(--display); font-weight:700; font-size:24px; line-height:1.2; color:var(--navy)}
-  .card-sub{margin:0; font-size:14.5px; line-height:1.55; color:var(--muted)}
-  .card-link{display:inline-flex; align-items:center; gap:6px; margin-top:14px; color:#c94a17; font-weight:600; font-size:14px; text-decoration:none}
-  .card-link svg.i{width:16px; height:16px}
-  .card-link:hover .arrow{transform:translateX(4px)}
-
-  .timeline{margin-top:28px; padding:34px clamp(22px,4vw,48px) 30px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 14px 34px -14px rgba(0,51,102,.14)}
-  .tl-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px 16px; margin-bottom:34px}
-  .tl-head h3{margin:0; font-family:var(--display); font-size:24px; color:var(--navy)}
-  .tl-head span{font-size:14px; font-weight:600; color:var(--muted)}
-  .tl{position:relative; padding:0 9px}
-  .tl-track{position:absolute; left:9px; right:9px; top:8px; height:3px; border-radius:3px; background:var(--line); overflow:hidden}
-  .tl-fill{height:100%; background:linear-gradient(90deg, var(--navy), var(--blue) 60%, var(--orange)); transform:scaleX(0); transform-origin:left; transition:transform 2s var(--ease) .2s}
-  .timeline.in .tl-fill{transform:scaleX(1)}
-  .tl-dots{position:relative; display:flex; justify-content:space-between; list-style:none; margin:0; padding:0}
-  .tl-dots li{width:0; display:flex; flex-direction:column; align-items:center; gap:12px}
-  .tl-dots i{display:block; flex:none; width:19px; height:19px; border-radius:50%; background:#fff; border:3px solid var(--line); transform:scale(.4); transition:transform .5s var(--ease), border-color .5s; transition-delay:calc(var(--n) * .17s + .2s)}
-  .timeline.in .tl-dots i{transform:scale(1); border-color:var(--navy)}
-  .timeline.in .tl-dots li:last-child i{border-color:var(--orange); background:var(--orange); animation:ping 1.8s ease-out 2.2s infinite}
-  .tl-dots span{font-size:12px; font-weight:600; color:var(--muted); white-space:nowrap}
-  .tl-dots li:last-child span{color:#c94a17}
-  .tl-caption{margin:28px 0 0; text-align:center; font-size:15px; line-height:1.6; color:var(--muted)}
-
-  /* ---------- RSVP ---------- */
   .rsvp{color:#fff; background:radial-gradient(90% 55% at 50% 0%, var(--blue-glow) 0%, var(--navy) 55%, var(--navy) 100%)}
   .rsvp .glow.g1{top:auto; bottom:-200px; right:-220px; opacity:.22}
   .rsvp .glow.g2{top:-240px; bottom:auto; left:-260px; opacity:.35}
-  .rsvp .section-head h2{color:#fff}
-  .deadline{display:inline-flex; align-items:center; gap:10px; margin:6px 0 0; padding:10px 16px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); font-size:14px; color:rgba(255,255,255,.88)}
+  .rsvp-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:26px; align-items:start}
+  .rsvp-col{min-width:0}
+  .section-head{text-align:center; margin:0 auto 22px; max-width:560px}
+  .section-head h2{font-family:var(--display); font-weight:700; font-size:clamp(32px,4.6vw,46px); line-height:1.08; color:#fff; margin:0 0 14px}
+  .deadline{display:inline-flex; align-items:center; gap:10px; margin:0; padding:9px 16px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); font-size:14px; color:rgba(255,255,255,.9)}
   .deadline b{color:var(--orange-2)}
-  .deadline svg.i{width:16px; height:16px; color:var(--orange-2)}
-  .rsvp-card{background:#fff; color:var(--ink); border-radius:26px; padding:clamp(22px,5vw,40px); box-shadow:0 40px 90px -24px rgba(0,0,0,.55)}
+  .deadline svg.i{width:16px; height:16px; color:var(--orange-2); flex:none}
+
+  .info-col{display:grid; gap:18px; min-width:0}
+  .glass{background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); border-radius:var(--radius); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 20px 50px -24px rgba(0,0,0,.5)}
+  .where{display:flex; gap:18px; align-items:flex-start; padding:24px}
+  .w-icon{width:50px; height:50px; flex:none; border-radius:14px; display:grid; place-items:center; color:var(--orange-2); background:rgba(255,107,53,.14)}
+  .w-icon svg.i{width:24px; height:24px}
+  .g-label{margin:0 0 4px; font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.66)}
+  .g-value{margin:0 0 6px; font-family:var(--display); font-weight:700; font-size:26px; line-height:1.15}
+  .g-sub{margin:0; font-size:14.5px; line-height:1.6; color:rgba(255,255,255,.84)}
+  .card-link{display:inline-flex; align-items:center; gap:6px; margin-top:12px; color:#ffb38f; font-weight:600; font-size:14px; text-decoration:none}
+  .card-link svg.i{width:16px; height:16px}
+  .card-link:hover .arrow{transform:translateX(4px)}
+
+  .timeline{padding:24px 26px 20px}
+  .tl-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:6px 16px; margin-bottom:26px}
+  .tl-head h3{margin:0; font-family:var(--display); font-size:20px}
+  .tl-head span{font-size:13px; font-weight:600; color:rgba(255,255,255,.72)}
+  .tl{position:relative; padding:0 9px}
+  .tl-track{position:absolute; left:9px; right:9px; top:8px; height:3px; border-radius:3px; background:rgba(255,255,255,.18); overflow:hidden}
+  .tl-fill{height:100%; background:linear-gradient(90deg, #9BCBEB, #fff 60%, var(--orange)); transform:scaleX(0); transform-origin:left; transition:transform 2s var(--ease) .2s}
+  .timeline.in .tl-fill{transform:scaleX(1)}
+  .tl-dots{position:relative; display:flex; justify-content:space-between; list-style:none; margin:0; padding:0}
+  .tl-dots li{width:0; display:flex; flex-direction:column; align-items:center; gap:10px}
+  .tl-dots i{display:block; flex:none; width:19px; height:19px; border-radius:50%; background:var(--navy); border:3px solid rgba(255,255,255,.32); transform:scale(.4); transition:transform .5s var(--ease), border-color .5s, background .5s; transition-delay:calc(var(--n) * .17s + .2s)}
+  .timeline.in .tl-dots i{transform:scale(1); border-color:#fff; background:#fff}
+  .timeline.in .tl-dots li:last-child i{border-color:var(--orange); background:var(--orange); animation:ping 1.8s ease-out 2.2s infinite}
+  .tl-dots span{font-size:11.5px; font-weight:600; color:rgba(255,255,255,.75); white-space:nowrap}
+  .tl-dots li:last-child span{color:#ffb38f}
+  .tl-caption{margin:22px 0 0; text-align:center; font-size:13.5px; line-height:1.6; color:rgba(255,255,255,.78)}
+
+  .rsvp-card{background:#fff; color:var(--ink); border-radius:26px; padding:clamp(22px,4vw,34px); box-shadow:0 40px 90px -24px rgba(0,0,0,.55)}
   .step{animation:fadeUp .55s var(--ease)}
   .choices{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-  .choice{display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:24px 22px; border-radius:20px; border:1.5px solid var(--line); background:var(--light); color:var(--ink); font:inherit; text-align:left; cursor:pointer; transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .3s}
+  .choice{display:flex; flex-direction:column; align-items:flex-start; gap:16px; padding:22px 20px; border-radius:20px; border:1.5px solid var(--line); background:var(--light); color:var(--ink); font:inherit; text-align:left; cursor:pointer; transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .3s}
   .choice:hover{transform:translateY(-4px); border-color:var(--orange); box-shadow:0 16px 34px -16px rgba(255,107,53,.55)}
   .choice:active{transform:scale(.98)}
   .choice-yes{position:relative; overflow:hidden; color:#fff; border-color:transparent; background:linear-gradient(135deg, #e85a25, #ff7a45); box-shadow:0 16px 36px -14px rgba(255,107,53,.8)}
@@ -215,17 +243,17 @@
   .choice-no .choice-ic{background:#fff; color:var(--navy); border:1px solid var(--line)}
   .choice strong{display:block; font-size:18px; font-weight:700}
   .choice small{display:block; margin-top:4px; font-size:13.5px; opacity:.9}
-  .step-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px}
+  .step-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px}
   .step-head h3{margin:0; font-family:var(--display); font-size:24px; color:var(--navy)}
   .back{display:inline-flex; align-items:center; gap:6px; padding:6px 2px; border:0; background:none; color:var(--muted); font:600 14px var(--body); cursor:pointer}
   .back:hover{color:var(--navy)}
   .back svg.i{width:16px; height:16px; transform:scaleX(-1)}
   .regret-text{margin:0 0 20px; font-size:15.5px; line-height:1.65; color:var(--muted)}
-  .field{position:relative; margin-bottom:14px}
-  .field input{width:100%; height:60px; padding:24px 16px 8px; border-radius:14px; border:1.5px solid var(--line); background:var(--input); color:var(--ink); font:500 16px var(--body); outline:none; transition:border-color .2s, background .2s, box-shadow .2s}
-  .field label{position:absolute; left:17px; top:20px; max-width:calc(100% - 34px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15.5px; color:#6b7686; pointer-events:none; transition:all .22s var(--ease)}
+  .field{position:relative; margin-bottom:12px}
+  .field input{width:100%; height:58px; padding:23px 16px 8px; border-radius:14px; border:1.5px solid var(--line); background:var(--input); color:var(--ink); font:500 16px var(--body); outline:none; transition:border-color .2s, background .2s, box-shadow .2s}
+  .field label{position:absolute; left:17px; top:19px; max-width:calc(100% - 34px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15.5px; color:#6b7686; pointer-events:none; transition:all .22s var(--ease)}
   .field input:focus{border-color:var(--navy); background:#fff; box-shadow:0 0 0 4px rgba(0,51,102,.08)}
-  .field input:focus + label, .field input:not(:placeholder-shown) + label{top:9px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--navy)}
+  .field input:focus + label, .field input:not(:placeholder-shown) + label{top:8px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--navy)}
   .field input[type=number]{-moz-appearance:textfield}
   .form-msg{min-height:1.2em; margin:12px 0 0; text-align:center; font-size:13.5px; font-weight:600; color:#dc2626}
   .regret-done{text-align:center; padding:10px 0}
@@ -233,12 +261,14 @@
   .regret-done .choice-ic{margin:0 auto 16px; background:var(--input); color:var(--navy)}
 
   /* ---------- Done + ticket ---------- */
+  .rsvp-grid.done{grid-template-columns:minmax(0,640px); justify-content:center}
+  .rsvp-grid.done .info-col{display:none}
   .done{text-align:center}
   .check{display:block; width:78px; height:78px; margin:0 auto 18px}
   .check circle{fill:none; stroke:var(--orange); stroke-width:4; stroke-dasharray:227; stroke-dashoffset:227; animation:dash .8s var(--ease) forwards}
   .check path{fill:none; stroke:#fff; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:50; stroke-dashoffset:50; animation:dash .5s var(--ease) .6s forwards}
   @keyframes dash{ to{stroke-dashoffset:0} }
-  .done-lead{margin:0 auto 34px; max-width:460px; font-size:16.5px; line-height:1.7; color:rgba(255,255,255,.85)}
+  .done-lead{margin:0 auto 30px; max-width:460px; font-size:16.5px; line-height:1.7; color:rgba(255,255,255,.88)}
 
   .ticket-scene{perspective:1200px; max-width:640px; margin:0 auto; text-align:left}
   .ticket{position:relative; display:grid; grid-template-columns:1fr 196px; overflow:hidden; background:#fff; color:var(--ink); border-radius:22px; box-shadow:0 44px 90px -26px rgba(0,0,0,.65); transform-style:preserve-3d; transition:transform .25s ease-out}
@@ -273,31 +303,36 @@
   .ticket.sweep .t-sheen{opacity:1; animation:sweep 1.8s ease-in-out 1s both}
   @keyframes sweep{ from{background-position:130% 50%} to{background-position:-30% 50%} }
 
-  .done-actions{display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:30px}
+  .done-actions{display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:28px}
   .done-actions .btn-primary{min-width:230px}
-  .save-msg{min-height:1.2em; margin:14px 0 0; font-size:13.5px; color:rgba(255,255,255,.75)}
-  .start-over{margin-top:16px; border:0; background:none; color:rgba(255,255,255,.7); font:14px var(--body); text-decoration:underline; text-underline-offset:3px; cursor:pointer}
+  .save-msg{min-height:1.2em; margin:14px 0 0; font-size:13.5px; color:rgba(255,255,255,.78)}
+  .start-over{margin-top:14px; border:0; background:none; color:rgba(255,255,255,.72); font:14px var(--body); text-decoration:underline; text-underline-offset:3px; cursor:pointer}
   .start-over:hover{color:#fff}
 
   .sticky-cta{position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom, 0px)); z-index:50; display:none; transform:translateY(160%); transition:transform .5s var(--ease)}
   .sticky-cta.show{transform:none}
   .sticky-cta .btn{width:100%}
 
-  .footer{padding:48px 16px calc(48px + env(safe-area-inset-bottom, 0px)); text-align:center; background:var(--navy-ink); color:rgba(255,255,255,.7); font-size:14px; line-height:1.75}
-  .footer .brand{margin-bottom:18px}
+  .footer{padding:32px 16px calc(32px + env(safe-area-inset-bottom, 0px)); text-align:center; background:var(--navy-ink); color:rgba(255,255,255,.72); font-size:14px; line-height:1.75}
+  .footer .brand{margin-bottom:14px}
   .footer .brand img{height:34px}
   .footer p{margin:0}
 
-  @media (max-width:1000px){ .cards{grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:960px){
+    .rsvp-grid{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr); gap:44px}
+    .info-col{order:-1; position:sticky; top:32px}
+    .rsvp-grid.done{grid-template-columns:minmax(0,640px)}
+  }
   @media (max-width:820px){ .sticky-cta{display:block} }
-  @media (max-width:560px){ .cards{grid-template-columns:1fr} }
   @media (max-width:540px){
     .eyebrow{letter-spacing:.16em; font-size:11px}
     .eyebrow:before, .eyebrow:after{display:none}
     .badge{font-size:10.5px; padding:8px 12px}
     .brand img{height:34px}
     .choices{grid-template-columns:1fr}
-    .choice{flex-direction:row; align-items:center; padding:20px}
+    .choice{flex-direction:row; align-items:center; padding:18px}
+    .where{padding:20px; gap:14px}
+    .timeline{padding:22px 20px 18px}
     .ticket{grid-template-columns:1fr}
     .t-main{padding:0 22px 22px}
     .t-photo{margin:0 -22px 22px}
@@ -308,7 +343,9 @@
     .t-stub-text{text-align:right}
     .t-qr img, .t-qr canvas{width:96px !important; height:96px !important}
     .done-actions .btn{width:100%}
-    .seal{width:116px; height:116px}
+    .envelope{width:270px; height:175px}
+    .env-flap{height:94px}
+    .wax{top:94px}
   }
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto}
@@ -320,46 +357,87 @@
 
 <body class="locked">
 
-<!-- ================= Intro: blue wax seal ================= -->
+<!-- ================= Envelope intro: break the blue wax seal ================= -->
 <div class="intro" id="intro">
   <div class="glow g1"></div><div class="glow g2"></div>
-  <div class="intro-ten" aria-hidden="true">10</div>
   <div class="fo"><p class="intro-eyebrow">You're invited</p></div>
+  <div class="envelope-scene" id="envelopeScene">
+    <div class="envelope-bob">
+      <div class="envelope" id="envelope">
+        <div class="env-back"></div>
+        <div class="env-card">
+          <div class="card-face card-inside"><b>10 Years,<em class="shim">10 Stories</em></b></div>
+          <div class="card-face card-cover"><img src="img/logo.png" alt=""></div>
+        </div>
+        <div class="env-pocket"></div>
+        <div class="env-flap"></div>
+        <button type="button" class="wax" id="seal" aria-label="Break the seal to open your invitation">
+          <span class="half hl">
+            <svg viewBox="0 0 140 140" aria-hidden="true">
+              <defs>
+                <filter id="waxEdge" x="-15%" y="-15%" width="130%" height="130%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="11" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+                </filter>
+                <radialGradient id="waxBody" cx="34%" cy="28%" r="85%">
+                  <stop offset="0" stop-color="#6fa8ec"/><stop offset="0.35" stop-color="#1f6fd0"/><stop offset="0.75" stop-color="#0b4497"/><stop offset="1" stop-color="#062a66"/>
+                </radialGradient>
+                <radialGradient id="waxDish" cx="60%" cy="70%" r="80%">
+                  <stop offset="0" stop-color="#0a3c86"/><stop offset="0.6" stop-color="#1257b3"/><stop offset="1" stop-color="#3b84dc"/>
+                </radialGradient>
+                <radialGradient id="waxGloss" cx="30%" cy="22%" r="45%">
+                  <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <g filter="url(#waxEdge)">
+                <circle cx="70" cy="70" r="55" fill="url(#waxBody)"/>
+                <circle cx="118" cy="98" r="11" fill="#0b4497"/>
+                <circle cx="24" cy="106" r="9" fill="#0b4497"/>
+                <circle cx="112" cy="30" r="8" fill="#1257b3"/>
+              </g>
+              <circle cx="70" cy="70" r="41" fill="url(#waxDish)"/>
+              <circle cx="70" cy="70" r="41" fill="none" stroke="#062a66" stroke-opacity="0.55" stroke-width="2"/>
+              <circle cx="70" cy="71.5" r="39" fill="none" stroke="#9BCBEB" stroke-opacity="0.45" stroke-width="1.5"/>
+              <circle cx="70" cy="70" r="33" fill="none" stroke="#9BCBEB" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="1.5 4.5" stroke-linecap="round"/>
+              <text x="71.5" y="83" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#04234f" fill-opacity="0.8">10</text>
+              <text x="70" y="81.5" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#d6e9fb">10</text>
+              <ellipse cx="50" cy="38" rx="30" ry="18" fill="url(#waxGloss)"/>
+            </svg>
+          </span>
+          <span class="half hr">
+            <svg viewBox="0 0 140 140" aria-hidden="true">
+              <g filter="url(#waxEdge)">
+                <circle cx="70" cy="70" r="55" fill="url(#waxBody)"/>
+                <circle cx="118" cy="98" r="11" fill="#0b4497"/>
+                <circle cx="24" cy="106" r="9" fill="#0b4497"/>
+                <circle cx="112" cy="30" r="8" fill="#1257b3"/>
+              </g>
+              <circle cx="70" cy="70" r="41" fill="url(#waxDish)"/>
+              <circle cx="70" cy="70" r="41" fill="none" stroke="#062a66" stroke-opacity="0.55" stroke-width="2"/>
+              <circle cx="70" cy="71.5" r="39" fill="none" stroke="#9BCBEB" stroke-opacity="0.45" stroke-width="1.5"/>
+              <circle cx="70" cy="70" r="33" fill="none" stroke="#9BCBEB" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="1.5 4.5" stroke-linecap="round"/>
+              <text x="71.5" y="83" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#04234f" fill-opacity="0.8">10</text>
+              <text x="70" y="81.5" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#d6e9fb">10</text>
+              <ellipse cx="50" cy="38" rx="30" ry="18" fill="url(#waxGloss)"/>
+            </svg>
+          </span>
+          <svg class="crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path pathLength="100" d="M52 0 L46 18 L54 34 L45 52 L53 70 L47 86 L50 100"/></svg>
+          <i class="crumb" style="--dx:-70px;--dy:60px;--r:-200deg"></i>
+          <i class="crumb" style="--dx:-38px;--dy:96px;--r:140deg"></i>
+          <i class="crumb" style="--dx:-12px;--dy:74px;--r:260deg"></i>
+          <i class="crumb" style="--dx:22px;--dy:110px;--r:-160deg"></i>
+          <i class="crumb" style="--dx:52px;--dy:70px;--r:220deg"></i>
+          <i class="crumb" style="--dx:80px;--dy:92px;--r:-240deg"></i>
+          <i class="crumb" style="--dx:-58px;--dy:20px;--r:180deg"></i>
+          <i class="crumb" style="--dx:64px;--dy:26px;--r:-120deg"></i>
+          <i class="crumb" style="--dx:6px;--dy:126px;--r:300deg"></i>
+          <i class="crumb" style="--dx:-90px;--dy:84px;--r:-280deg"></i>
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="fo"><h2 class="intro-title">10 Years,<em class="shim">10 Stories</em></h2></div>
-  <div class="fo"><p class="intro-sub">An evening celebrating a decade in the heart of Dublin</p></div>
-  <button type="button" class="seal" id="seal" aria-label="Break the seal to open your invitation">
-    <svg viewBox="0 0 140 140" aria-hidden="true">
-      <defs>
-        <filter id="waxEdge" x="-15%" y="-15%" width="130%" height="130%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="11" result="n"/>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
-        </filter>
-        <radialGradient id="waxBody" cx="34%" cy="28%" r="85%">
-          <stop offset="0" stop-color="#6fa8ec"/><stop offset="0.35" stop-color="#1f6fd0"/><stop offset="0.75" stop-color="#0b4497"/><stop offset="1" stop-color="#062a66"/>
-        </radialGradient>
-        <radialGradient id="waxDish" cx="60%" cy="70%" r="80%">
-          <stop offset="0" stop-color="#0a3c86"/><stop offset="0.6" stop-color="#1257b3"/><stop offset="1" stop-color="#3b84dc"/>
-        </radialGradient>
-        <radialGradient id="waxGloss" cx="30%" cy="22%" r="45%">
-          <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <g filter="url(#waxEdge)">
-        <circle cx="70" cy="70" r="55" fill="url(#waxBody)"/>
-        <circle cx="118" cy="98" r="11" fill="#0b4497"/>
-        <circle cx="24" cy="106" r="9" fill="#0b4497"/>
-        <circle cx="112" cy="30" r="8" fill="#1257b3"/>
-      </g>
-      <circle cx="70" cy="70" r="41" fill="url(#waxDish)"/>
-      <circle cx="70" cy="70" r="41" fill="none" stroke="#062a66" stroke-opacity="0.55" stroke-width="2"/>
-      <circle cx="70" cy="71.5" r="39" fill="none" stroke="#9BCBEB" stroke-opacity="0.45" stroke-width="1.5"/>
-      <circle cx="70" cy="70" r="33" fill="none" stroke="#9BCBEB" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="1.5 4.5" stroke-linecap="round"/>
-      <text x="71.5" y="83" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#04234f" fill-opacity="0.8">10</text>
-      <text x="70" y="81.5" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="36" fill="#d6e9fb">10</text>
-      <ellipse cx="50" cy="38" rx="30" ry="18" fill="url(#waxGloss)"/>
-    </svg>
-  </button>
-  <div class="fo"><p class="intro-hint"><span class="tap-dot"></span>Break the seal to open</p></div>
+  <div class="fo"><p class="intro-hint"><span class="tap-dot"></span>Tap the seal to break it</p></div>
 </div>
 
 <!-- ================= Hero ================= -->
@@ -397,6 +475,7 @@
       <div class="chip"><small>Date</small><b>Wed 21 Oct</b></div>
       <div class="chip"><small>Time</small><b>5 &ndash; 10pm</b></div>
       <div class="chip"><small>Dress code</small><b>Smart casual</b></div>
+      <div class="chip"><small>Where</small><b>Hotel, O'Connell St</b></div>
     </div>
 
     <div class="countdown r" style="--d:1s" role="timer" aria-label="Countdown to the party">
@@ -419,166 +498,144 @@
       </div>
     </div>
   </div>
-  <a class="scroll-cue" href="#details" aria-label="Scroll to details"></a>
 </section>
 
-<!-- ================= Details ================= -->
-<section class="section light" id="details">
-  <div class="container">
-    <div class="section-head reveal">
-      <p class="kicker">The evening</p>
-      <h2>An evening in the heart of <em>Dublin</em></h2>
-      <p class="lead">Join us at the hotel to raise a glass to a decade on O'Connell Street, and the people who made it what it is.</p>
-    </div>
-
-    <div class="cards">
-      <div class="card reveal" style="--d:0s">
-        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div>
-        <p class="card-label">Date</p>
-        <p class="card-value">Wednesday 21 October</p>
-        <p class="card-sub">Kindly RSVP by 10.10</p>
-      </div>
-      <div class="card reveal" style="--d:.1s">
-        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-        <p class="card-label">Time</p>
-        <p class="card-value">5:00 &ndash; 10:00 pm</p>
-        <p class="card-sub">Doors open at 5pm</p>
-      </div>
-      <div class="card reveal" style="--d:.2s">
-        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><path d="M8 3L3 6l2 4 3-1v12h8V9l3 1 2-4-5-3a4 4 0 0 1-8 0z"/></svg></div>
-        <p class="card-label">Dress code</p>
-        <p class="card-value">Smart casual</p>
-        <p class="card-sub">Polished, but comfortable</p>
-      </div>
-      <div class="card reveal" style="--d:.3s">
-        <div class="card-icon"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
-        <p class="card-label">Where</p>
-        <p class="card-value">Hotel</p>
-        <p class="card-sub">Holiday Inn Express Dublin City Centre, 28-32 Upper O'Connell Street, Dublin 1</p>
-        <a class="card-link" href="https://www.google.com/maps/search/?api=1&amp;query=Holiday+Inn+Express+Dublin+City+Centre+28-32+Upper+O%27Connell+Street" target="_blank" rel="noopener">Get directions <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      </div>
-    </div>
-
-    <div class="timeline reveal" id="timeline">
-      <div class="tl-head"><h3>A decade on O'Connell Street</h3><span>2016 &ndash; 2026</span></div>
-      <div class="tl">
-        <div class="tl-track"><div class="tl-fill"></div></div>
-        <ol class="tl-dots" id="tlDots"></ol>
-      </div>
-      <p class="tl-caption">Every dot is a year of guests, teams and stories. The last one's a party.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= RSVP ================= -->
+<!-- ================= Details + RSVP, one screen ================= -->
 <section class="section rsvp" id="rsvp">
   <div class="glow g1"></div><div class="glow g2"></div>
-  <div class="container narrow">
-    <div class="section-head reveal">
-      <p class="kicker">RSVP</p>
-      <h2 id="panelHeading">Will you join us?</h2>
-      <p class="deadline" id="deadline"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Kindly RSVP by <b>10.10</b> &ndash; ten years deserves a fitting deadline</span></p>
-    </div>
+  <div class="container">
+    <div class="rsvp-grid" id="rsvpGrid">
 
-    <div class="rsvp-card reveal" id="rsvpPanel">
-      <div id="stepInitial" class="step">
-        <div class="choices">
-          <button type="button" class="choice choice-yes" id="btnYes">
+      <div class="rsvp-col">
+        <div class="section-head reveal">
+          <p class="kicker">RSVP</p>
+          <h2 id="panelHeading">Will you join us?</h2>
+          <p class="deadline" id="deadline"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Kindly RSVP by <b>10.10</b> &ndash; ten years deserves a fitting deadline</span></p>
+        </div>
+
+        <div class="rsvp-card reveal" id="rsvpPanel">
+          <div id="stepInitial" class="step">
+            <div class="choices">
+              <button type="button" class="choice choice-yes" id="btnYes">
+                <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                <span><strong>I'll be there</strong><small>Save my spot</small></span>
+              </button>
+              <button type="button" class="choice choice-no" id="btnNo">
+                <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg></span>
+                <span><strong>Can't make it</strong><small>Send my regrets</small></span>
+              </button>
+            </div>
+          </div>
+
+          <div id="stepForm" class="step hidden">
+            <div class="step-head">
+              <h3>Your details</h3>
+              <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
+            </div>
+            <div class="field"><input type="text" id="gname" placeholder=" " autocomplete="name"><label for="gname">Your name</label></div>
+            <div class="field"><input type="email" id="gemail" placeholder=" " autocomplete="email" inputmode="email"><label for="gemail">Your email</label></div>
+            <div class="field"><input type="number" id="gparty" placeholder=" " min="1" max="20" value="1" inputmode="numeric"><label for="gparty">How many attending including you?</label></div>
+            <div class="field hidden" id="othersField"><input type="text" id="gothers" placeholder=" " autocomplete="off"><label for="gothers">Names of the others (optional)</label></div>
+            <div class="field"><input type="text" id="gdiet" placeholder=" " autocomplete="off"><label for="gdiet">Dietary or access needs (optional)</label></div>
+            <button type="button" class="btn btn-primary btn-block shine" id="btnConfirm">Confirm my spot <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            <p class="form-msg" id="formMsg" role="alert"></p>
+          </div>
+
+          <div id="stepRegret" class="step hidden">
+            <div class="step-head">
+              <h3>Send your regrets</h3>
+              <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
+            </div>
+            <p class="regret-text">Sorry you can't make it this time. Let us know below and we'll keep you in mind for what's next.</p>
+            <div class="field"><input type="text" id="rname" placeholder=" " autocomplete="name"><label for="rname">Your name</label></div>
+            <div class="field"><input type="email" id="remail" placeholder=" " autocomplete="email" inputmode="email"><label for="remail">Email (optional)</label></div>
+            <button type="button" class="btn btn-primary btn-block" id="btnSendRegret">Send my regrets</button>
+            <p class="form-msg" id="regretMsg" role="alert"></p>
+          </div>
+
+          <div id="stepRegretDone" class="step hidden regret-done">
             <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
-            <span><strong>I'll be there</strong><small>Save my spot</small></span>
-          </button>
-          <button type="button" class="choice choice-no" id="btnNo">
-            <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg></span>
-            <span><strong>Can't make it</strong><small>Send my regrets</small></span>
-          </button>
+            <p>Thanks for letting us know. We'll miss you, and we'll keep you in mind for what's next.</p>
+          </div>
+
+          <!-- Honeypot: hidden from people, bots fill it in and Web3Forms drops the submission -->
+          <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
         </div>
-      </div>
 
-      <div id="stepForm" class="step hidden">
-        <div class="step-head">
-          <h3>Your details</h3>
-          <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
-        </div>
-        <div class="field"><input type="text" id="gname" placeholder=" " autocomplete="name"><label for="gname">Your name</label></div>
-        <div class="field"><input type="email" id="gemail" placeholder=" " autocomplete="email" inputmode="email"><label for="gemail">Your email</label></div>
-        <div class="field"><input type="number" id="gparty" placeholder=" " min="1" max="20" value="1" inputmode="numeric"><label for="gparty">How many attending including you?</label></div>
-        <div class="field hidden" id="othersField"><input type="text" id="gothers" placeholder=" " autocomplete="off"><label for="gothers">Names of the others (optional)</label></div>
-        <div class="field"><input type="text" id="gdiet" placeholder=" " autocomplete="off"><label for="gdiet">Dietary or access needs (optional)</label></div>
-        <button type="button" class="btn btn-primary btn-block shine" id="btnConfirm">Confirm my spot <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-        <p class="form-msg" id="formMsg" role="alert"></p>
-      </div>
+        <div class="done hidden" id="doneWrap">
+          <svg class="check" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36"/><path d="M24 41l11 11 21-23"/></svg>
+          <p class="done-lead" id="doneLead"></p>
 
-      <div id="stepRegret" class="step hidden">
-        <div class="step-head">
-          <h3>Send your regrets</h3>
-          <button type="button" class="back" data-back><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Back</button>
-        </div>
-        <p class="regret-text">Sorry you can't make it this time. Let us know below and we'll keep you in mind for what's next.</p>
-        <div class="field"><input type="text" id="rname" placeholder=" " autocomplete="name"><label for="rname">Your name</label></div>
-        <div class="field"><input type="email" id="remail" placeholder=" " autocomplete="email" inputmode="email"><label for="remail">Email (optional)</label></div>
-        <button type="button" class="btn btn-primary btn-block" id="btnSendRegret">Send my regrets</button>
-        <p class="form-msg" id="regretMsg" role="alert"></p>
-      </div>
-
-      <div id="stepRegretDone" class="step hidden regret-done">
-        <span class="choice-ic"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
-        <p>Thanks for letting us know. We'll miss you, and we'll keep you in mind for what's next.</p>
-      </div>
-
-      <!-- Honeypot: hidden from people, bots fill it in and Web3Forms drops the submission -->
-      <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
-    </div>
-
-    <div class="done hidden" id="doneWrap">
-      <svg class="check" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36"/><path d="M24 41l11 11 21-23"/></svg>
-      <p class="done-lead" id="doneLead"></p>
-
-      <div class="ticket-scene" id="ticketScene">
-        <div class="ticket" id="ticketNode">
-          <div class="t-main">
-            <div class="t-photo">
-              <div class="t-top"><img class="t-logo" src="img/logo.png" alt="Holiday Inn Express"><span class="t-tag">10th Anniversary</span></div>
-            </div>
-            <p class="t-label">You're invited to</p>
-            <h3 class="t-title">10 Years, <em class="shim">10 Stories</em></h3>
-            <p class="t-label">Guest</p>
-            <p class="t-name" id="ticketName">Guest Name</p>
-            <div class="t-grid">
-              <div><p class="t-label">Date</p><b>Wed 21 Oct 2026</b></div>
-              <div><p class="t-label">Time</p><b>5:00 &ndash; 10:00 pm</b></div>
-              <div><p class="t-label">Venue</p><b>Hotel</b></div>
-              <div><p class="t-label">Dress code</p><b>Smart casual</b></div>
-              <div><p class="t-label">Guests</p><b id="ticketGuests">1 guest</b></div>
-              <div><p class="t-label">Guest type</p><b id="ticketTier">Guest</b></div>
+          <div class="ticket-scene" id="ticketScene">
+            <div class="ticket" id="ticketNode">
+              <div class="t-main">
+                <div class="t-photo">
+                  <div class="t-top"><img class="t-logo" src="img/logo.png" alt="Holiday Inn Express"><span class="t-tag">10th Anniversary</span></div>
+                </div>
+                <p class="t-label">You're invited to</p>
+                <h3 class="t-title">10 Years, <em class="shim">10 Stories</em></h3>
+                <p class="t-label">Guest</p>
+                <p class="t-name" id="ticketName">Guest Name</p>
+                <div class="t-grid">
+                  <div><p class="t-label">Date</p><b>Wed 21 Oct 2026</b></div>
+                  <div><p class="t-label">Time</p><b>5:00 &ndash; 10:00 pm</b></div>
+                  <div><p class="t-label">Venue</p><b>Hotel</b></div>
+                  <div><p class="t-label">Dress code</p><b>Smart casual</b></div>
+                  <div><p class="t-label">Guests</p><b id="ticketGuests">1 guest</b></div>
+                  <div><p class="t-label">Guest type</p><b id="ticketTier">Guest</b></div>
+                </div>
+              </div>
+              <div class="t-stub">
+                <div class="t-qr" id="qrcode"></div>
+                <div class="t-stub-text">
+                  <p class="t-ref" id="refCode">HIEX-0000</p>
+                  <p class="t-admit" id="admitLabel">Admit one<br>Show on arrival</p>
+                </div>
+              </div>
+              <div class="t-sheen"></div>
             </div>
           </div>
-          <div class="t-stub">
-            <div class="t-qr" id="qrcode"></div>
-            <div class="t-stub-text">
-              <p class="t-ref" id="refCode">HIEX-0000</p>
-              <p class="t-admit" id="admitLabel">Admit one<br>Show on arrival</p>
+
+          <div class="done-actions">
+            <button type="button" class="btn btn-primary shine" id="btnDownload">
+              <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span id="saveLabel">Download my ticket</span>
+            </button>
+            <div class="cal" data-cal>
+              <button type="button" class="btn btn-glass cal-toggle" aria-haspopup="true" aria-expanded="false">
+                <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Add to calendar
+              </button>
+              <div class="cal-menu" role="menu">
+                <button type="button" role="menuitem" data-ics><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Apple / Outlook (.ics)</button>
+                <a role="menuitem" data-gcal target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Google Calendar</a>
+              </div>
             </div>
           </div>
-          <div class="t-sheen"></div>
+          <p class="save-msg" id="saveMsg" role="status"></p>
+          <button type="button" class="start-over" id="startOver">Not you? Start a new RSVP</button>
         </div>
       </div>
 
-      <div class="done-actions">
-        <button type="button" class="btn btn-primary shine" id="btnDownload">
-          <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span id="saveLabel">Download my ticket</span>
-        </button>
-        <div class="cal" data-cal>
-          <button type="button" class="btn btn-glass cal-toggle" aria-haspopup="true" aria-expanded="false">
-            <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Add to calendar
-          </button>
-          <div class="cal-menu" role="menu">
-            <button type="button" role="menuitem" data-ics><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Apple / Outlook (.ics)</button>
-            <a role="menuitem" data-gcal target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Google Calendar</a>
+      <aside class="info-col">
+        <div class="glass where reveal">
+          <div class="w-icon"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+          <div>
+            <p class="g-label">Where</p>
+            <p class="g-value">Hotel</p>
+            <p class="g-sub">Holiday Inn Express Dublin City Centre, 28-32 Upper O'Connell Street, Dublin 1. Doors open at 5pm.</p>
+            <a class="card-link" href="https://www.google.com/maps/search/?api=1&amp;query=Holiday+Inn+Express+Dublin+City+Centre+28-32+Upper+O%27Connell+Street" target="_blank" rel="noopener">Get directions <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           </div>
         </div>
-      </div>
-      <p class="save-msg" id="saveMsg" role="status"></p>
-      <button type="button" class="start-over" id="startOver">Not you? Start a new RSVP</button>
+
+        <div class="glass timeline reveal" id="timeline" style="--d:.1s">
+          <div class="tl-head"><h3>A decade on O'Connell Street</h3><span>2016 &ndash; 2026</span></div>
+          <div class="tl">
+            <div class="tl-track"><div class="tl-fill"></div></div>
+            <ol class="tl-dots" id="tlDots"></ol>
+          </div>
+          <p class="tl-caption">Every dot is a year of guests, teams and stories. The last one's a party.</p>
+        </div>
+      </aside>
+
     </div>
   </div>
 </section>
@@ -660,8 +717,8 @@
     tl.appendChild(li);
   }
 
-  /* ---- Intro: break the seal, iris closes onto it, page revealed ---- */
-  var intro = $('intro'), seal = $('seal');
+  /* ---- Intro: crack the seal, seal halves fall, flap opens, card rises, page revealed ---- */
+  var intro = $('intro'), envelope = $('envelope'), seal = $('seal');
   var pageRevealed = false;
   function revealPage(){
     if (pageRevealed) return;
@@ -673,14 +730,19 @@
   function openInvite(){
     if (!intro || intro.classList.contains('opening')) return;
     if (reduce){ intro.classList.add('hidden'); revealPage(); return; }
-    var r = seal.getBoundingClientRect();
-    intro.style.setProperty('--cx', (r.left + r.width / 2) + 'px');
-    intro.style.setProperty('--cy', (r.top + r.height / 2) + 'px');
     intro.classList.add('opening');
-    setTimeout(function(){ intro.classList.add('closing'); revealPage(); }, 550);
-    setTimeout(function(){ intro.classList.add('hidden'); }, 2300);
+    envelope.classList.add('cracking');                                   /* crack draws across the seal, envelope shakes */
+    setTimeout(function(){ envelope.classList.add('broken'); }, 380);     /* halves drop away, wax crumbs fly */
+    setTimeout(function(){ envelope.classList.add('open'); }, 900);       /* flap opens, card rises */
+    setTimeout(function(){ envelope.classList.add('bookopen'); }, 1900);  /* card cover swings open */
+    setTimeout(function(){
+      $('envelopeScene').classList.add('zoom');
+      intro.classList.add('closing');
+      revealPage();
+    }, 2900);
+    setTimeout(function(){ intro.classList.add('hidden'); }, 3900);
   }
-  seal.addEventListener('click', openInvite);
+  envelope.addEventListener('click', openInvite);
   seal.focus({preventScroll:true});
 
   /* ---- Floating bokeh in the hero ---- */
@@ -754,8 +816,8 @@
         var sy = window.scrollY, vh = window.innerHeight;
         if (sy < vh * 1.2){
           big10.style.transform = 'translate(-50%,' + (sy * 0.3) + 'px)';
-          heroInner.style.opacity = Math.max(0, 1 - sy / (vh * 0.75));
-          heroInner.style.transform = 'translateY(' + (sy * 0.12) + 'px)';
+          heroInner.style.opacity = Math.max(0, 1 - sy / (vh * 0.9));
+          heroInner.style.transform = 'translateY(' + (sy * 0.1) + 'px)';
         }
         ticking = false;
       });
@@ -767,7 +829,7 @@
     entries.forEach(function(e){
       if (e.isIntersecting){ e.target.classList.add('in'); revealIO.unobserve(e.target); }
     });
-  }, {threshold:0.15, rootMargin:'0px 0px -40px 0px'});
+  }, {threshold:0.12, rootMargin:'0px 0px -30px 0px'});
   document.querySelectorAll('.reveal').forEach(function(el){ revealIO.observe(el); });
 
   /* ---- Sticky mobile RSVP button ---- */
@@ -861,7 +923,7 @@
   }
 
   /* ---- RSVP steps ---- */
-  var rsvpPanel = $('rsvpPanel'), doneWrap = $('doneWrap'), panelHeading = $('panelHeading'), deadline = $('deadline');
+  var rsvpPanel = $('rsvpPanel'), doneWrap = $('doneWrap'), panelHeading = $('panelHeading'), deadline = $('deadline'), rsvpGrid = $('rsvpGrid');
   var steps = [$('stepInitial'), $('stepForm'), $('stepRegret'), $('stepRegretDone')];
   function showStep(step, heading){
     steps.forEach(function(s){ s.classList.toggle('hidden', s !== step); });
@@ -992,6 +1054,7 @@
     rsvpPanel.classList.add('hidden');
     deadline.classList.add('hidden');
     doneWrap.classList.remove('hidden');
+    rsvpGrid.classList.add('done');
     panelHeading.textContent = fresh ? "You're on the list" : 'Welcome back';
     $('heroRsvpLabel').textContent = 'View my ticket';
     rsvpDone = true; updateSticky();
@@ -1017,6 +1080,7 @@
     $('gparty').value = '1';
     $('othersField').classList.add('hidden');
     doneWrap.classList.add('hidden');
+    rsvpGrid.classList.remove('done');
     rsvpPanel.classList.remove('hidden');
     deadline.classList.remove('hidden');
     $('heroRsvpLabel').textContent = 'RSVP now';
