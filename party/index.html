@@ -104,6 +104,16 @@
   .card-inside b em{display:block; font-style:italic}
   .ci-rule{display:block; width:28px; height:2px; background:var(--orange); border-radius:2px; margin:7px auto 6px}
   .ci-meta{font-size:6.8px; letter-spacing:.16em; text-transform:uppercase; color:#3b4a5c; font-weight:600}
+  /* envelope card: navy cover with a foil edge and the hotel line drawing; cream inside with the same motif */
+  .card-cover{background:linear-gradient(160deg,#0b478a 0%,#003366 55%,#00234d 100%)}
+  .card-cover:before{inset:6px; border:1px solid rgba(255,138,85,.6); border-radius:5px}
+  .card-cover:after{content:""; position:absolute; right:0; bottom:0; width:64%; aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; opacity:.22}
+  .card-cover img{width:50%; z-index:1}
+  .cv-tag{position:relative; z-index:1; margin-top:8px; font-size:5.5px; letter-spacing:.34em; text-transform:uppercase; color:rgba(255,255,255,.75); font-weight:600; opacity:0; transition:opacity .5s ease}
+  .envelope.open .cv-tag{opacity:1}
+  .card-inside:before{content:""; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,#003366,#FF6B35); z-index:2}
+  .ci-mark{position:absolute; right:-2px; bottom:-16px; font:700 100px/1 var(--display); color:transparent; -webkit-text-stroke:1px rgba(0,51,102,.13); pointer-events:none; font-style:normal}
+  .ci-contour{position:absolute; left:0; bottom:0; width:46%; aspect-ratio:514/517; background:url('img/hotel-contour.png') left bottom/contain no-repeat; filter:invert(1) opacity(.1); pointer-events:none}
   .env-flap{position:absolute; top:0; left:0; right:0; height:101px; z-index:3; background:linear-gradient(200deg,#fff,#e3e8ee); clip-path:polygon(0 0, 100% 0, 50% 100%); transform-origin:top center; transition:transform .8s var(--ease), z-index 0s .4s}
   .envelope.open .env-flap{transform:rotateX(-178deg); z-index:0}
   .envelope.open .env-card{transform:translateY(-118px)}
@@ -234,6 +244,23 @@
   .rsvp:before{content:""; position:absolute; left:0; right:0; top:0; height:140px; z-index:0; pointer-events:none; background:linear-gradient(180deg, rgba(0,20,43,.97), transparent)}
   .rsvp .glow.g1{top:auto; bottom:-200px; right:-220px; opacity:.22}
   .rsvp .glow.g2{top:-240px; bottom:auto; left:-260px; opacity:.35}
+  .rsvp:after{content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background-image:radial-gradient(rgba(255,255,255,.1) 1px, transparent 1.3px); background-size:26px 26px; -webkit-mask-image:radial-gradient(75% 65% at 50% 42%, #000 20%, transparent 100%); mask-image:radial-gradient(75% 65% at 50% 42%, #000 20%, transparent 100%)}
+  .rsvp-deco{position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+  .rd-10{position:absolute; right:-3%; top:2%; font:700 clamp(280px,38vw,560px)/.8 var(--display); letter-spacing:-.04em; color:transparent; -webkit-text-stroke:1.5px rgba(255,255,255,.07); white-space:nowrap}
+  .rd-hotel{position:absolute; left:-1%; bottom:0; width:min(520px,62vw); aspect-ratio:514/517; background:url('img/hotel-contour.png') left bottom/contain no-repeat; opacity:.12}
+  .rsvp .container{z-index:1}
+  .rsvp .kicker{display:inline-flex; align-items:center; gap:12px}
+  .rsvp .kicker:before, .rsvp .kicker:after{content:""; width:28px; height:1px; background:var(--orange)}
+  .where{position:relative; overflow:hidden}
+  .where:after{content:""; position:absolute; right:-6px; bottom:0; width:42%; aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; opacity:.13; pointer-events:none}
+  .where > *{position:relative; z-index:1}
+  .timeline{position:relative; overflow:hidden}
+  .timeline:after{content:"10"; position:absolute; right:-4px; bottom:-38px; font:700 130px/1 var(--display); color:transparent; -webkit-text-stroke:1px rgba(255,255,255,.08); pointer-events:none}
+  .timeline > *{position:relative; z-index:1}
+  .rsvp-card{position:relative; overflow:hidden}
+  .rsvp-card:before{content:""; position:absolute; left:0; right:0; top:0; height:5px; background:linear-gradient(90deg,#003366,#FF6B35); z-index:2}
+  .rsvp-card:after{content:""; position:absolute; right:0; bottom:0; width:44%; aspect-ratio:514/517; background:url('img/hotel-contour.png') right bottom/contain no-repeat; filter:invert(1) opacity(.06); pointer-events:none}
+  .rsvp-card > *{position:relative; z-index:1}
   .rsvp-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:26px; align-items:start}
   .rsvp-col{min-width:0}
   .section-head{text-align:center; margin:0 auto 22px; max-width:560px}
@@ -421,8 +448,8 @@
       <div class="envelope" id="envelope">
         <div class="env-back"></div>
         <div class="env-card">
-          <div class="card-face card-inside"><span class="ci-eye">You're invited</span><b>10 Years,<em class="shim">10 Stories</em></b><i class="ci-rule"></i><span class="ci-meta">Wed 21 Oct &middot; 5&ndash;10pm</span></div>
-          <div class="card-face card-cover"><img src="img/logo.png" alt=""></div>
+          <div class="card-face card-inside"><span class="ci-eye">You're invited</span><b>10 Years,<em class="shim">10 Stories</em></b><i class="ci-rule"></i><span class="ci-meta">Wed 21 Oct &middot; 5&ndash;10pm</span><i class="ci-contour"></i><i class="ci-mark">10</i></div>
+          <div class="card-face card-cover"><img src="img/logo-white.png" alt=""><span class="cv-tag">10th Anniversary</span></div>
         </div>
         <div class="env-pocket"></div>
         <div class="env-flap"></div>
@@ -551,6 +578,7 @@
 <!-- ================= Details + RSVP, one screen ================= -->
 <section class="section rsvp" id="rsvp">
   <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="rsvp-deco" aria-hidden="true"><span class="rd-10">10</span><i class="rd-hotel"></i></div>
   <div class="container">
     <div class="rsvp-grid" id="rsvpGrid">
 
