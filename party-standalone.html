@@ -82,7 +82,7 @@
   .envelope-bob{animation:fadeUp .9s var(--ease) .2s both}
   .intro:not(.opening) .envelope-bob{animation:fadeUp .9s var(--ease) .2s both, bob 4s ease-in-out 1.2s infinite}
   @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  .envelope{position:relative; width:290px; height:188px; transform:rotate(-2deg); cursor:pointer}
+  .envelope{position:relative; width:290px; height:188px; cursor:pointer}
   .envelope:after{content:""; position:absolute; left:8%; right:8%; bottom:-22px; height:22px; background:radial-gradient(ellipse at center, rgba(0,0,0,.4), transparent 70%); z-index:-1}
   .env-back{position:absolute; inset:0; background:linear-gradient(160deg,#e9eef4,#d4dce5); border-radius:8px; box-shadow:0 24px 50px rgba(0,10,30,.5)}
   .env-pocket{position:absolute; inset:0; background:linear-gradient(160deg,#fafbfc,#e4e9ef); clip-path:polygon(0 100%, 0 30%, 50% 58%, 100% 30%, 100% 100%); border-radius:0 0 8px 8px; z-index:2}
@@ -145,8 +145,8 @@
   @keyframes drawCrack{ to{stroke-dashoffset:0} }
   .envelope.cracking{animation:shake .38s linear}
   @keyframes shake{
-    0%,100%{transform:rotate(-2deg)} 15%{transform:rotate(-2deg) translate(-3px,1px)} 30%{transform:rotate(-1deg) translate(3px,-1px)}
-    45%{transform:rotate(-3deg) translate(-2px,1px)} 60%{transform:rotate(-1.5deg) translate(2px,0)} 80%{transform:rotate(-2deg) translate(-1px,0)}
+    0%,100%{transform:none} 15%{transform:translate(-3px,1px)} 30%{transform:translate(3px,-1px)}
+    45%{transform:translate(-2px,1px)} 60%{transform:translate(2px,0)} 80%{transform:translate(-1px,0)}
   }
   .envelope.cracking .hl{transform:translate(-2px,0) rotate(-2deg)}
   .envelope.cracking .hr{transform:translate(2px,1px) rotate(2deg)}
